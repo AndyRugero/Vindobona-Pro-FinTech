@@ -9,7 +9,7 @@ import { useTransactions } from './Hooks/useTransactions';
 
 function App() {
   // Accessing the Brain (Hook)
-  const { ledgerData, saveNewEntry } = useTransactions();
+  const { ledgerData, saveNewEntry, totalBalance, income, expenses } = useTransactions();
 
   return (
     <div className="app-shell">
@@ -17,8 +17,9 @@ function App() {
 
       <main className="main-content">
         <Topbar />
-        <DashboardHeader />
-        <StatsRow />
+        <DashboardHeader balance={totalBalance} />
+        <StatsRow income={income} expenses={expenses}
+          totalCount={ledgerData.length} />
 
         <div className="dashboard-content">
           {/* Passing the logic to the Form */}
