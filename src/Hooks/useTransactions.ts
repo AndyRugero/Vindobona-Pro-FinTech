@@ -1,20 +1,33 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { Transaction } from '../Interfaces/Interfaces';
 //   
 import { TransactionService } from './TransactionService';
 
 export const useTransactions = () => {
-    const [ledgerData, setLedgerData] = useState<Transaction[]>([
-        {
-            id: '1',
-            date: '15.05.2026',
-            amount: '-$33.50',
-            category: 'Groceries',
-            receiver: 'BILLA AG',
-            isNegative: true
-        }
-    ]);
+    const [ledgerData, setLedgerData] = useState<Transaction[]>(() => {
+        const savedData = localStorage.getItem("vindobona_ledger");
 
+        if (savedData) return JSON.parse(savedData);
+
+
+        return [
+            {
+                id: '1',
+                date: '15.05.2026',
+                amount: '-$33.50',
+                category: 'Groceries',
+                receiver: 'BILLA AG',
+                isNegative: true
+            }
+        ];
+    });
+    //Watcher of useState
+
+    useEffect(() => {
+        const stringData = JSON.stringify(ledgerData);
+
+        localStorage.setItem('vindobona_ledger', stringData);
+    }, [ledgerData]);
 
     const saveNewEntry = (receiver: string, amount: string, category: string) => {
         const finalCategory = category || TransactionService.predictCategory(receiver);
