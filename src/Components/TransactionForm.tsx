@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 
-// Lesson 13: Connecting the form to the Brain
+//  form to the Brain
 const TransactionForm: React.FC<{ onAdd: (r: string, a: string, c: string) => void }> = ({ onAdd }) => {
   const [receiver, setReceiver] = useState('');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('');
 
+
   const handleAdd = () => {
     if (receiver && amount) {
-      onAdd(receiver, amount, category); 
+      onAdd(receiver, amount, category);
       setReceiver('');
       setAmount('');
       setCategory('');
@@ -18,7 +19,7 @@ const TransactionForm: React.FC<{ onAdd: (r: string, a: string, c: string) => vo
   return (
     <div className="transaction-form">
       <div className="section-header">ADD TRANSACTION</div>
-      
+
       <div className="form-group">
         <label>Receiver</label>
         <input value={receiver} onChange={(e) => setReceiver(e.target.value)} placeholder="Receiver Name" />
@@ -33,7 +34,7 @@ const TransactionForm: React.FC<{ onAdd: (r: string, a: string, c: string) => vo
         <label>Category</label>
         <input value={category} onChange={(e) => setCategory(e.target.value)} placeholder="Groceries" />
       </div>
-      
+
       <button className="submit-button" onClick={handleAdd}>ADD</button>
     </div>
   );

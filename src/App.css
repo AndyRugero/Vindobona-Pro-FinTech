@@ -317,3 +317,37 @@
     font-weight: 600;
     font-family: ui-monospace, monospace;
 }
+
+.control-panel {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    /* Removed the heavy box background to make it blend with the ledger */
+    padding: 0px;
+    background: transparent;
+}
+
+.control-panel input,
+.control-panel select {
+    /* Made the inputs smaller and sleeker like the mockup */
+    padding: 8px 14px;
+    background: rgba(255, 255, 255, 0.02);
+    font-size: 13px;
+    color: #a0a5b1;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    outline: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.control-panel input::placeholder {
+    color: #6c7285;
+}
+
+.control-panel input:focus,
+.control-panel select:focus {
+    border: 1px solid #e1a140;
+    /* Golden highlight to match the mockup theme */
+    background: rgba(255, 255, 255, 0.05);
+}

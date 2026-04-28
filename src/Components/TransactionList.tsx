@@ -1,11 +1,31 @@
-import React from 'react';
+import React, { useState } from 'react';
 import type { Transaction } from '../Interfaces/Interfaces';
+import TransactionControls from './TransactionControls';
 
-// Lesson 13: Connecting the list to the data
-const TransactionList: React.FC<{ transactions: Transaction[] }> = ({ transactions }) => {
+// The Blueprint for the List
+interface TransactionListProps {
+  transactions: Transaction[];
+  onDelete: (id: string) => void;
+}
+
+const TransactionList: React.FC<TransactionListProps> = ({ transactions, onDelete }) => {
+  // Tracking the Search, Sort, and Calendar
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState("Date");
+  const [filterDate, setFilterDate] = useState("");
+
   return (
     <div className="central-ledger">
-      <div className="section-header">CENTRAL LEDGER</div>
+      {/* Title */}
+      <div className="section-header" style={{ marginBottom: '15px' }}>Transaction Ledger</div>
+
+      {/* The Controls perfectly nestled inside the ledger card */}
+      <TransactionControls 
+        searchTerm={searchTerm} setSearchTerm={setSearchTerm}
+        filterDate={filterDate} setFilterDate={setFilterDate}
+        sortBy={sortBy} setSortBy={setSortBy}
+      />
+
       <table className="ledger-table">
         <thead>
           <tr>
@@ -13,6 +33,7 @@ const TransactionList: React.FC<{ transactions: Transaction[] }> = ({ transactio
             <th>Receiver</th>
             <th>Category</th>
             <th>Amount</th>
+            <th>Delete transaction</th>
           </tr>
         </thead>
         <tbody>
@@ -25,6 +46,7 @@ const TransactionList: React.FC<{ transactions: Transaction[] }> = ({ transactio
               <td className={`amount ${tx.isNegative ? 'negative' : 'positive'}`}>
                 {tx.amount}
               </td>
+              <td><button onClick={() => onDelete(tx.id)}>Delete</button></td>
             </tr>
           ))}
         </tbody>

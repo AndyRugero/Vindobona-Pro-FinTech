@@ -21,7 +21,7 @@ export const useTransactions = () => {
             }
         ];
     });
-    //Watcher of useState
+    //Watcher of useEffect
 
     useEffect(() => {
         const stringData = JSON.stringify(ledgerData);
@@ -42,7 +42,13 @@ export const useTransactions = () => {
         };
 
         setLedgerData([...ledgerData, newTx]);
+
     };
+    const deleteEntry = (idToRemove: string) => {
+        const updatedList = ledgerData.filter(tx => tx.id !== idToRemove);
+        setLedgerData(updatedList);
+    };
+
 
     // Expense Tracker calculation(SIMPLE FUNCTIONS AND variables)
     const cleanAmount = (amt: string) => parseFloat(amt.replace(/[^\d.]/g, '')) || 0;
@@ -65,6 +71,7 @@ export const useTransactions = () => {
     return {
         ledgerData,
         saveNewEntry,
+        deleteEntry,
         income,
         expenses,
         totalBalance,

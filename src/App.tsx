@@ -9,7 +9,7 @@ import { useTransactions } from './Hooks/useTransactions';
 
 function App() {
   // Accessing the Brain (Hook)
-  const { ledgerData, saveNewEntry, totalBalance, income, expenses } = useTransactions();
+  const { ledgerData, saveNewEntry, deleteEntry, totalBalance, income, expenses } = useTransactions();
 
   return (
     <div className="app-shell">
@@ -24,8 +24,9 @@ function App() {
         <div className="dashboard-content">
           {/* Passing the logic to the Form */}
           <TransactionForm onAdd={saveNewEntry} />
-          {/* Passing the data to the List */}
-          <TransactionList transactions={ledgerData} />
+
+          {/* Passing the raw data to the List (The List will handle its own search/sort!) */}
+          <TransactionList transactions={ledgerData} onDelete={deleteEntry} />
         </div>
       </main>
     </div>
