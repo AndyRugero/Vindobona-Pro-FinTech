@@ -7,18 +7,34 @@ const TransactionForm: React.FC<{ onAdd: (r: string, a: string, c: string) => vo
   const [category, setCategory] = useState('');
 
 
+
+  const [error, setError] = useState<string | null>(null);
+
   const handleAdd = () => {
-    if (receiver && amount) {
-      onAdd(receiver, amount, category);
-      setReceiver('');
-      setAmount('');
-      setCategory('');
+    if (receiver.trim() === '') {
+      setError('Receiver name cannot be empty!');
+      return;
     }
+
+    if (amount.trim() === '') {
+      setError('Amount cannot be empty!');
+      return;
+    }
+
+    setError(null);
+    onAdd(receiver, amount, category);
+    setReceiver('');
+    setAmount('');
+    setCategory('');
   };
+
+
 
   return (
     <div className="transaction-form">
       <div className="section-header">ADD TRANSACTION</div>
+      {error && (<div className="error-box">!!{error}
+      </div>)}
 
       <div className="form-group">
         <label>Receiver</label>
