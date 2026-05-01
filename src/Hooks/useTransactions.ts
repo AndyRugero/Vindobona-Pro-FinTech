@@ -38,7 +38,8 @@ export const useTransactions = () => {
             amount: amount,
             category: finalCategory,
             receiver: receiver,
-            isNegative: amount.includes('-')
+            isNegative: amount.includes('-'),
+            status: 'pending'
         };
 
         setLedgerData([...ledgerData, newTx]);
@@ -75,5 +76,6 @@ export const useTransactions = () => {
         income,
         expenses,
         totalBalance,
+        status: 'Complete'
     };
 };

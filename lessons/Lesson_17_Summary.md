@@ -1,6 +1,6 @@
-# 🔍 Lesson 17: Search and Filter UI (Derived State)
+    # 🔍 Lesson 17: Search and Filter UI (Derived State)
 
-In Lesson 16, we used `.filter()` to completely delete a transaction from the Brain. 
+In Lesson 16, we used `.filter()` to completely delete a transaction from the  Brain. 
 
 In this lesson, we focused on the first half of **Searching and Sorting**: building the User Interface and the "Memory" for the controls. We don't want to permanently delete data when we search; we just want to temporarily hide it!
 

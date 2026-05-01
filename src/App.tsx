@@ -22,11 +22,11 @@ function App() {
           totalCount={ledgerData.length} />
 
         <div className="dashboard-content">
-          {/* Passing the logic to the Form */}
-          <TransactionForm onAdd={saveNewEntry} />
-
           {/* Passing the raw data to the List (The List will handle its own search/sort!) */}
           <TransactionList transactions={ledgerData} onDelete={deleteEntry} />
+
+          {/* Passing the logic to the Form */}
+          <TransactionForm onAdd={saveNewEntry} />
         </div>
       </main>
     </div>

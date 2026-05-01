@@ -4,7 +4,7 @@ When building applications, you constantly need to query, filter, and transform 
 
 ---
 
-## 1. The SQL Basics in C# (LINQ)
+ ## 1. The SQL Basics in C# (LINQ)
 
 **SQL** (Structured Query Language) is used for databases. **LINQ** (Language Integrated Query) is how C# allows you to write SQL-like commands directly on a `List<T>`.
 

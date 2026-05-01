@@ -5,6 +5,7 @@ export interface Transaction {
     category: string;
     receiver: string;
     isNegative: boolean;
+    status: string;
 }
 
 export interface StatItem {
