@@ -1,4 +1,5 @@
 import './App.css';
+import './App.grid.css';
 import DashboardHeader from './Components/DashboardHeader';
 import StatsRow from './Components/StatsRow';
 import TransactionForm from './Components/TransactionForm';
@@ -20,7 +21,17 @@ function App() {
         <DashboardHeader balance={totalBalance} />
         <StatsRow income={income} expenses={expenses}
           totalCount={ledgerData.length} />
+        <section className="analytic-grid">
+          <div className="chart-box">
+            <h3>Cash Flow Trend</h3>
+            <div className="chart-placeholder">Bar Graph Area</div>
+          </div>
 
+          <div className="chart-box">
+            <h3>Spending Distribution</h3>
+            <div className="chart-placeholder">Pie chart Area</div>
+          </div>
+        </section>
         <div className="dashboard-content">
           {/* Passing the raw data to the List (The List will handle its own search/sort!) */}
           <TransactionList transactions={ledgerData} onDelete={deleteEntry} />

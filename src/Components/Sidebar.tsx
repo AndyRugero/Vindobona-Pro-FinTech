@@ -22,7 +22,6 @@ const Sidebar: React.FC = () => {
             <nav className="sidebar-nav">
                 <div className="nav-item active"><span className="nav-icon">🏠</span> Dashboard</div>
                 <div className="nav-item"><span className="nav-icon">📖</span> Ledger</div>
-                <div className="nav-item"><span className="nav-icon">📊</span> Analytics</div>
                 <div className="nav-item"><span className="nav-icon">💸</span> Transfers</div>
                 <div className="nav-item"><span className="nav-icon">💳</span> Payment Methods</div>
                 <div className="nav-item"><span className="nav-icon">⚙️</span> Settings</div>

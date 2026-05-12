@@ -1,0 +1,44 @@
+.analytic-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    /*two equal columns side by side*/
+    gap: 24px;
+    /*space btn charts*/
+    margin-top: 32px;
+    margin-bottom: 32px;
+
+    /*space btn letdger bellow */
+}
+
+.chart-box {
+    background-color: #273142;
+    padding: 16px;
+    min-height: 320px;
+    border: 1px solid #334155;
+    /* room for drawing later */
+    display: flex;
+    flex-direction: column;
+    border-radius: 12px;
+}
+
+.chart-box h3 {
+    color: #eab308;
+    /* Golden theme color */
+    font-size: 12px;
+    margin-top: 0;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Placeholder style for the "Coming Soon" look */
+.chart-placeholder {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #475569;
+    border: 2px dashed #334155;
+    border-radius: 8px;
+    font-style: italic;
+}
