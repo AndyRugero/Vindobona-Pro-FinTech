@@ -423,7 +423,6 @@
 }
 
 .profile-avatar {
-    font-size: 32px;
     background: #1e293b;
     width: 60px;
     height: 60px;
@@ -431,7 +430,16 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    margin-bottom: 8px;
+    border: 1px solid rgba(234, 179, 8, 0.3);
+}
+
+.account-tag {
+    font-size: 10px;
+    color: #94a3b8;
+    letter-spacing: 2px;
     margin-bottom: 12px;
+    font-weight: bold;
 }
 
 .profile-info h4 {
@@ -572,3 +580,123 @@
     font-size: 15px !important;
     font-style: italic;
 }
+
+.pie-slice-0 { fill: #eab308; }
+.pie-slice-1 { fill: #3b82f6; }
+.pie-slice-2 { fill: #10b981; }
+.pie-slice-3 { fill: #ef4444; }
+.pie-slice-4 { fill: #8b5cf6; }
+
+/* Styling Recharts components via Global Classes */
+.recharts-default-tooltip {
+    background-color: #1e293b !important;
+    border: 1px solid #334155 !important;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.recharts-legend-item-text {
+    color: #94a3b8 !important;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* --- CSV IMPORT VIEW --- */
+.csv-import-container {
+    color: white;
+    padding: 20px;
+}
+
+.import-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 30px;
+}
+
+.back-button {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: color 0.2s;
+}
+
+.back-button:hover {
+    color: white;
+}
+
+.upload-zone {
+    border: 2px dashed #334155;
+    border-radius: 12px;
+    padding: 40px;
+    text-align: center;
+    background-color: #0c1222;
+    margin-bottom: 30px;
+    transition: all 0.3s ease;
+}
+
+.upload-zone:hover {
+    border-color: #eab308;
+    background-color: rgba(234, 179, 8, 0.05);
+}
+
+.upload-label {
+    cursor: pointer;
+}
+
+.upload-icon-container {
+    margin-bottom: 15px;
+}
+
+.upload-title {
+    margin: 0 0 10px 0;
+    color: #f1f5f9;
+}
+
+.upload-subtitle {
+    color: #94a3b8;
+    font-size: 14px;
+}
+
+.import-error {
+    background-color: rgba(239, 68, 68, 0.1);
+    border: 1px solid #ef4444;
+    color: #fca5a5;
+    padding: 12px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.import-preview-section {
+    margin-top: 20px;
+}
+
+.preview-status {
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #10b981;
+}
+
+.preview-table-wrapper {
+    max-height: 300px;
+    overflow-y: auto;
+    background-color: #1e293b;
+    border-radius: 8px;
+    border: 1px solid #334155;
+}
+
+.preview-confirm-btn {
+    margin-top: 20px;
+    width: auto !important;
+    padding: 12px 40px !important;
+}
+

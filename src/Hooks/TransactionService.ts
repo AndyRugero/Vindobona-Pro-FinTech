@@ -17,6 +17,14 @@ export const TransactionService = {
             return 'Transport';
         }
 
+        if (name.includes('spotify') || name.includes('apple') || name.includes('music')) {
+            return 'Music';
+        }
+
+        if (name.includes('netflix') || name.includes('disney') || name.includes('hbo')) {
+            return 'Entertainment';
+        }
+
         return 'General'; // Fallback if no match is found
     }
 };

@@ -5,20 +5,22 @@ import { TransactionService } from './TransactionService';
 
 export const useTransactions = () => {
     const [ledgerData, setLedgerData] = useState<Transaction[]>(() => {
-        const savedData = localStorage.getItem("vindobona_ledger");
-
-        if (savedData) return JSON.parse(savedData);
-
+        try {
+            const savedData = localStorage.getItem("vindobona_ledger");
+            if (savedData && savedData !== "undefined") {
+                const parsed = JSON.parse(savedData);
+                if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+            }
+        } catch (e) {
+            console.error("Corrupted data found, resetting ledger.", e);
+        }
 
         return [
-            {
-                id: '1',
-                date: '15.05.2026',
-                amount: '-$33.50',
-                category: 'Groceries',
-                receiver: 'BILLA AG',
-                isNegative: true
-            }
+            { id: '1', date: '15.05.2026', amount: '-$33.50', category: 'Groceries', receiver: 'BILLA AG', isNegative: true },
+            { id: '2', date: '16.05.2026', amount: '-$10.99', category: 'Music', receiver: 'Spotify Premium', isNegative: true },
+            { id: '3', date: '17.05.2026', amount: '-$55.00', category: 'Transport', receiver: 'OMV Petrol Station', isNegative: true },
+            { id: '4', date: '18.05.2026', amount: '+$2800.00', category: 'Income', receiver: 'Monthly Salary', isNegative: false },
+            { id: '8', date: '22.05.2026', amount: '-$42.00', category: 'Dining', receiver: 'Pizza Palace', isNegative: true },
         ];
     });
     //Watcher of useEffect
@@ -50,6 +52,12 @@ export const useTransactions = () => {
         setLedgerData(updatedList);
     };
 
+    const importTransactions = (newList: Transaction[]) => {
+        setLedgerData([...ledgerData, ...newList]);
+    };
+
+
+
 
     // Expense Tracker calculation(SIMPLE FUNCTIONS AND variables)
     const cleanAmount = (amt: string) => parseFloat(amt.replace(/[^\d.]/g, '')) || 0;
@@ -73,6 +81,8 @@ export const useTransactions = () => {
         ledgerData,
         saveNewEntry,
         deleteEntry,
+        importTransactions,
+
         income,
         expenses,
         totalBalance,
