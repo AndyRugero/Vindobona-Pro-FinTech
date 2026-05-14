@@ -581,11 +581,25 @@
     font-style: italic;
 }
 
-.pie-slice-0 { fill: #eab308; }
-.pie-slice-1 { fill: #3b82f6; }
-.pie-slice-2 { fill: #10b981; }
-.pie-slice-3 { fill: #ef4444; }
-.pie-slice-4 { fill: #8b5cf6; }
+.pie-slice-0 {
+    fill: #eab308;
+}
+
+.pie-slice-1 {
+    fill: #3b82f6;
+}
+
+.pie-slice-2 {
+    fill: #10b981;
+}
+
+.pie-slice-3 {
+    fill: #ef4444;
+}
+
+.pie-slice-4 {
+    fill: #8b5cf6;
+}
 
 /* Styling Recharts components via Global Classes */
 .recharts-default-tooltip {
@@ -699,4 +713,35 @@
     width: auto !important;
     padding: 12px 40px !important;
 }
-
+
+/* --- ANALYTICS CARD STYLING --- */
+.analytics-card {
+    background-color: #0c1222;
+    /* Dark background to match your theme */
+    padding: 24px;
+    border-radius: 16px;
+    border: 1px solid #1e293b;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    margin-bottom: 24px;
+}
+
+.card-header h3 {
+    color: #eab308;
+    /* Golden title */
+    margin: 0 0 4px 0;
+    font-size: 16px;
+}
+
+.card-header p {
+    color: #64748b;
+    /* Gray subtitle */
+    font-size: 13px;
+    margin: 0;
+}
+
+.chart-wrapper {
+    width: 100%;
+}
