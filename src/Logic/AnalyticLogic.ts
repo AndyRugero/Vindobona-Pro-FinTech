@@ -47,7 +47,25 @@ export const prepareTrendData = (transactions: Transaction[]) => {
     });
 
     return Object.keys(dateMap)
-        .sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
+        .sort((a, b) => {
+            // Handle "Unknown" or missing dates gracefully
+            if (a === "Unknown") return 1;
+            if (b === "Unknown") return -1;
+
+            // Convert DD.MM.YYYY to YYYY-MM-DD so the browser can sort it correctly
+            const partsA = a.split('.');
+            const partsB = b.split('.');
+
+            if (partsA.length !== 3 || partsB.length !== 3) return 0;
+
+            const [dayA, monthA, yearA] = partsA;
+            const [dayB, monthB, yearB] = partsB;
+            
+            const dateA = new Date(`${yearA}-${monthA}-${dayA}`).getTime();
+            const dateB = new Date(`${yearB}-${monthB}-${dayB}`).getTime();
+            
+            return dateA - dateB;
+        })
         .map(date => ({
             date,
             income: dateMap[date].income,

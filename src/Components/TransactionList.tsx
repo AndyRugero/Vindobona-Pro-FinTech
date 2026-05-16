@@ -1,23 +1,20 @@
-import React, { useState } from 'react';
-import type { Transaction } from '../Interfaces/Interfaces';
+import { useState } from 'react';
 import TransactionControls from './TransactionControls';
-import { processTransactions } from '../Logic/TransactionLogic';
+import { useTransactionContext } from '../Context/TransactionContext';
 
-// The Blueprint for the List
-interface TransactionListProps {
-  transactions: Transaction[];
-  onDelete: (id: string) => void;
-}
 
-const TransactionList: React.FC<TransactionListProps> = ({ transactions, onDelete }) => {
-  // Tracking the Search, Sort, and Calendar
-  const [searchTerm, setSearchTerm] = useState("");
+const TransactionList = () => {
+  // 1. Grab everything we need from the Cloud
+  const { filteredData, setLedgerData } = useTransactionContext();
+
+  // 2. Local UI state for sorting/filtering
   const [sortBy, setSortBy] = useState("Date");
   const [filterDate, setFilterDate] = useState("");
 
-  // --- CLEAN ARCHITECTURE (Divide & Conquer) ---
-  // We moved the heavy math into our new Logic folder!
-  let processedList = processTransactions(transactions, searchTerm, sortBy, filterDate);
+  // 3. Create a delete function that updates the cloud
+  const handleDelete = (id: string) => {
+    setLedgerData(prev => prev.filter(tx => tx.id !== id));
+  };
 
   return (
     <div className="central-ledger">
@@ -26,7 +23,8 @@ const TransactionList: React.FC<TransactionListProps> = ({ transactions, onDelet
 
       {/* The Controls perfectly nestled inside the ledger card */}
       <TransactionControls
-        searchTerm={searchTerm} setSearchTerm={setSearchTerm}
+        searchTerm="" // Search is now handled globally in the Context
+        setSearchTerm={() => {}} 
         filterDate={filterDate} setFilterDate={setFilterDate}
         sortBy={sortBy} setSortBy={setSortBy}
       />
@@ -39,25 +37,18 @@ const TransactionList: React.FC<TransactionListProps> = ({ transactions, onDelet
             <th>Category</th>
             <th>Amount</th>
             <th>Status</th>
-            <th>Delete transaction</th>
-
+            <th>Delete</th>
           </tr>
         </thead>
         <tbody>
-          {/* Notice how ONE curly bracket { opens here... */}
-          {processedList.length === 0 ? (
-            
-            /* THIS HAPPENS IF TRUE (Empty) */
+          {filteredData.length === 0 ? (
             <tr>
               <td colSpan={6} className="empty-message">
-                No Transactions found for this search or Date!!
+                No Transactions found!
               </td>
             </tr>
-
           ) : (
-            
-            /* THIS HAPPENS IF FALSE (Not Empty) */
-            processedList.map((tx) => (
+            filteredData.map((tx) => (
               <tr key={tx.id}>
                 <td>{tx.date}</td>
                 <td>{tx.receiver}</td>
@@ -66,19 +57,22 @@ const TransactionList: React.FC<TransactionListProps> = ({ transactions, onDelet
                   {tx.amount}
                 </td>
                 <td>
-                  <span className={`status-Pill ${(tx.status || 'Complete').toLowerCase()}`}>
+                  <span className="status-Pill complete">
                     {tx.status || 'Complete'}
                   </span>
                 </td>
-                <td><button className="Delete-button" onClick={() => onDelete(tx.id)}>Delete</button></td>
+                <td>
+                  <button className="Delete-button" onClick={() => handleDelete(tx.id)}>
+                    Delete
+                  </button>
+                </td>
               </tr>
             ))
-            
-          )} {/* ...and the ONE curly bracket } closes here! */}
+          )}
         </tbody>
       </table>
     </div>
   );
 };
 
-export default TransactionList
+export default TransactionList;

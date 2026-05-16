@@ -4,32 +4,40 @@ import type { Transaction } from '../Interfaces/Interfaces';
 import { TransactionService } from './TransactionService';
 
 export const useTransactions = () => {
-    const [ledgerData, setLedgerData] = useState<Transaction[]>(() => {
-        try {
-            const savedData = localStorage.getItem("vindobona_ledger");
-            if (savedData && savedData !== "undefined") {
-                const parsed = JSON.parse(savedData);
-                if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-            }
-        } catch (e) {
-            console.error("Corrupted data found, resetting ledger.", e);
-        }
+    const [ledgerData, setLedgerData] = useState<Transaction[]>([
+        { id: '1', date: '15.05.2026', amount: '-$33.50', category: 'Groceries', receiver: 'BILLA AG', isNegative: true, status: 'completed' },
+        { id: '2', date: '16.05.2026', amount: '-$10.99', category: 'Music', receiver: 'Spotify Premium', isNegative: true, status: 'completed' },
+        { id: '3', date: '17.05.2026', amount: '-$55.00', category: 'Transport', receiver: 'OMV Petrol Station', isNegative: true, status: 'completed' },
+        { id: '4', date: '18.05.2026', amount: '+$2800.00', category: 'Income', receiver: 'Monthly Salary', isNegative: false, status: 'completed' },
+        { id: '8', date: '22.05.2026', amount: '-$42.00', category: 'Dining', receiver: 'Pizza Palace', isNegative: true, status: 'completed' },
+    ]);
+    const [error, setError] = useState<string | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
 
-        return [
-            { id: '1', date: '15.05.2026', amount: '-$33.50', category: 'Groceries', receiver: 'BILLA AG', isNegative: true },
-            { id: '2', date: '16.05.2026', amount: '-$10.99', category: 'Music', receiver: 'Spotify Premium', isNegative: true },
-            { id: '3', date: '17.05.2026', amount: '-$55.00', category: 'Transport', receiver: 'OMV Petrol Station', isNegative: true },
-            { id: '4', date: '18.05.2026', amount: '+$2800.00', category: 'Income', receiver: 'Monthly Salary', isNegative: false },
-            { id: '8', date: '22.05.2026', amount: '-$42.00', category: 'Dining', receiver: 'Pizza Palace', isNegative: true },
-        ];
-    });
-    //Watcher of useEffect
-
+    // THE LOADER: Runs once when the app starts
     useEffect(() => {
-        const stringData = JSON.stringify(ledgerData);
+        const loadFromStorage = async () => {
+            try {
+                setIsLoading(true);
+                const data = await TransactionService.fetchAsync();
+                if (data && data.length > 0) {
+                    setLedgerData(data);
+                }
+            } catch (err) {
+                setError("Failed to load data, please refresh the page");
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        loadFromStorage();
+    }, []);
 
-        localStorage.setItem('vindobona_ledger', stringData);
+
+    // THE SAVER: Runs every time ledgerData changes
+    useEffect(() => {
+        TransactionService.save(ledgerData);
     }, [ledgerData]);
+
 
     const saveNewEntry = (receiver: string, amount: string, category: string) => {
         const finalCategory = category || TransactionService.predictCategory(receiver);
@@ -82,8 +90,9 @@ export const useTransactions = () => {
         saveNewEntry,
         deleteEntry,
         importTransactions,
-
+        isLoading,
         income,
+        error,
         expenses,
         totalBalance,
         status: 'Complete'

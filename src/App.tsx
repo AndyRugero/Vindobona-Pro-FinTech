@@ -8,64 +8,65 @@ import Topbar from './Components/Topbar';
 import Sidebar from './Components/Sidebar';
 import { useTransactions } from './Hooks/useTransactions';
 import SpendingDistribution from './Components/SpendingDistribution';
-import { preparePieData, prepareTrendData } from './Logic/AnalyticLogic';
 import { useState } from 'react';
 import CSVImportView from './Components/CSVImportView';
 import CashFlowTrend from './Components/CashFlowTrend';
-
+import { TransactionProvider } from './Context/TransactionContext';
 
 function App() {
   // Navigation State
   const [currentView, setCurrentView] = useState('dashboard');
 
   // Accessing the Brain (Hook)
+  // We only grab what App.tsx actually NEEDS now.
   const {
-    ledgerData,
+    isLoading,
     saveNewEntry,
-    deleteEntry,
-    importTransactions,
-    totalBalance,
-    income,
-    expenses
+    importTransactions
   } = useTransactions();
 
-  // Step 2: Prepare the data for the Chart
-  const pieData = preparePieData(ledgerData);
-  const trendData = prepareTrendData(ledgerData);
+  if (isLoading) {
+    return (
+      <div className="Loading-screen">
+        <div className="spinner"></div>
+        <h2>Loading YOUR finances </h2>
+      </div>
+    );
+  }
 
   return (
-    <div className="app-shell">
+    <TransactionProvider>
+      <div className="app-shell">
+        <Sidebar currentView={currentView} onViewChange={setCurrentView} />
 
-      <Sidebar currentView={currentView} onViewChange={setCurrentView} />
+        <main className="main-content">
+          <Topbar />
 
-      <main className="main-content">
-        <Topbar />
+          {currentView === 'import' ? (
+            <CSVImportView
+              onImport={importTransactions}
+              onBack={() => setCurrentView('dashboard')}
+            />
+          ) : (
+            <>
+              {/* DashboardHeader and StatsRow are now Smart! */}
+              <DashboardHeader />
+              <StatsRow />
+              
+              <section className="analytic-grid">
+                <CashFlowTrend />
+                <SpendingDistribution />
+              </section>
 
-        {currentView === 'import' ? (
-          <CSVImportView
-            onImport={importTransactions}
-            onBack={() => setCurrentView('dashboard')}
-          />
-        ) : (
-          <>
-            <DashboardHeader balance={totalBalance} />
-            <StatsRow income={income} expenses={expenses}
-              totalCount={ledgerData.length} />
-            <section className="analytic-grid">
-              <CashFlowTrend data={trendData} />
-              <SpendingDistribution data={pieData} />
-            </section>
-            <div className="dashboard-content">
-              {/* Passing the raw data to the List (The List will handle its own search/sort!) */}
-              <TransactionList transactions={ledgerData} onDelete={deleteEntry} />
-
-              {/* Passing the logic to the Form */}
-              <TransactionForm onAdd={saveNewEntry} />
-            </div>
-          </>
-        )}
-      </main>
-    </div>
+              <div className="dashboard-content">
+                <TransactionList />
+                <TransactionForm onAdd={saveNewEntry} />
+              </div>
+            </>
+          )}
+        </main>
+      </div>
+    </TransactionProvider>
   );
 }
 

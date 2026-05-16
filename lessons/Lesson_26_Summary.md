@@ -1,17 +1,77 @@
-# Lesson 26: The Service Layer & Mock Backend
+# Lesson 26: The Service Layer & JSON Flow 🏗️📡
 
-## 1. The Concept: Moving Logic out of Components
-So far, our logic is scattered between `App.tsx` and `useTransactions.ts`. As an app grows, this becomes "Spaghetti Code." 
+## Goal
+To separate our "Data Storage" logic from our "UI Logic" using the **Service Pattern**. This makes the app professional, scalable, and easy to maintain.
 
-**The Service Layer** is a professional architectural pattern where all data-fetching and storage logic lives in a dedicated file. This makes your app easier to test and ready for a real Database (API).
+---
 
-## 2. Our Goal
-In this lesson, we will:
-1.  **Refactor `TransactionService.ts`**: Move all LocalStorage logic there.
-2.  **Implement a "Loading State"**: Simulate a real network delay so the user sees a spinner while data "fetches."
-3.  **Global Error Handling**: Ensure the app doesn't crash if the data is corrupted.
+## 1. The Service Object (`TransactionService.ts`)
+The Service is the **Middleman**. It is the ONLY file in the entire project that knows about `localStorage`.
 
-## 3. Why This Matters
-Real-world apps never touch LocalStorage directly inside a Hook. They call a **Service**. Learning this pattern separates "Junior" developers from "Senior" architects.
+### The Save Method (Serialization)
+```typescript
+save: (data: any[]) => {
+    const jsonString = JSON.stringify(data); // Converts Objects -> JSON String
+    localStorage.setItem("Vindobona_ledger", jsonString);
+}
+```
+**Concept:** `JSON.stringify` turns your live JavaScript objects into a text string so they can "sleep" in the browser's storage.
 
-*Next Step: Create the `TransactionService.ts` architecture.*
+### The Fetch Method (Deserialization)
+```typescript
+fetchAsync: async (): Promise<any[]> => {
+    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate delay
+    const rawData = localStorage.getItem("Vindobona_ledger");
+    if (!rawData) return [];
+    return JSON.parse(rawData); // Converts JSON String -> Live Objects
+}
+```
+**Concept:** `JSON.parse` takes the "sleeping" text string and wakes it up back into usable JavaScript objects. We use `async` because real servers take time to respond.
+
+---
+
+## 2. The Hook Connection (`useTransactions.ts`)
+We use two separate **Watchers** (`useEffect`) to manage the data lifecycle.
+
+### The Loader (Startup)
+```typescript
+useEffect(() => {
+    const loadFromStorage = async () => {
+        const data = await TransactionService.fetchAsync();
+        if (data && data.length > 0) {
+            setLedgerData(data); // Push the data into our App's state
+        }
+    };
+    loadFromStorage();
+}, []); // [] = Run only once when the app starts
+```
+**Connection:** This connects the **Service** to the **UI** right when the app opens.
+
+### The Saver (Watcher)
+```typescript
+useEffect(() => {
+    TransactionService.save(ledgerData);
+}, [ledgerData]); // [ledgerData] = Run every time the list changes
+```
+**Connection:** This ensures that every time you add, delete, or import a transaction, it is instantly backed up to the storage.
+
+---
+
+## 3. The JSON Flow Diagram
+1. **App Action**: You click "Add Transaction".
+2. **Hook Change**: `ledgerData` state updates.
+3. **Saver Trigger**: `useEffect` detects the change.
+4. **Serialization**: `JSON.stringify` converts the list to text.
+5. **Storage**: Text is saved in `localStorage`.
+6. **(Next Refresh)**:
+7. **Loader Trigger**: `useEffect` runs on startup.
+8. **Deserialization**: `JSON.parse` converts text back to objects.
+9. **UI Refresh**: Dashboard shows your saved data.
+
+---
+
+## Why this is a "Junior to Senior" Move
+Instead of messy code everywhere, you now have a clean system where:
+- **Service**: Handles the "How" (Storage).
+- **Hook**: Handles the "What" (Data).
+- **App**: Handles the "Look" (UI).
