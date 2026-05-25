@@ -16,28 +16,28 @@ module.exports = (db) => {
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
         callbackURL: "http://localhost:5001/api/auth/google/callback" // The callback door
     },
-    async (accessToken, refreshToken, profile, done) => {
-        try {
-            // A. Search if this Google user already exists in our database
-            let user = await db.get('SELECT * FROM users WHERE google_id = ?', profile.id);
-            
-            if (!user) {
-                // B. If they don't exist, register them as a new user!
-                const userId = Date.now().toString(); // Generate unique ID
-                
-                await db.run(
-                    'INSERT INTO users (id, username, password_hash, google_id, is_verified) VALUES (?, ?, ?, ?, ?)',
-                    [userId, profile.displayName, 'OAUTH_USER', profile.id, 1]
-                );
-                user = { id: userId, username: profile.displayName };
+        async (accessToken, refreshToken, profile, done) => {
+            try {
+                // A. Search if this Google user already exists in our database
+                let user = await db.get('SELECT * FROM users WHERE google_id = ?', profile.id);
+
+                if (!user) {
+                    // B. If they don't exist, register them as a new user!
+                    const userId = Date.now().toString(); // Generate unique ID
+
+                    await db.run(
+                        'INSERT INTO users (id, username, password_hash, google_id, is_verified) VALUES (?, ?, ?, ?, ?)',
+                        [userId, profile.displayName, 'OAUTH_USER', profile.id, 1]
+                    );
+                    user = { id: userId, username: profile.displayName };
+                }
+
+                // Pass the user details back to Passport
+                return done(null, user);
+            } catch (error) {
+                return done(error, null);
             }
-            
-            // Pass the user details back to Passport
-            return done(null, user);
-        } catch (error) {
-            return done(error, null);
-        }
-    }));
+        }));
 
     // 🚪 2. THE LOGIN REDIRECT ROUTE: Takes user from React to Google's sign-in page
     // Path: GET http://localhost:5001/api/auth/google
@@ -45,7 +45,7 @@ module.exports = (db) => {
 
     // 🤝 3. THE CALLBACK ROUTE: Where Google sends the user back after signing in
     // Path: GET http://localhost:5001/api/auth/google/callback
-    router.get('/auth/google/callback', 
+    router.get('/auth/google/callback',
         passport.authenticate('google', { session: false, failureRedirect: '/login' }),
         (req, res) => {
             // Google authenticated them successfully! Generate our JWT token for their session:
@@ -54,7 +54,7 @@ module.exports = (db) => {
                 process.env.JWT_SECRET,
                 { expiresIn: '2h' }
             );
-            
+
             // Redirect the user back to the React app and pass the token in the URL!
             res.redirect(`http://localhost:5173?token=${token}&username=${req.user.username}`);
         }
@@ -75,7 +75,7 @@ module.exports = (db) => {
             if (cleanUsername.length < 3) {
                 return res.status(400).json({ error: 'Username must be at least 3 characters long' });
             }
-            
+
             if (cleanUsername.includes(' ')) {
                 return res.status(400).json({ error: 'Username must not contain spaces' });
             }
@@ -104,7 +104,7 @@ module.exports = (db) => {
             // 3. Hash the password securely using bcryptjs (10 salt rounds)
             const passwordHash = await bcrypt.hash(password, 10);
             const userId = Date.now().toString(); // Generate unique user ID
-            
+
             // Generate a secure 6-digit code
             const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
 
@@ -115,7 +115,7 @@ module.exports = (db) => {
             );
 
             // 5. Send verification email in the background
-            const emailHtml = getVerificationEmailHelper(cleanUsername, verificationCode);
+            const emailHtml = buildVerificationEmail(cleanUsername, verificationCode);
 
             sendEmail(cleanEmail, 'Verify Your Vindobona Pro Account 🔑', emailHtml)
                 .catch(err => console.error('Error sending verification email:', err));
@@ -128,11 +128,11 @@ module.exports = (db) => {
             });
         } catch (error) {
             console.error('Registration error:', error);
-            if (error.message && error.message.includes('UNIQUE constraint failed')) { 
+            if (error.message && error.message.includes('UNIQUE constraint failed')) {
                 if (error.message.includes('email')) {
                     return res.status(400).json({ error: 'Email is already registered' });
                 }
-                return res.status(400).json({ error: 'Username is already taken' }); 
+                return res.status(400).json({ error: 'Username is already taken' });
             }
             res.status(500).json({ error: 'Failed to register user' });
         }
