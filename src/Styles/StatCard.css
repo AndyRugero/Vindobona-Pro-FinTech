@@ -1,0 +1,93 @@
+.stat-card {
+    background-color: #1e293b;
+    padding: 20px;
+    border-radius: 16px;
+    border: 1px solid #334155;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    
+    /* Animation handled purely in CSS */
+    animation: fadeInUp 0.6s ease-out forwards;
+    opacity: 0;
+    
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* 🏎️ DYNAMIC DELAYS IN CSS (No more inline styles!) */
+.stat-card:nth-child(1) { animation-delay: 0s; }
+.stat-card:nth-child(2) { animation-delay: 0.1s; }
+.stat-card:nth-child(3) { animation-delay: 0.2s; }
+.stat-card:nth-child(4) { animation-delay: 0.3s; }
+
+.stat-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+}
+
+/* --- THEMES --- */
+.stat-card--income { border-color: rgba(16, 185, 129, 0.3); color: #10b981; }
+.stat-card--income .stat-card__icon-box { background-color: rgba(16, 185, 129, 0.2); }
+.stat-card--income:hover { border-color: #10b981; }
+
+.stat-card--expenses { border-color: rgba(239, 68, 68, 0.3); color: #ef4444; }
+.stat-card--expenses .stat-card__icon-box { background-color: rgba(239, 68, 68, 0.2); }
+.stat-card--expenses:hover { border-color: #ef4444; }
+
+.stat-card--savings { border-color: rgba(59, 130, 246, 0.3); color: #3b82f6; }
+.stat-card--savings .stat-card__icon-box { background-color: rgba(59, 130, 246, 0.2); }
+.stat-card--savings:hover { border-color: #3b82f6; }
+
+.stat-card--warning { border-color: rgba(234, 179, 8, 0.3); color: #eab308; }
+.stat-card--warning .stat-card__icon-box { background-color: rgba(234, 179, 8, 0.2); }
+.stat-card--warning:hover { border-color: #eab308; }
+
+/* --- INNER LAYOUT --- */
+.stat-card__top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.stat-card__icon-box {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stat-card__body {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.stat-card__label {
+    color: #94a3b8;
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+
+.stat-card__value {
+    color: white;
+    font-size: 24px;
+    font-weight: 800;
+}
+
+.stat-card__sparkline {
+    width: 100px;
+    height: 45px;
+}
+
+/* The Glowing Sparkline */
+.recharts-line-path {
+    filter: drop-shadow(0px 0px 6px currentColor);
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}

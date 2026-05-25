@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
+import { useTransactionContext } from '../Context/TransactionContext';
+import '../Styles/TransactionForm.css';
 
-//  form to the Brain
-const TransactionForm: React.FC<{ onAdd: (r: string, a: string, c: string) => void }> = ({ onAdd }) => {
+const TransactionForm: React.FC = () => {
+  const { addTransaction } = useTransactionContext();
   const [receiver, setReceiver] = useState('');
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('');
-
-
-
   const [error, setError] = useState<string | null>(null);
 
   const handleAdd = () => {
@@ -22,19 +21,19 @@ const TransactionForm: React.FC<{ onAdd: (r: string, a: string, c: string) => vo
     }
 
     setError(null);
-    onAdd(receiver, amount, category);
+    // Use the global action instead of a prop!
+    addTransaction(receiver, amount, category);
+    
+    // Reset form
     setReceiver('');
     setAmount('');
     setCategory('');
   };
 
-
-
   return (
     <div className="transaction-form">
       <div className="section-header">ADD TRANSACTION</div>
-      {error && (<div className="error-box">!!{error}
-      </div>)}
+      {error && (<div className="error-box">!!{error}</div>)}
 
       <div className="form-group">
         <label>Receiver</label>

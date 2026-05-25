@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { Upload, CheckCircle, AlertCircle, ArrowLeft } from 'lucide-react';
+import '../Styles/CSVImportView.css';
 import type { Transaction } from '../Interfaces/Interfaces';
 import { TransactionService } from '../Hooks/TransactionService';
+import { useTransactionContext } from '../Context/TransactionContext';
 
 interface Props {
-    onImport: (data: Transaction[]) => void;
     onBack: () => void;
 }
 
-const CSVImportView: React.FC<Props> = ({ onImport, onBack }) => {
+const CSVImportView: React.FC<Props> = ({ onBack }) => {
+    const { importTransactions } = useTransactionContext();
     const [file, setFile] = useState<File | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [preview, setPreview] = useState<Transaction[]>([]);
@@ -31,12 +33,10 @@ const CSVImportView: React.FC<Props> = ({ onImport, onBack }) => {
         reader.onload = (e) => {
             const text = e.target?.result as string;
             const rows = text.split('\n').filter(row => row.trim() !== '');
-
             const dataRows = rows.slice(1);
 
             const parsedData = dataRows.map((row, index) => {
                 const columns = row.split(',').map(col => col.trim().replace(/^"|"$/g, ''));
-
                 const date = columns[0] || new Date().toLocaleDateString();
                 const receiver = columns[1] || 'Unknown';
                 const amount = columns[2] || '0';
@@ -60,7 +60,8 @@ const CSVImportView: React.FC<Props> = ({ onImport, onBack }) => {
 
     const handleConfirmImport = () => {
         if (preview.length > 0) {
-            onImport(preview);
+            // Use the global context action!
+            importTransactions(preview);
             onBack();
         }
     };
@@ -126,13 +127,6 @@ const CSVImportView: React.FC<Props> = ({ onImport, onBack }) => {
                                         <td className={`amount ${tx.isNegative ? 'negative' : 'positive'}`}>{tx.amount}</td>
                                     </tr>
                                 ))}
-                                {preview.length > 10 && (
-                                    <tr>
-                                        <td colSpan={4} style={{ textAlign: 'center', color: '#94a3b8', fontSize: '12px' }}>
-                                            + {preview.length - 10} more transactions...
-                                        </td>
-                                    </tr>
-                                )}
                             </tbody>
                         </table>
                     </div>

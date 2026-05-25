@@ -1,75 +1,105 @@
-import type { Transaction } from "../Interfaces/Interfaces";
+import type { Transaction } from '../Interfaces/Interfaces';
 
+// 📈 skeleton for the main graph(income expenses and savings)
+export const prepareTrendData = (transactions: Transaction[]) => {
+    // 1. map to group everything by date
+    const dailyData = new Map<string, { date: string; income: number; expenses: number; savings: number }>();
 
-export const preparePieData = (transactions: Transaction[]) => {
-    if (!Array.isArray(transactions)) return [];
-    const categoryMap: { [key: string]: number } = {};
+    // Create an ordered list of days to ensure chronological order
+    const dayOrder = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
+    // Pre-populate all 7 days with 0 values so the graph always renders complete lines
+    dayOrder.forEach(day => {
+        dailyData.set(day, { date: day, income: 0, expenses: 0, savings: 0 });
+    });
+
+    // 2. loop every transaction in the list
     transactions.forEach(tx => {
-        if (tx.isNegative) {
-            const category = tx.category || "Uncategorized";
-            const amount = Math.abs(parseFloat(tx.amount.replace(/[^0-9.-]+/g, "")));
+        const amount = Math.abs(parseFloat(tx.amount.replace(/[^\d.-]/g, '')) || 0);
 
-            if (!isNaN(amount)) {
-                if (categoryMap[category]) {
-                    categoryMap[category] += amount;
-                } else {
-                    categoryMap[category] = amount;
+        let dateKey = tx.date;
+
+        // Normalize full dates into short day names (e.g. 'Mon')
+        if (!dayOrder.includes(dateKey)) {
+            let parsedDate = new Date(dateKey);
+
+            // Handle D.M.YYYY or DD.MM.YYYY formats which would otherwise cause Invalid Date
+            // or incorrectly parse (e.g. 12.5.2026 becoming Dec 5th)
+            const dotMatch = dateKey.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+            if (dotMatch) {
+                const day = parseInt(dotMatch[1], 10);
+                const month = parseInt(dotMatch[2], 10) - 1;
+                const year = parseInt(dotMatch[3], 10);
+                parsedDate = new Date(year, month, day);
+            } else if (isNaN(parsedDate.getTime())) {
+                // Fallback for DD/MM/YYYY formats if standard parsing fails
+                const slashMatch = dateKey.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+                if (slashMatch) {
+                    const first = parseInt(slashMatch[1], 10);
+                    const second = parseInt(slashMatch[2], 10);
+                    const year = parseInt(slashMatch[3], 10);
+                    parsedDate = new Date(year, second - 1, first);
                 }
             }
+
+            if (!isNaN(parsedDate.getTime())) {
+                dateKey = parsedDate.toLocaleDateString('en-US', { weekday: 'short' });
+            }
+        }
+
+        // If this date doesn't exist in our map yet, set it to 0s
+        if (!dailyData.has(dateKey)) {
+            dailyData.set(dateKey, { date: dateKey, income: 0, expenses: 0, savings: 0 });
+        }
+
+        const dayStats = dailyData.get(dateKey)!;
+
+        // Sort the transaction into income or expenses
+        if (tx.isNegative) {
+            dayStats.expenses += amount;
+        } else {
+            dayStats.income += amount;
+        }
+
+        // Calculate Net Savings (Income - Expenses)
+        dayStats.savings = dayStats.income - dayStats.expenses;
+    });
+
+    // Convert map to list and sort chronologically (Mon -> Sun)
+    return Array.from(dailyData.values()).sort((a, b) => {
+        const indexA = dayOrder.indexOf(a.date);
+        const indexB = dayOrder.indexOf(b.date);
+
+        if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+        if (indexA !== -1) return -1;
+        if (indexB !== -1) return 1;
+        return 0;
+    });
+};
+
+//  skeleton for the donut pie chart
+export const preparePieData = (transactions: Transaction[]) => {
+    // 1. Create a map called categories
+    const categories = new Map<string, number>();
+
+    // 2. Loop through every transaction in the list
+    transactions.forEach(tx => {
+        // We ONLY care about negative transactions (spending/expenses)
+        if (tx.isNegative) {
+            const amount = Math.abs(parseFloat(tx.amount.replace(/[^\d.-]/g, '')) || 0);
+            const category = tx.category || 'Other';
+
+            // Get the current total for this category (or 0 if new)
+            const currentTotal = categories.get(category) || 0;
+
+            // Add the new amount to the category's running total
+            categories.set(category, currentTotal + amount);
         }
     });
 
-    return Object.keys(categoryMap).map(catName => ({
-        name: catName,
-        value: categoryMap[catName]
+    // 3. Convert the categories Map to [{ name, value }] for the chart
+    return Array.from(categories.entries()).map(([name, value]) => ({
+        name,
+        value
     }));
 };
-
-export const prepareTrendData = (transactions: Transaction[]) => {
-    const dateMap: { [key: string]: { income: number; expenses: number } } = {};
-
-    transactions.forEach(tx => {
-        const date = tx.date || "Unknown";
-        const amount = Math.abs(parseFloat(tx.amount.replace(/[^0-9.-]+/g, "")));
-
-        if (!isNaN(amount)) {
-            if (!dateMap[date]) {
-                dateMap[date] = { income: 0, expenses: 0 };
-            }
-
-            if (tx.isNegative) {
-                dateMap[date].expenses += amount;
-            } else {
-                dateMap[date].income += amount;
-            }
-        }
-    });
-
-    return Object.keys(dateMap)
-        .sort((a, b) => {
-            // Handle "Unknown" or missing dates gracefully
-            if (a === "Unknown") return 1;
-            if (b === "Unknown") return -1;
-
-            // Convert DD.MM.YYYY to YYYY-MM-DD so the browser can sort it correctly
-            const partsA = a.split('.');
-            const partsB = b.split('.');
-
-            if (partsA.length !== 3 || partsB.length !== 3) return 0;
-
-            const [dayA, monthA, yearA] = partsA;
-            const [dayB, monthB, yearB] = partsB;
-            
-            const dateA = new Date(`${yearA}-${monthA}-${dayA}`).getTime();
-            const dateB = new Date(`${yearB}-${monthB}-${dayB}`).getTime();
-            
-            return dateA - dateB;
-        })
-        .map(date => ({
-            date,
-            income: dateMap[date].income,
-            expenses: dateMap[date].expenses
-        }));
-};
-

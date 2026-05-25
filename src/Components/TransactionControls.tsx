@@ -1,26 +1,20 @@
 import React from 'react';
+import { useTransactionContext } from '../Context/TransactionContext';
 
-// The Blueprint
-interface ControlsProps {
-    searchTerm: string;
-    setSearchTerm: (term: string) => void;
-    filterDate: string;
-    setFilterDate: (date: string) => void;
-    sortBy: string;
-    setSortBy: (sort: string) => void;
-}
+const TransactionControls: React.FC = () => {
+    // Grab everything directly from the Cloud!
+    const { 
+        searchTerm, setSearchTerm, 
+        filterDate, setFilterDate, 
+        sortBy, setSortBy 
+    } = useTransactionContext();
 
-const TransactionControls: React.FC<ControlsProps> = ({ 
-    searchTerm, setSearchTerm, 
-    filterDate, setFilterDate, 
-    sortBy, setSortBy 
-}) => {
     return (
         <div className="control-panel">
             {/* Search */}
             <input 
               type="text" 
-              placeholder="Search by Receiver..." 
+              placeholder="Search Receiver or Category..." 
               value={searchTerm} 
               onChange={(e) => setSearchTerm(e.target.value)} 
             />

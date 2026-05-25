@@ -1,0 +1,96 @@
+.central-ledger {
+    flex: 1;
+    background-color: #0c1222;
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid #1e293b;
+}
+
+.ledger-title {
+    margin-bottom: 20px;
+}
+
+/* --- THE CONTROLS (Ensuring visibility) --- */
+.control-panel {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    background: rgba(255, 255, 255, 0.02);
+    padding: 12px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.control-panel input,
+.control-panel select {
+    padding: 10px 15px;
+    background: #1e293b !important; /* Force dark background */
+    font-size: 13px;
+    color: #f1f5f9 !important; /* Force white text */
+    border-radius: 8px;
+    border: 1px solid #334155;
+    outline: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    min-width: 150px;
+}
+
+/* Make the dropdown arrows visible */
+.control-panel select {
+    appearance: auto;
+}
+
+.control-panel input:focus,
+.control-panel select:focus {
+    border: 1px solid #eab308;
+    box-shadow: 0 0 0 2px rgba(234, 179, 8, 0.1);
+}
+
+.ledger-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.ledger-table th {
+    text-align: left;
+    color: #64748b;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 12px;
+    border-bottom: 2px solid #1e293b;
+}
+
+.ledger-table td {
+    padding: 16px 12px;
+    font-size: 14px;
+    color: #cbd5e1;
+    border-bottom: 1px solid #1e293b;
+}
+
+.Delete-button {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+}
+
+.Delete-button:hover {
+    background: #ef4444;
+    color: white;
+}
+
+/* --- DYNAMIC AMOUNT COLORS IN LEDGER --- */
+.amount.positive {
+    color: #10b981 !important; /* Premium neon emerald green for Income */
+    font-weight: 600;
+}
+
+.amount.negative {
+    color: #ef4444 !important; /* Premium vibrant ruby red for Expenses */
+    font-weight: 600;
+}

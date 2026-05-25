@@ -1,0 +1,60 @@
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dashboard-header__title h2 {
+    color: #eab308;
+    margin: 0;
+}
+
+.dashboard-header__title p {
+    color: #94a3b8;
+    font-size: 14px;
+}
+
+.balance-card {
+    background-color: #334155;
+    padding: 16px 32px;
+    border-radius: 8px;
+}
+
+.balance-card__label {
+    color: #cbd5e1;
+    font-size: 14px;
+}
+
+.balance-card__amount {
+    color: white;
+    font-size: 32px;
+    font-weight: bold;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.search-bar input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 10px 15px;
+    color: white;
+    font-size: 0.9rem;
+    width: 250px;
+    transition: all 0.3s ease;
+}
+
+.search-bar input::placeholder {
+    color: #64748b;
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}

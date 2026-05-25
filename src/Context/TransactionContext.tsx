@@ -1,56 +1,69 @@
-import { createContext, useContext, useState, useMemo, type ReactNode, type Dispatch, type SetStateAction } from 'react';
+import {
+    createContext, useContext, useState, useEffect, useMemo, type ReactNode,
+    type Dispatch, type SetStateAction
+} from 'react';
 import type { Transaction } from '../Interfaces/Interfaces';
 import { processTransactions } from '../Logic/TransactionLogic';
 import { preparePieData, prepareTrendData } from '../Logic/AnalyticLogic';
 
 /**
- * STEP 1: THE INTERFACE (The Menu)
+ * THE UNIFIED MENU
  */
 export interface TransactionContextType {
-    // 1. The master list of all transactions
     ledgerData: Transaction[];
-    
-    // 2. Function to add/remove/edit transactions
     setLedgerData: Dispatch<SetStateAction<Transaction[]>>;
-    
-    // 3. The current text inside the search bar
     searchTerm: string;
-    
-    // 4. Function to change the search text
     setSearchTerm: Dispatch<SetStateAction<string>>;
-    
-    // 5. The "Smart List" that updates as you search
+    sortBy: string;
+    setSortBy: Dispatch<SetStateAction<string>>;
+    filterDate: string;
+    setFilterDate: Dispatch<SetStateAction<string>>;
     filteredData: Transaction[];
-
-    // --- The Math Totals (calculator) ---
     totalBalance: number;
     income: number;
     expenses: number;
-
-    // --- Analytic Data (Charts) ---
     pieData: any[];
     trendData: any[];
+    addTransaction: (receiver: string, amount: string, category: string) => void;
+    deleteTransaction: (id: string) => void;
+    importTransactions: (data: Transaction[]) => void;
 }
 
-/**
- * THE CLOUD BLUEPRINT
- */
 export const TransactionContext = createContext<TransactionContextType | undefined>(undefined);
 
-/**
- * THE POWER STATION (The Provider)
- */
+const API_URL = "http://localhost:5001/api/transactions";
+
 export const TransactionProvider = ({ children }: { children: ReactNode }) => {
-    // A. Storage Units
     const [ledgerData, setLedgerData] = useState<Transaction[]>([]);
+
+    // fetch from Backend (Securely with JWT Token)
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        fetch(API_URL, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    console.error("Authorization Error:", data.error);
+                    return;
+                }
+                setLedgerData(data);
+            })
+            .catch(error => console.error("Error loading transactions", error));
+    }, []);
+
     const [searchTerm, setSearchTerm] = useState("");
+    const [sortBy, setSortBy] = useState("Date");
+    const [filterDate, setFilterDate] = useState("");
 
-    // B. THE SMART FILTER (memorizes filteredData)
     const filteredData = useMemo(() => {
-        return processTransactions(ledgerData, searchTerm, "Date", "");
-    }, [ledgerData, searchTerm]);
+        return processTransactions(ledgerData, searchTerm, sortBy, filterDate);
+    }, [ledgerData, searchTerm, sortBy, filterDate]);
 
-    // C. THE ACCOUNTING DEPARTMENT (The Math)
     const totalBalance = useMemo(() => {
         return ledgerData.reduce((acc, tx) => {
             const amount = parseFloat(tx.amount.replace(/[^\d.-]/g, '')) || 0;
@@ -70,39 +83,71 @@ export const TransactionProvider = ({ children }: { children: ReactNode }) => {
             .reduce((acc, tx) => acc + (parseFloat(tx.amount.replace(/[^\d.-]/g, '')) || 0), 0);
     }, [ledgerData]);
 
-    // D. THE ANALYTIC BRAIN (Charts)
-    // We use filteredData here so the charts update as you search!
     const pieData = useMemo(() => preparePieData(filteredData), [filteredData]);
     const trendData = useMemo(() => prepareTrendData(filteredData), [filteredData]);
 
-    // E. THE BROADCAST
+    //  1. ADD TRANSACTION: Sends new transaction data to the backend Express server
+    const addTransaction = (receiver: string, amount: string, category: string) => {
+        const token = localStorage.getItem('token');
+        fetch(API_URL, {
+            method: 'POST', 
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // Attach secure token
+            },
+            body: JSON.stringify({ receiver, amount, category }) 
+        })
+            .then(response => response.json())
+            .then(newTx => {
+                if (newTx.error) {
+                    console.error("Error adding transaction:", newTx.error);
+                    return;
+                }
+                setLedgerData(prev => [newTx, ...prev]);
+            })
+            .catch(error => {
+                console.error("Error adding transaction:", error);
+            });
+    }; 
+
+    // 🚂 2. DELETE TRANSACTION: Tells the backend Express server to delete a transaction by its ID
+    const deleteTransaction = (id: string) => {
+        const token = localStorage.getItem('token');
+        fetch(`${API_URL}/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}` // Attach secure token
+            }
+        })
+            .then(response => {
+                if (response.ok) {
+                    setLedgerData(prev => prev.filter(tx => tx.id !== id));
+                } else {
+                    console.error("Failed to delete transaction from the server");
+                }
+            })
+            .catch(error => {
+                console.error("Error deleting transaction:", error);
+            });
+    }; 
+
+    const importTransactions = (data: Transaction[]) => {
+        setLedgerData(prev => [...data, ...prev]);
+    };
+
     return (
         <TransactionContext.Provider value={{
-            ledgerData,
-            setLedgerData,
-            searchTerm,
-            setSearchTerm,
-            filteredData,
-            totalBalance,
-            income,
-            expenses,
-            pieData,
-            trendData
+            ledgerData, setLedgerData, searchTerm, setSearchTerm, sortBy, setSortBy, filterDate, setFilterDate,
+            filteredData, totalBalance, income, expenses, pieData, trendData,
+            addTransaction, deleteTransaction, importTransactions
         }}>
             {children}
         </TransactionContext.Provider>
     );
 };
 
-/**
- * THE CUSTOM HOOK (The Subscriber)
- */
 export const useTransactionContext = () => {
     const context = useContext(TransactionContext);
-    
-    if (!context) {
-        throw new Error("useTransactionContext must be used within a TransactionProvider");
-    }
-    
+    if (!context) throw new Error("useTransactionContext must be used within a TransactionProvider");
     return context;
 };

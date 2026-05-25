@@ -1,0 +1,173 @@
+/* 🛠️ We will rebuild all Analytics and Hologram CSS here together! */
+
+/* ==========================================
+   STEP 1: The Hologram Card Container
+   ========================================== */
+
+/* 1. Base style for all standard dashboard cards */
+.analytics-card {
+    background-color: #0c1222;
+    /* Fallback dark background color */
+    padding: 24px;
+    /* Internal padding inside the card borders */
+    border-radius: 16px;
+    /* Smooth, modern rounded corners */
+    border: 1px solid #1e293b;
+    /* Subtle slate-colored border line */
+    color: white;
+    /* Make all text inside the card white */
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    /* Underlying depth shadow */
+    position: relative;
+    /* Crucial! Allows the top light ray to anchor to this card */
+    overflow: hidden;
+    /* Clips any glowing paths so they stay inside the rounded corners */
+}
+
+/* 2. Premium Hologram look (Applied on top of .analytics-card) */
+.hologram-card {
+    /* Fades beautifully between a deep navy and a dark blackish-blue */
+    background: linear-gradient(145deg, #0c1222, #050a18);
+    /* A deep, heavy black drop-shadow to make the card look like it's floating in space */
+    box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.5);
+}
+
+/* 3. The Top Light Ray (A glowing 1px border running across the top edge) */
+.hologram-card::after {
+    content: '';
+    /* Required! Tells the browser to draw this invisible box */
+    position: absolute;
+    /* Detach it and float it absolute */
+    top: 0;
+    /* Put it at the absolute top edge */
+    left: 0;
+    /* Stretch it completely from left... */
+    right: 0;
+    /* ...to right */
+    height: 1px;
+    /* Make it a super thin, elegant 1-pixel high line */
+    /* A horizontal gradient that starts transparent, shines neon blue in the center, and fades away */
+    background: linear-gradient(90deg, transparent, #3b82f6, transparent);
+    opacity: 0.5;
+    /* Fade it slightly so it looks premium and subtle */
+}
+
+/* ==========================================
+   STEP 2: Typography, Headers, and Spacing
+   ========================================== */
+
+/* 1. The container for our titles & controls */
+.card-header {
+    display: flex;
+    /* Activates Flexbox to lay children out in a row */
+    justify-content: space-between;
+    /* Pushes Title group to the left, selectors to the far right */
+    align-items: center;
+    /* Centers titles and dropdowns vertically in the middle */
+    margin-bottom: 24px;
+    /* Creates a healthy 24px gap between text and the graph */
+    margin-top: 10px;
+    gap: 16px;
+}
+
+/* 2. Main title styling */
+.card-header h3 {
+    margin: 0;
+    /* Overwrite default browser margins */
+    font-size: 1.10rem;
+    /* Set a clean, legible font size */
+    font-weight: 600;
+    /* Semi-bold weight for modern premium look */
+    letter-spacing: -0.02em;
+    /* Tighter tracking for modern aesthetic */
+}
+
+/* 3. Subtitle styling */
+.card-header p {
+    margin: 4px 0 0 0;
+    /* Create a tiny 4px gap below the main header */
+    font-size: 0.8rem;
+    /* Make it smaller and elegant */
+    color: #64748b;
+    /* Slate-gray color so it acts as secondary text */
+}
+
+/* 4. Chart Wrapper spacing */
+.chart-wrapper {
+    margin-top: 16px;
+    /* Adds breathing room below the header */
+    width: 100%;
+    /* Allows the chart to stretch to full card width */
+}
+
+/* ==========================================
+   STEP 3: Glassmorphism Time Selectors
+   ========================================== */
+
+/* 1. Frosted glass styling for dropdown menus */
+.time-range-select {
+    background: rgba(30, 41, 59, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    color: #94a3b8;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s ease;
+}
+
+/* Subtly glows neon blue when your mouse hovers over it! */
+.time-range-select:hover {
+    background: rgba(30, 41, 59, 0.7);
+    border-color: rgba(59, 130, 246, 0.3);
+    color: white;
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.15);
+}
+
+/* Dropdown options styling */
+.time-range-select option {
+    background-color: #0f172a;
+    color: white;
+}
+
+
+
+/* ==========================================================================
+   STEP 5: Curve Colors & Glowing Neon Lasers (High-Performance SVG Styles)
+   ========================================================================== */
+
+/* 🟢 INCOME: Solid Green Laser Wave */
+.chart-area--income path.recharts-curve {
+    stroke: #10b981;
+    stroke-width: 3px;
+    filter: drop-shadow(0 2px 8px rgba(16, 185, 129, 0.4));
+}
+
+/* 🔴 EXPENSES: Dashed Red Limit Laser Wave */
+.chart-area--expenses path.recharts-curve {
+    stroke: #ef4444;
+    stroke-width: 2px;
+    stroke-dasharray: 5 5;
+    filter: drop-shadow(0 2px 8px rgba(239, 68, 68, 0.3));
+}
+
+/* 🔵 SAVINGS: Bold Blue Margin Laser Wave */
+.chart-area--savings path.recharts-curve {
+    stroke: #3b82f6;
+    stroke-width: 3px;
+    filter: drop-shadow(0 2px 8px rgba(59, 130, 246, 0.4));
+}
+
+/* ⚡ HOVER: active curve high-contrast glow focus */
+.recharts-curve:hover {
+    filter: drop-shadow(0 2px 14px currentColor) !important;
+    stroke-width: 4px !important;
+    cursor: pointer;
+}
+
+
+.recharts-default-legend .recharts-legend-icon {
+    filter: drop-shadow(0 0 5px currentColor);
+}

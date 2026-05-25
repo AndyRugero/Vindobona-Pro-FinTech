@@ -1,32 +1,56 @@
-import React from 'react';
 import StatCard from './StatCard';
 import { useTransactionContext } from '../Context/TransactionContext';
+import { TrendingUp, Wallet, ArrowDownCircle, BarChart3 } from 'lucide-react';
+import '../Styles/StatsRow.css';
 
 const StatsRow = () => {
-  // 1. Grab the live numbers from the Cloud
   const { income, expenses, filteredData } = useTransactionContext();
+
+  const getMiniTrend = (type: 'income' | 'expenses') => {
+    return filteredData
+      .slice(0, 8)
+      .reverse()
+      .map((tx, index) => {
+        const amount = Math.abs(parseFloat(tx.amount.replace(/[^\d.-]/g, '')) || 0);
+        const value = (type === 'income' && !tx.isNegative) || (type === 'expenses' && tx.isNegative)
+          ? amount
+          : 5;
+        return { name: index, value };
+      });
+  };
 
   return (
     <section className="stats-row">
-      <StatCard 
-        label="Monthly Income" 
-        value={income.toLocaleString()} 
+      <StatCard
+        label="Monthly Income"
+        value={`$${income.toLocaleString()}`}
+        icon={<TrendingUp size={20} />}
+        type="savings"
+        chartData={getMiniTrend('income')}
       />
-      <StatCard 
-        label="Monthly Expenses" 
-        value={expenses.toLocaleString()} 
-        animationDelay="0.1s" 
+
+      <StatCard
+        label="Monthly Expenses"
+        value={`$${Math.abs(expenses).toLocaleString()}`}
+        icon={<ArrowDownCircle size={20} />}
+        type="expenses"
+        chartData={getMiniTrend('expenses')}
       />
-      {/* We calculate Net Savings right here using the global values! */}
-      <StatCard 
-        label="Net Savings" 
-        value={(income - Math.abs(expenses)).toLocaleString()} 
-        animationDelay="0.2s" 
+
+      <StatCard
+        label="Net Savings"
+        value={`$${(income - Math.abs(expenses)).toLocaleString()}`}
+        icon={<Wallet size={20} />}
+        type="income"
+        chartData={getMiniTrend('income')}
       />
-      <StatCard 
-        label="Total Transactions" 
-        value={filteredData.length.toString()} 
-        animationDelay="0.3s" 
+
+      <StatCard
+        label="Data Points"
+        value={filteredData.length.toString()}
+        icon={<BarChart3 size={20} />}
+        type="warning"
+        chartData={[{ value: 2 }, { value: 5 }, { value: 3 }, { value: 8 }, { value: 6 }, { value: 10 }]}
       />
     </section>
   );

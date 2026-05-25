@@ -1,4 +1,5 @@
 import React from 'react';
+import '../Styles/Sidebar.css';
 import {
     UserRoundPen,
     LayoutDashboard,
@@ -11,8 +12,8 @@ import {
     RefreshCw
 } from 'lucide-react';
 
-const Sidebar: React.FC<{ 
-    currentView: string; 
+const Sidebar: React.FC<{
+    currentView: string;
     onViewChange: (view: string) => void;
 }> = ({ currentView, onViewChange }) => {
     return (
@@ -37,19 +38,19 @@ const Sidebar: React.FC<{
 
             {/* The Navigation Links */}
             <nav className="sidebar-nav">
-                <div 
+                <div
                     className={`nav-item ${currentView === 'dashboard' ? 'active' : ''}`}
                     onClick={() => onViewChange('dashboard')}
                 >
                     <LayoutDashboard size={18} className="nav-icon" /> Dashboard
                 </div>
-                <div 
+                <div
                     className={`nav-item ${currentView === 'ledger' ? 'active' : ''}`}
                     onClick={() => onViewChange('ledger')}
                 >
                     <BookOpen size={18} className="nav-icon" /> Ledger
                 </div>
-                <div 
+                <div
                     className={`nav-item ${currentView === 'import' ? 'active' : ''}`}
                     onClick={() => onViewChange('import')}
                 >

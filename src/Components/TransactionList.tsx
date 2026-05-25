@@ -1,33 +1,15 @@
-import { useState } from 'react';
 import TransactionControls from './TransactionControls';
 import { useTransactionContext } from '../Context/TransactionContext';
-
+import '../Styles/TransactionList.css';
 
 const TransactionList = () => {
-  // 1. Grab everything we need from the Cloud
-  const { filteredData, setLedgerData } = useTransactionContext();
-
-  // 2. Local UI state for sorting/filtering
-  const [sortBy, setSortBy] = useState("Date");
-  const [filterDate, setFilterDate] = useState("");
-
-  // 3. Create a delete function that updates the cloud
-  const handleDelete = (id: string) => {
-    setLedgerData(prev => prev.filter(tx => tx.id !== id));
-  };
+  const { filteredData, deleteTransaction } = useTransactionContext();
 
   return (
     <div className="central-ledger">
-      {/* Title */}
-      <div className="section-header" style={{ marginBottom: '15px' }}>Transaction Ledger</div>
+      <div className="section-header ledger-title">Recent Transactions</div>
 
-      {/* The Controls perfectly nestled inside the ledger card */}
-      <TransactionControls
-        searchTerm="" // Search is now handled globally in the Context
-        setSearchTerm={() => {}} 
-        filterDate={filterDate} setFilterDate={setFilterDate}
-        sortBy={sortBy} setSortBy={setSortBy}
-      />
+      <TransactionControls />
 
       <table className="ledger-table">
         <thead>
@@ -37,14 +19,14 @@ const TransactionList = () => {
             <th>Category</th>
             <th>Amount</th>
             <th>Status</th>
-            <th>Delete</th>
+            <th>Action</th>
           </tr>
         </thead>
         <tbody>
           {filteredData.length === 0 ? (
             <tr>
               <td colSpan={6} className="empty-message">
-                No Transactions found!
+                No transactions found for this search.
               </td>
             </tr>
           ) : (
@@ -62,7 +44,7 @@ const TransactionList = () => {
                   </span>
                 </td>
                 <td>
-                  <button className="Delete-button" onClick={() => handleDelete(tx.id)}>
+                  <button className="Delete-button" onClick={() => deleteTransaction(tx.id)}>
                     Delete
                   </button>
                 </td>

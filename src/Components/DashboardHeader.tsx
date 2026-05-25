@@ -1,5 +1,7 @@
 
 import { useTransactionContext } from '../Context/TransactionContext';
+import '../Styles/DashboardHeader.css';
+
 
 const DashboardHeader = () => {
   // 1. Grab Balance and Search state directly from the Cloud
