@@ -178,8 +178,27 @@
     font-size: 24px;
     font-weight: 700;
     letter-spacing: 8px;
-    text-indent: 8px; /* Balance letter-spacing indent */
+    text-indent: 8px;
+    /* Balance letter-spacing indent */
     padding: 14px;
     font-family: monospace;
     background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* 🔑 Forgot password link placement */
+.forgot-password-link {
+    text-align: right;
+    margin-top: -10px;
+    margin-bottom: 10px;
+}
+
+.forgot-password-link span {
+    color: var(--accent);
+    cursor: pointer;
+    font-size: 13px;
+    transition: text-decoration 0.2s ease;
+}
+
+.forgot-password-link span:hover {
+    text-decoration: underline;
 }

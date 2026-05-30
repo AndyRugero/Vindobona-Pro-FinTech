@@ -1,3 +1,4 @@
+const { rateLimit } = require('express-rate-limit'); //import limit
 const express = require('express'); // 📥 Import Express
 const router = express.Router(); // 🏗️ Initialize the Express Router
 const bcrypt = require('bcryptjs'); // 📥 Import security hashing library
@@ -5,8 +6,11 @@ const jwt = require('jsonwebtoken'); // 📥 Import JWT library
 const passport = require('passport'); // 📥 Import Passport
 const GoogleStrategy = require('passport-google-oauth20').Strategy; // Import Google OAuth Strategy
 const { sendEmail } = require('../services/emailService'); // 📧 Import our email service!
-const { getVerificationEmailHelper } = require('../Verifyer/emailTemplates'); // 📧 Import email formatting helper!
-
+const { getVerificationEmailHelper, ResetPasswordEmail } = require('../Verifyer/emailTemplates'); // 📧 Import email formatting helper!
+const crypto = require('crypto');
+const authenticationToken = require('../middleware/authGuard');
+const { authenticator } = require('otplib');
+const qrcode = require('qrcode');
 // 📤 We export a function that accepts the database connection 'db'
 module.exports = (db) => {
 
@@ -59,6 +63,14 @@ module.exports = (db) => {
             res.redirect(`http://localhost:5173?token=${token}&username=${req.user.username}`);
         }
     );
+    // Limit Login attempts to 5 every 15 minutes
+    const authLimiter = rateLimit({
+        windowMs: 15 * 60 * 1000,
+        max: 5,
+        message: { error: 'Too many security attempts! You are locked out for 15 minutes. ⏱️' },
+        standardHeaders: true,
+        legacyHeaders: false,
+    });
 
     // ✍️ REGISTER: Sign up a new user with email verification
     // Path becomes: POST http://localhost:5001/api/users/register
@@ -115,7 +127,7 @@ module.exports = (db) => {
             );
 
             // 5. Send verification email in the background
-            const emailHtml = buildVerificationEmail(cleanUsername, verificationCode);
+            const emailHtml = getVerificationEmailHelper(cleanUsername, verificationCode);
 
             sendEmail(cleanEmail, 'Verify Your Vindobona Pro Account 🔑', emailHtml)
                 .catch(err => console.error('Error sending verification email:', err));
@@ -140,7 +152,7 @@ module.exports = (db) => {
 
     // 🔑 LOGIN: Verify user credentials and generate a JWT token
     // Path becomes: POST http://localhost:5001/api/auth/login
-    router.post('/auth/login', async (req, res) => {
+    router.post('/auth/login', authLimiter, async (req, res) => {
         try {
             const { username, password } = req.body;
 
@@ -169,6 +181,15 @@ module.exports = (db) => {
                     username: user.username
                 });
             }
+            // ask 2FA Check: if user has 2fa enabled..stop here and ask their authentication code
+            if (user.two_factor_enabled == 1) {
+                return res.status(200).json({
+                    message: "2fa authentication required",
+                    requires2FA: true,
+                    username: user.username
+                })
+            }
+
 
             // 4. Generate a JWT Token signed with a secret key
             const token = jwt.sign(
@@ -251,6 +272,243 @@ module.exports = (db) => {
             res.status(500).json({ error: 'Failed to verify user account' });
         }
     });
+    // ✉️ FORGOT PASSWORD: Send a secure link to reset password
+    // Path: POST http://localhost:5001/api/auth/forgot-password
+    router.post('/auth/forgot-password', authLimiter, async (req, res) => {
+        try {
+            const { email } = req.body;
 
+            // 1. Basic validation: Make sure email was submitted
+            if (!email) {
+                return res.status(400).json({ error: 'Email address is required' });
+            }
+
+            const cleanEmail = email.trim().toLowerCase();
+
+            // 2. Find the user in the database
+            const user = await db.get('SELECT * FROM users WHERE email = ?', cleanEmail);
+
+            // 🔒 SECURITY BEST PRACTICE (User Enumeration Prevention):
+            // If the email is not in our database, we do NOT tell the client "Email not found".
+            // That would let hackers check which emails are registered. We return the same success message!
+            if (!user) {
+                return res.status(200).json({
+                    message: 'If that email is registered, a password reset link has been sent. ✉️'
+                });
+            }
+
+            // 3. Generate a secure random token (keycard)
+            const resetToken = crypto.randomBytes(32).toString('hex');
+
+            // 4. Set token lifespan (15 minutes from now)
+            const resetTokenExpiry = Date.now() + 15 * 60 * 1000;
+
+            // 5. Store the token and expiry inside the user's database row
+            await db.run(
+                'UPDATE users SET reset_token = ?, reset_token_expiry = ? WHERE id = ?',
+                [resetToken, resetTokenExpiry, user.id]
+            );
+
+            // 6. Build the reset link pointing to our React frontend
+            const resetLink = `http://localhost:5173/reset-password?token=${resetToken}`;
+
+            // 7. Render the template we created in Part A
+            const emailHtml = ResetPasswordEmail(user.username, resetLink);
+
+            // 8. Send the email in the background
+            sendEmail(cleanEmail, 'Reset your Vindobona Pro password 🔑', emailHtml)
+                .catch(err => console.error('Error sending reset email:', err));
+
+            // 9. Respond with a successful message
+            res.status(200).json({
+                message: 'If that email is registered, a password reset link has been sent. ✉️'
+            });
+
+
+
+        } catch (error) {
+            console.error('Forgot password error:', error);
+            res.status
+                (500).json({ error: 'Failed to request password reset' });
+        }
+    });
+
+    router.post('/auth/reset-password', authLimiter, async (req, res) => {
+        try {
+            const { token, newPassword } = req.body;
+
+            // 1. Basic validation: Make sure both token and new password are submitted
+            if (!token || !newPassword) {
+                return res.status(400).json({ error: 'Token and new password are required' });
+            }
+
+            if (newPassword.length < 6) {
+                return res.status(400).json({ error: 'Password must be at least 6 characters long' });
+            }
+
+            // 2. Find the user with this token
+            const user = await db.get('SELECT * FROM users WHERE reset_token = ?', token);
+
+            // 3. If no user has this token, it is invalid
+            if (!user) {
+                return res.status(400).json({ error: 'Invalid or expired password reset token.' });
+            }
+
+            // 4. Check if the token has expired
+            const currentTime = Date.now();
+            if (currentTime > user.reset_token_expiry) {
+                // Clean up the expired token fields from database
+                await db.run(
+                    'UPDATE users SET reset_token = NULL, reset_token_expiry = NULL WHERE id = ?',
+                    user.id
+                );
+                return res.status(400).json({ error: 'Your reset link has expired (15-minute limit reached).' });
+            }
+
+            // 5. Hash the new password securely (10 salt rounds)
+            const newPasswordHash = await bcrypt.hash(newPassword, 10);
+
+            // 6. Update user's password and clear the reset fields
+            await db.run(
+                'UPDATE users SET password_hash = ?, reset_token = NULL, reset_token_expiry = NULL WHERE id = ?',
+                [newPasswordHash, user.id]
+            );
+
+            // 7. Respond with a success message!
+            res.status(200).json({
+                message: 'Password reset successfully! You can now log in with your new password. 🚀'
+            });
+
+
+
+        } catch (error) {
+            console.error('Password Reset Error:', error);
+            res.status(500).json({ error: 'Failed to reset password' });
+        }
+    });
+
+    // 📱 2FA SETUP: Generate a new secret and return a QR code
+    // Path: POST http://localhost:5001/api/auth/2fa/setup
+    router.post('/auth/2fa/setup', authenticationToken, async (req, res) => {
+        try {
+            // 1. Generate a random secret key (e.g., KVKFK...)
+            const secret = authenticator.generateSecret();
+
+            // 2. Generate a secure OTP authentication URL
+            const otpauth = authenticator.keyuri(
+                req.user.username,
+                'Vindobona Pro',
+                secret
+            );
+
+            // 3. Convert the OTP Auth URL into a scanable Base64 QR Code image
+            const qrCodeUrl = await qrcode.toDataURL(otpauth);
+
+            // 4. Temporarily save the secret to the user's database row
+            await db.run(
+                'UPDATE users SET two_factor_secret = ? WHERE id = ?',
+                [secret, req.user.userId]
+            );
+
+            // 5. Send the QR Code image and the plaintext secret back to the React frontend
+            res.status(200).json({
+                qrCodeUrl,
+                secret
+            });
+        } catch (error) {
+            console.error('2FA setup error:', error);
+            res.status(500).json({ error: 'Failed to generate 2FA setup QR Code.' });
+        }
+    });
+
+    // 📱 2FA VERIFY & ENABLE: Check code and activate 2FA permanently
+    // Path: POST http://localhost:5001/api/auth/2fa/verify
+    router.post('/auth/2fa/verify', authenticationToken, async (req, res) => {
+        try {
+            const { code } = req.body;
+
+            if (!code) {
+                return res.status(400).json({ error: 'Verification code is required.' });
+            }
+
+            // 1. Fetch the user's temporary secret from the database
+            const user = await db.get('SELECT two_factor_secret FROM users WHERE id = ?', req.user.userId);
+            if (!user || !user.two_factor_secret) {
+                return res.status(400).json({ error: '2FA setup was not initiated. Please start setup again.' });
+            }
+
+            // 2. Verify the 6-digit code against the secret using otplib authenticator
+            const isValid = authenticator.verify({
+                token: code,
+                secret: user.two_factor_secret
+            });
+
+            if (!isValid) {
+                return res.status(400).json({ error: 'Invalid authentication code. Please try again.' });
+            }
+
+            // 3. Mark 2FA as fully enabled in the database
+            await db.run(
+                'UPDATE users SET two_factor_enabled = 1 WHERE id = ?',
+                req.user.userId
+            );
+
+            res.status(200).json({ message: 'Two-Factor Authentication enabled successfully! 🎉' });
+        } catch (error) {
+            console.error('2FA verification error:', error);
+            res.status(500).json({ error: 'Failed to verify 2FA code.' });
+        }
+    });
+
+    // 📱 2FA LOGIN: Verify the authenticator code and return the JWT token
+    // Path: POST http://localhost:5001/api/auth/2fa/login
+    router.post('/auth/2fa/login', authLimiter, async (req, res) => {
+        try {
+            const { username, code } = req.body;
+
+            // 1. Validate input
+            if (!username || !code) {
+                return res.status(400).json({ error: 'Username and authenticator code are required.' });
+            }
+
+            // 2. Find the user in the database
+            const user = await db.get('SELECT * FROM users WHERE username = ?', username);
+            if (!user) {
+                return res.status(401).json({ error: 'Invalid login request.' });
+            }
+
+            // 3. Double check that 2FA is actually enabled for this user
+            if (user.two_factor_enabled !== 1 || !user.two_factor_secret) {
+                return res.status(400).json({ error: '2FA is not enabled for this account.' });
+            }
+
+            // 4. Verify the 6-digit code against their secret
+            const isValid = authenticator.verify({
+                token: code,
+                secret: user.two_factor_secret
+            });
+
+            if (!isValid) {
+                return res.status(401).json({ error: 'Invalid authenticator code. Please try again.' });
+            }
+
+            // 5. Code is valid! Generate the final JWT token
+            const token = jwt.sign(
+                { userId: user.id, username: user.username },
+                process.env.JWT_SECRET,
+                { expiresIn: '2h' }
+            );
+
+            // 6. Return the success message and token to frontend
+            res.status(200).json({
+                message: 'Login successful! 🚀',
+                token,
+                username: user.username
+            });
+        } catch (error) {
+            console.error('2FA login error:', error);
+            res.status(500).json({ error: 'Failed to verify 2FA login.' });
+        }
+    });
     return router; // 📤 Return the router back to server.js
 };

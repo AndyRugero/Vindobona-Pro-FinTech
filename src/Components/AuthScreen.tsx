@@ -1,4 +1,4 @@
-import React, { useState, } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../Styles/AuthScreen.css';
 
 // 🔌 Props: This tells React what inputs this component receives from its parent (App.tsx)
@@ -18,13 +18,34 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
     const [error, setError] = useState('');                // Stores any error message from the server
     const [successMessage, setSuccessMessage] = useState(''); // Stores any success message to show
 
-    //  This function runs when the user clicks the submit button on Login or Sign-Up forms
+    // 🔑 NEW STATES FOR PASSWORD RESET FLOW
+    const [isForgotPassword, setIsForgotPassword] = useState(false); // Shows Forgot Password form
+    const [isResetMode, setIsResetMode] = useState(false);           // Shows Reset Password form
+    const [forgotPasswordEmail, setForgotPasswordEmail] = useState(''); // Email for forgot password form
+    const [newPassword, setNewPassword] = useState('');              // New password typed by user
+    const [confirmPassword, setConfirmPassword] = useState('');      // Confirm new password
+    const [resetToken, setResetToken] = useState('');                // Token from email URL
+
+    // 🕵️‍♂️ URL Detector: Check if the user loaded the page via a reset password link on startup
+    useEffect(() => {
+        const path = window.location.pathname;
+        if (path === '/reset-password') {
+            const params = new URLSearchParams(window.location.search);
+            const token = params.get('token');
+            if (token) {
+                setResetToken(token);
+                setIsResetMode(true);
+            }
+        }
+    }, []);
+
+    // This function runs when the user clicks the submit button on Login or Sign-Up forms
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault(); // Stops the webpage from reloading when submitting
         setError('');       // Clear any old error message
         setSuccessMessage(''); // Clear any old success message
 
-        //  Check: Make sure the user didn't leave boxes blank
+        // Check: Make sure the user didn't leave boxes blank
         if (!username || !password) {
             setError('Please type in both a username and password.');
             return;
@@ -76,7 +97,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
                 setPassword(''); // Clear the password box
             }
         } catch (err: any) {
-            //  Show the error message if the server failed or connection failed
+            // Show the error message if the server failed or connection failed
             setError(err.message || 'Cannot connect to the server.');
         }
     };
@@ -117,33 +138,161 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
         }
     };
 
+    // ✉️ Handler: Sends "Forgot Password" request to backend
+    const handleForgotSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError('');
+        setSuccessMessage('');
+
+        if (!forgotPasswordEmail) {
+            setError('Please enter your email address.');
+            return;
+        }
+
+        try {
+            const response = await fetch('http://localhost:5001/api/auth/forgot-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: forgotPasswordEmail }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Something went wrong.');
+            }
+
+            setSuccessMessage(data.message || 'If registered, a reset link has been sent!');
+            setForgotPasswordEmail('');
+        } catch (err: any) {
+            setError(err.message || 'Cannot connect to the server.');
+        }
+    };
+
+    // 🔐 Handler: Sends "Reset Password" form data to backend
+    const handleResetSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError('');
+        setSuccessMessage('');
+
+        if (!newPassword || !confirmPassword) {
+            setError('Please fill out both password fields.');
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            setError('Passwords do not match.');
+            return;
+        }
+
+        try {
+            const response = await fetch('http://localhost:5001/api/auth/reset-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: resetToken, newPassword }),
+            });
+
+            const data = await response.json();
+
+            //limiter handler 5th feature(5 times try)
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Password reset failed.');
+            }
+
+            setSuccessMessage(data.message || 'Password reset successful!');
+            setNewPassword('');
+            setConfirmPassword('');
+
+            // Redirect back to login after 3 seconds
+            setTimeout(() => {
+                setIsResetMode(false);
+                setSuccessMessage('');
+                window.history.replaceState({}, document.title, '/'); // Clean URL
+            }, 3000);
+        } catch (err: any) {
+            setError(err.message || 'Cannot connect to the server.');
+        }
+    };
+
+    // 🏷️ Dynamic title selection
+    const getCardTitle = () => {
+        if (isResetMode) return 'Reset Password';
+        if (isForgotPassword) return 'Forgot Password';
+        if (isVerifying) return 'Verify Your Email';
+        return isLogin ? 'Welcome Back' : 'Create Account';
+    };
+
+    // 🏷️ Dynamic subtitle selection
+    const getCardSubtitle = () => {
+        if (isResetMode) return 'Enter your new password below';
+        if (isForgotPassword) return 'Enter your email to receive a reset link';
+        if (isVerifying) return 'Enter the 6-digit code sent to your inbox';
+        return isLogin ? 'Log in to access your financial dashboard' : 'Sign up to get started';
+    };
+
     return (
         <div className="auth-container">
             <div className="auth-card">
-                {/* The card header changes text based on our state */}
-                <h2>
-                    {isVerifying
-                        ? 'Verify Your Email'
-                        : isLogin
-                            ? 'Welcome Back'
-                            : 'Create Account'}
-                </h2>
-                <p className="auth-subtitle">
-                    {isVerifying
-                        ? 'Enter the 6-digit code sent to your inbox'
-                        : isLogin
-                            ? 'Log in to access your financial dashboard'
-                            : 'Sign up to get started'}
-                </p>
+                {/* Header Title & Subtitle */}
+                <h2>{getCardTitle()}</h2>
+                <p className="auth-subtitle">{getCardSubtitle()}</p>
 
-                {/* Show badges only if we have messages to display */}
+                {/* Notification Badges */}
                 {error && <div className="auth-error">{error}</div>}
                 {successMessage && <div className="auth-success">{successMessage}</div>}
 
-                {/* Render the appropriate form envelope */}
-                {isVerifying ? (
+                {/* Conditional Form Render */}
+                {isResetMode ? (
+                    /* 🔐 Reset Password Form */
+                    <form onSubmit={handleResetSubmit} className="auth-form">
+                        <div className="form-group">
+                            <label htmlFor="newPassword">New Password</label>
+                            <input
+                                type="password"
+                                id="newPassword"
+                                value={newPassword}
+                                onChange={(e) => setNewPassword(e.target.value)}
+                                placeholder="Min. 6 characters"
+                                required
+                            />
+                        </div>
+                        <div className="form-group">
+                            <label htmlFor="confirmPassword">Confirm Password</label>
+                            <input
+                                type="password"
+                                id="confirmPassword"
+                                value={confirmPassword}
+                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                placeholder="Confirm new password"
+                                required
+                            />
+                        </div>
+                        <button type="submit" className="auth-button">
+                            Reset Password
+                        </button>
+                    </form>
+                ) : isForgotPassword ? (
+                    /* ✉️ Forgot Password Form */
+                    <form onSubmit={handleForgotSubmit} className="auth-form">
+                        <div className="form-group">
+                            <label htmlFor="forgotEmail">Email Address</label>
+                            <input
+                                type="email"
+                                id="forgotEmail"
+                                value={forgotPasswordEmail}
+                                onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                                placeholder="Enter your email"
+                                required
+                            />
+                        </div>
+                        <button type="submit" className="auth-button">
+                            Send Reset Link
+                        </button>
+                    </form>
+                ) : isVerifying ? (
+                    /* 📧 Verification Code Form */
                     <form onSubmit={handleVerifySubmit} className="auth-form">
-                        {/* OTP Verification Code Input Box */}
                         <div className="form-group">
                             <label htmlFor="verificationCode">Verification Code</label>
                             <input
@@ -156,16 +305,14 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
                                 required
                             />
                         </div>
-
-                        {/* Submit Button */}
                         <button type="submit" className="auth-button">
                             Verify & Login
                         </button>
                     </form>
                 ) : (
+                    /* 🚪 Login / Sign Up Form */
                     <form onSubmit={handleSubmit} className="auth-form">
-
-                        {/* Username Input Box */}
+                        {/* Username */}
                         <div className="form-group">
                             <label htmlFor="username">Username</label>
                             <input
@@ -178,7 +325,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
                             />
                         </div>
 
-                        {/* Email Input Box (Sign-Up mode only) */}
+                        {/* Email (Sign-Up mode only) */}
                         {!isLogin && (
                             <div className="form-group">
                                 <label htmlFor="email">Email Address</label>
@@ -193,7 +340,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
                             </div>
                         )}
 
-                        {/* Password Input Box */}
+                        {/* Password */}
                         <div className="form-group">
                             <label htmlFor="password">Password</label>
                             <input
@@ -206,12 +353,25 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
                             />
                         </div>
 
-                        {/* Submit Button */}
+                        {/* Forgot Password Link (Login mode only) */}
+                        {isLogin && (
+                            <div className="forgot-password-link">
+                                <span onClick={() => {
+                                    setIsForgotPassword(true);
+                                    setError('');
+                                    setSuccessMessage('');
+                                }}>
+                                    Forgot Password?
+                                </span>
+                            </div>
+                        )}
+
+                        {/* Submit button */}
                         <button type="submit" className="auth-button">
-                            {isLogin ? 'Log In ' : 'Sign Up '}
+                            {isLogin ? 'Log In' : 'Sign Up'}
                         </button>
 
-                        {/* Branded Google Sign-in Button */}
+                        {/* Google button */}
                         <button
                             type="button"
                             className="google-btn"
@@ -223,8 +383,29 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
                     </form>
                 )}
 
-                {/* Switch Link: toggles between Login, Register, and Verify modes */}
-                {isVerifying ? (
+                {/* Bottom Toggle Navigation Links */}
+                {isResetMode ? (
+                    <p className="auth-toggle">
+                        <span onClick={() => {
+                            setIsResetMode(false);
+                            setError('');
+                            setSuccessMessage('');
+                            window.history.replaceState({}, document.title, '/'); // Clean URL
+                        }}>
+                            Back to Login
+                        </span>
+                    </p>
+                ) : isForgotPassword ? (
+                    <p className="auth-toggle">
+                        <span onClick={() => {
+                            setIsForgotPassword(false);
+                            setError('');
+                            setSuccessMessage('');
+                        }}>
+                            Back to Login
+                        </span>
+                    </p>
+                ) : isVerifying ? (
                     <p className="auth-toggle">
                         Need to login or sign up?{' '}
                         <span onClick={() => {

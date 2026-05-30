@@ -5,6 +5,11 @@ const cors = require('cors'); // 📥 Allows our React frontend to talk to this 
 const path = require('path'); // 📥 Builds safe file paths compatible with Windows and Mac
 const sqlite3 = require('sqlite3'); // 📥 Core SQLite3 database driver
 const { open } = require('sqlite'); // 📥 Promise wrapper to allow using async/await with SQLite
+const { rateLimit } = require('express-rate-limit');
+const authenticationToken = require('./middleware/authGuard');
+const { authenticator } = require('otplib');
+const qrcode = require('qrcode');
+
 
 //  2. SERVER CONFIGURATION
 const app = express(); // 🏗️ Create an instance of the Express application
@@ -41,7 +46,13 @@ const initializeDatabase = async () => {
             password_hash TEXT NOT NULL, -- Secure, hashed password
             google_id TEXT UNIQUE, -- 🔑 Google OAuth ID (can be null for local accounts)
             is_verified INTEGER NOT NULL DEFAULT 0, -- 🔑 Verified status
-            verification_code TEXT -- 🔑 Email verification code
+            verification_code TEXT ,-- 🔑 Email verification code
+            reset_token TEXT ,-- 🔑 Temporary reset token for forgotenPass
+            reset_token_expiry INTEGER,-- 🔑 Expiry time for the reset token
+            two_factor_secret TEXT, -- 🔑 2FA secret key
+            two_factor_enabled INTEGER NOT NULL DEFAULT 0 -- 1 =2FA enabled, 0 = disabled
+            
+            
         );
     `);
     console.log('Database connected and tables initialized successfully! 🎉');
@@ -50,6 +61,18 @@ const initializeDatabase = async () => {
 // ⚙️ 4. GLOBAL MIDDLEWARES
 app.use(cors()); // Allow frontend to talk to backend
 app.use(express.json()); // Allow reading JSON body data in POST requests
+//Global Rate Limiter
+
+const globalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message: { error: 'Too many requests from this IP. Please try again in 15 minutes.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+app.use('/api', globalLimiter);
+
+
 
 // 🚀 5. START DATABASE & BIND ROUTERS
 // Connect to the database first, then mount routes and start listening for requests
