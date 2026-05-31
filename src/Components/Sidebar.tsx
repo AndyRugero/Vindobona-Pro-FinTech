@@ -58,7 +58,12 @@ const Sidebar: React.FC<{
                 </div>
                 <div className="nav-item"><ArrowRightLeft size={18} className="nav-icon" /> Transfers</div>
                 <div className="nav-item"><CreditCard size={18} className="nav-icon" /> Payment Methods</div>
-                <div className="nav-item"><Settings size={18} className="nav-icon" /> Settings</div>
+                <div
+                    className={`nav-item ${currentView === 'settings' ? 'active' : ''}`}
+                    onClick={() => onViewChange('settings')}
+                >
+                    <Settings size={18} className="nav-icon" /> Settings
+                </div>
                 <div className="nav-item"><HelpCircle size={18} className="nav-icon" /> Help Center</div>
             </nav>
 

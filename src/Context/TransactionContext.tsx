@@ -5,6 +5,7 @@ import {
 import type { Transaction } from '../Interfaces/Interfaces';
 import { processTransactions } from '../Logic/TransactionLogic';
 import { preparePieData, prepareTrendData } from '../Logic/AnalyticLogic';
+import { API_BASE_URL } from '../config';
 
 /**
  * THE UNIFIED MENU
@@ -31,7 +32,7 @@ export interface TransactionContextType {
 
 export const TransactionContext = createContext<TransactionContextType | undefined>(undefined);
 
-const API_URL = "http://localhost:5001/api/transactions";
+const API_URL = `${API_BASE_URL}/api/transactions`;
 
 export const TransactionProvider = ({ children }: { children: ReactNode }) => {
     const [ledgerData, setLedgerData] = useState<Transaction[]>([]);
@@ -90,12 +91,12 @@ export const TransactionProvider = ({ children }: { children: ReactNode }) => {
     const addTransaction = (receiver: string, amount: string, category: string) => {
         const token = localStorage.getItem('token');
         fetch(API_URL, {
-            method: 'POST', 
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}` // Attach secure token
             },
-            body: JSON.stringify({ receiver, amount, category }) 
+            body: JSON.stringify({ receiver, amount, category })
         })
             .then(response => response.json())
             .then(newTx => {
@@ -108,7 +109,7 @@ export const TransactionProvider = ({ children }: { children: ReactNode }) => {
             .catch(error => {
                 console.error("Error adding transaction:", error);
             });
-    }; 
+    };
 
     // 🚂 2. DELETE TRANSACTION: Tells the backend Express server to delete a transaction by its ID
     const deleteTransaction = (id: string) => {
@@ -129,7 +130,7 @@ export const TransactionProvider = ({ children }: { children: ReactNode }) => {
             .catch(error => {
                 console.error("Error deleting transaction:", error);
             });
-    }; 
+    };
 
     const importTransactions = (data: Transaction[]) => {
         setLedgerData(prev => [...data, ...prev]);

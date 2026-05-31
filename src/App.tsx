@@ -11,6 +11,7 @@ import CSVImportView from './Components/CSVImportView';
 import CashFlowTrend from './Components/CashFlowTrend';
 import AuthScreen from './Components/AuthScreen'; // 📥 Import AuthScreen
 import { TransactionProvider } from './Context/TransactionContext'; // 📥 Import Provider
+import SettingsView from './Components/settingsView';
 
 // ⏱Define timeout limit: 10 seconds (10 * 1000ms) for quick testing!
 // Once we verify it works, we will set this to 15 minutes (15 * 60 * 1000ms).
@@ -102,6 +103,8 @@ function App() {
             <CSVImportView
               onBack={() => setCurrentView('dashboard')}
             />
+          ) : currentView === 'settings' ? (
+            <SettingsView token={token} username={localStorage.getItem('username')} />
           ) : (
             <>
               <DashboardHeader />
@@ -118,9 +121,9 @@ function App() {
               </div>
             </>
           )}
-        </main>
-      </div>
-    </TransactionProvider>
+      </main>
+    </div>
+    </TransactionProvider >
   );
 }
 

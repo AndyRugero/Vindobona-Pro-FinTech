@@ -10,7 +10,7 @@ Banks prioritize security above all else. A simple password login is not enough;
 - [ ] **Rate Limiting & Brute-Force Protection** (Completed: Lesson 43)
   - Limit login attempts to prevent automated password cracking.
   - Return clear, standard HTTP 429 error messages.
-- [/] **Multi-Factor Authentication (MFA/2FA)** (In Progress: Lesson 44)
+- [x] **Multi-Factor Authentication (MFA/2FA)** (Completed: Lesson 45)
   - Integrate `otplib` and `qrcode` to generate secure, time-based secrets.
   - Require a rolling 6-digit verification code from Google Authenticator to log in.
 - [ ] **Secure JWT & Cookie Management**
@@ -25,10 +25,10 @@ Financial dashboards must load instantly, display complex data cleanly, and be a
 - [ ] **Data Visualization & Analytics** (Lesson 45)
   - Implement interactive financial charts (using Recharts or Chart.js) to display cash flow trends, income, and expenses.
   - Add filters for monthly, quarterly, and yearly financial analyses.
-- [ ] **Production Deployment to Vercel** (Lesson 46)
+- [x] **Production Deployment to Vercel** (Completed: Lesson 46)
   - Connect your GitHub repository to Vercel for continuous deployment (CI/CD).
   - Configure environment variables securely on the server.
-- [ ] **Custom Domain Setup (`.com`)** (Lesson 47)
+- [x] **Custom Domain Setup (`.com`)** (Lesson 47)
   - Link a custom domain (e.g., `vindobonafintech.com`) to the deployed React app.
   - Configure DNS settings and SSL certificates for secure HTTPS connections.
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import '../Styles/AuthScreen.css';
+import { API_BASE_URL } from '../config';
 
 // 🔌 Props: This tells React what inputs this component receives from its parent (App.tsx)
 interface AuthScreenProps {
@@ -25,6 +26,8 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
     const [newPassword, setNewPassword] = useState('');              // New password typed by user
     const [confirmPassword, setConfirmPassword] = useState('');      // Confirm new password
     const [resetToken, setResetToken] = useState('');                // Token from email URL
+    const [is2FALogin, setIs2FALogin] = useState(false); //YEs OR nO SWITCH screen to show 2FA prompt
+    const [twoFactorCode, setTwoFactorCode] = useState(''); //Memory slot for the 6 digit code user
 
     // 🕵️‍♂️ URL Detector: Check if the user loaded the page via a reset password link on startup
     useEffect(() => {
@@ -58,7 +61,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
 
         // 🗺️ Choose the API path depending on if we are logging in or signing up
         const endpoint = isLogin ? '/api/auth/login' : '/api/users/register';
-        const url = `http://localhost:5001${endpoint}`;
+        const url = `${API_BASE_URL}${endpoint}`;
         const requestBody = isLogin ? { username, password } : { username, password, email };
 
         try {
@@ -87,8 +90,17 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
 
             // 🎉 If we made it here, the API call succeeded!
             if (isLogin) {
-                // If logging in, send the token and username back to App.tsx
-                onLoginSuccess(data.token, data.username);
+                //check if backend is asking for aFA code bfr issuing a token
+                if (data.requires2FA) {
+                    setIs2FALogin(true);//toggle Ui into 2FA verification mode
+                    setSuccessMessage(data.message || '2FA verification required. Please enter your 6-digit code.');
+
+                }
+
+                else {
+                    // If logging in, send the token and username back to App.tsx
+                    onLoginSuccess(data.token, data.username);
+                }
             } else {
                 // If signing up, switch to verification OTP screen
                 setSuccessMessage(data.message || 'Registration successful! Verification code sent.');
@@ -96,6 +108,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
                 setVerifyingUsername(data.username || username);
                 setPassword(''); // Clear the password box
             }
+
         } catch (err: any) {
             // Show the error message if the server failed or connection failed
             setError(err.message || 'Cannot connect to the server.');
@@ -113,7 +126,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
             return;
         }
 
-        const url = `http://localhost:5001/api/users/verify`;
+        const url = `${API_BASE_URL}/api/users/verify`;
 
         try {
             const response = await fetch(url, {
@@ -137,6 +150,46 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
             setError(err.message || 'Cannot connect to the server.');
         }
     };
+    // 📱 HANDLER: Sends the rolling 6-digit 2FA code to the backend for verification during login
+    const handle2FALoginSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();    // 1. Stop page from reloading
+        setError('');          // 2. Clear old errors
+        setSuccessMessage(''); // 3. Clear old success messages
+
+        // 4. Validate: If code is not 6 digits, stop here and show error!
+        if (!twoFactorCode || twoFactorCode.length !== 6) {
+            setError('Please enter a valid 6-digit authenticator code.');
+            return; // 'return' stops the function from continuing!
+        }
+
+        const url = `${API_BASE_URL}/api/auth/2fa/login`;
+
+        try {
+            // 5. Send POST request with the username and the code
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username, code: twoFactorCode }),
+            });
+
+            // 6. Read the JSON response from server
+            const data = await response.json();
+
+            // 7. If status is bad, throw an error to trigger the catch block
+            if (!response.ok) {
+                throw new Error(data.error || '2FA authentication failed.');
+            }
+
+            // 8. Success! Save the session token and log in
+            setSuccessMessage('Login successful! 🚀');
+            onLoginSuccess(data.token, data.username);
+        } catch (err: any) {
+            // 9. If server or connection fails, show the error on screen
+            setError(err.message || 'Cannot connect to the server.');
+        }
+    };
 
     // ✉️ Handler: Sends "Forgot Password" request to backend
     const handleForgotSubmit = async (e: React.FormEvent) => {
@@ -150,7 +203,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
         }
 
         try {
-            const response = await fetch('http://localhost:5001/api/auth/forgot-password', {
+            const response = await fetch(`${API_BASE_URL}/api/auth/forgot-password`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email: forgotPasswordEmail }),
@@ -186,7 +239,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
         }
 
         try {
-            const response = await fetch('http://localhost:5001/api/auth/reset-password', {
+            const response = await fetch(`${API_BASE_URL}/api/auth/reset-password`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ token: resetToken, newPassword }),
@@ -220,6 +273,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
         if (isResetMode) return 'Reset Password';
         if (isForgotPassword) return 'Forgot Password';
         if (isVerifying) return 'Verify Your Email';
+        if (is2FALogin) return 'Two-Factor Verification';
         return isLogin ? 'Welcome Back' : 'Create Account';
     };
 
@@ -228,6 +282,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
         if (isResetMode) return 'Enter your new password below';
         if (isForgotPassword) return 'Enter your email to receive a reset link';
         if (isVerifying) return 'Enter the 6-digit code sent to your inbox';
+        if (is2FALogin) return 'Enter the 6-digit code from your authenticator app';
         return isLogin ? 'Log in to access your financial dashboard' : 'Sign up to get started';
     };
 
@@ -294,12 +349,33 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
                     /* 📧 Verification Code Form */
                     <form onSubmit={handleVerifySubmit} className="auth-form">
                         <div className="form-group">
+
                             <label htmlFor="verificationCode">Verification Code</label>
                             <input
                                 type="text"
                                 id="verificationCode"
                                 value={verificationCode}
                                 onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                placeholder="Enter 6-digit code"
+                                maxLength={6}
+                                required
+                            />
+                        </div>
+                        <button type="submit" className="auth-button">
+                            Verify & Login
+                        </button>
+                    </form>
+
+                    /* 📱 2FA Code Input Form */
+                ) : is2FALogin ? (
+                    <form onSubmit={handle2FALoginSubmit} className="auth-form">
+                        <div className="form-group">
+                            <label htmlFor="twoFactorCode">Authenticator Code</label>
+                            <input
+                                type="text"
+                                id="twoFactorCode"
+                                value={twoFactorCode}
+                                onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                                 placeholder="Enter 6-digit code"
                                 maxLength={6}
                                 required
@@ -360,6 +436,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
                                     setIsForgotPassword(true);
                                     setError('');
                                     setSuccessMessage('');
+
                                 }}>
                                     Forgot Password?
                                 </span>
@@ -375,7 +452,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
                         <button
                             type="button"
                             className="google-btn"
-                            onClick={() => window.location.href = 'http://localhost:5001/api/auth/google'}
+                            onClick={() => window.location.href = `${API_BASE_URL}/api/auth/google`}
                         >
                             <img src="/google-logo.svg" alt="Google" className="google-icon" />
                             <span>Sign in with Google</span>
@@ -390,6 +467,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
                             setIsResetMode(false);
                             setError('');
                             setSuccessMessage('');
+                            setTwoFactorCode('');
                             window.history.replaceState({}, document.title, '/'); // Clean URL
                         }}>
                             Back to Login
@@ -401,6 +479,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
                             setIsForgotPassword(false);
                             setError('');
                             setSuccessMessage('');
+                            setTwoFactorCode('');
                         }}>
                             Back to Login
                         </span>
@@ -414,6 +493,18 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
                             setError('');
                             setSuccessMessage('');
                             setVerificationCode('');
+                        }}>
+                            Back to Login
+                        </span>
+                    </p>
+                ) : is2FALogin ? (
+                    <p className="auth-toggle">
+                        <span onClick={() => {
+                            setIs2FALogin(false);
+                            setIsLogin(true);
+                            setError('');
+                            setSuccessMessage('');
+                            setTwoFactorCode('');
                         }}>
                             Back to Login
                         </span>

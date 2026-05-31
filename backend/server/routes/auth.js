@@ -387,6 +387,21 @@ module.exports = (db) => {
         }
     });
 
+    // 📱 2FA STATUS: Check if 2FA is enabled for the logged-in user
+    // Path: GET http://localhost:5001/api/auth/2fa/status
+    router.get('/auth/2fa/status', authenticationToken, async (req, res) => {
+        try {
+            const user = await db.get('SELECT two_factor_enabled FROM users WHERE id = ?', req.user.userId);
+            if (!user) {
+                return res.status(404).json({ error: 'User not found.' });
+            }
+            res.status(200).json({ enabled: user.two_factor_enabled === 1 });
+        } catch (error) {
+            console.error('2FA status check error:', error);
+            res.status(500).json({ error: 'Failed to retrieve 2FA status.' });
+        }
+    });
+
     // 📱 2FA SETUP: Generate a new secret and return a QR code
     // Path: POST http://localhost:5001/api/auth/2fa/setup
     router.post('/auth/2fa/setup', authenticationToken, async (req, res) => {
