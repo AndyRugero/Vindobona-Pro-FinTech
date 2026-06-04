@@ -93,5 +93,115 @@ module.exports = (db) => {
         }
     });
 
-    return router; // 📤 Return the router back to server.js
+    // POST: Safe funds transfer between users using SQL transactions
+    // Path: POST http://localhost:5001/api/transactions/transfer
+    router.post('/transfer', authenticateToken, async (req, res) => {
+        const { receiverUsername, amount } = req.body;
+        const senderId = req.user.userId;
+        const senderUsername = req.user.username;
+
+        // Basic validation checks
+        if (!receiverUsername || !amount) {
+            return res.status(400).json({ error: 'Receiver username and amount are required.' });
+        }
+        const transferAmount = parseFloat(amount);
+        if (isNaN(transferAmount) || transferAmount <= 0) {
+            return res.status(400).json({ error: 'Invalid transfer amount.' });
+        }
+        if (receiverUsername.trim().toLowerCase() === senderUsername.trim().toLowerCase()) {
+            return res.status(400).json({ error: 'You cannot transfer to yourself Money' });
+        }
+
+        try {
+            // Database query to find receiver if they exist
+            const receiver = await db.get(
+                'SELECT id, username FROM users WHERE LOWER(username) = ?',
+                receiverUsername.trim().toLowerCase()
+            );
+
+            if (!receiver) {
+                return res.status(404).json({ error: 'Receiver not found' });
+            }
+
+            // Fetch the sender's current balance
+            const sender = await db.get('SELECT balance FROM users WHERE id = ?', senderId);
+            if (!sender) {
+                return res.status(404).json({ error: 'Sender not found' });
+            }
+
+            // Wallet Check: if the balance is less than the transfer amount, block transfer
+            if (sender.balance < transferAmount) {
+                return res.status(400).json({ error: 'Insufficient balance' });
+            }
+            // ----------------------------------------------------
+            // 🏦 STEP 3: TRANSACTION & DATABASE UPDATES (Stage 1)
+            // ----------------------------------------------------
+
+            // A. Open the secure transaction envelope
+            await db.run('BEGIN TRANSACTION');
+
+            // B. Subtract transfer amount from the sender's balance
+            await db.run(
+                'UPDATE users SET balance = balance - ? WHERE id = ?',
+                [transferAmount, senderId]
+            );
+
+            // C. Add transfer amount to the receiver's balance
+            //an outgoing ledger record for the sender (is_negative = 1)
+            const senderTxId = Date.now().toString() + '-send';
+            await db.run(
+                `INSERT INTO transactions (id, date, receiver , amount , category, is_negative, status, user_id)
+                VALUES (?,?,?,?,?,?,?,?)`,
+                [senderTxId, new Date().toLocaleDateString('en-Us', { weekday: 'short' }),
+                    receiver.username,// who the sender sent money
+                    transferAmount, 'Transfer', 1, // 1 = negative (expense)
+                    'Complete', senderId // Linked to sender's dashboard
+                ]
+            );
+
+
+            // incoming ledger record for the receiver (is_negative = 0)
+
+            const receiverTxId = (Date.now() + 1).toString() + '-recv';
+            await db.run(
+                `INSERT INTO transactions (id , date, receiver , amount , category , is_negative, status, user_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                [receiverTxId, new Date().toLocaleDateString('en-Us', { weekday: 'short' }),
+
+                    senderUsername,//whosends
+                    transferAmount,//whoreceives
+                    'Transfer', 0,//0 = positive (incoming)
+                    'Complete', receiver.id // Linked to the recever on the dashboard
+                ]
+            );
+
+
+            await db.run(
+                'UPDATE users SET balance = balance + ? WHERE id = ?',
+                [transferAmount, receiver.id]
+            );
+
+            // D. Seal the transaction envelope and write changes permanently to disk
+            await db.run('COMMIT');
+
+            // E. Return successful response
+            return res.status(200).json({
+                message: 'Balance transfer completed successfully!',
+                amount: transferAmount,
+                receiver: receiver.username
+            });
+
+        } catch (error) {
+            console.error('Error during balance safety checks', error);
+            try {
+                // If anything failed inside the transaction, undo all balance updates
+                await db.run('ROLLBACK');
+            } catch (rollbackError) {
+                console.error('Failed to rollback transaction:', rollbackError);
+            }
+            return res.status(500).json({ error: 'Database verification failed' });
+        }
+    });
+
+    return router;
 };

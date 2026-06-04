@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+
+  # Configuration for our Node.js backend container
+  backend:
+
+    # Tell Docker where the Dockerfile is located
+    build: ./backend
+
+    # Give our running container a friendly name
+    container_name: vindobona-backend
+
+    ports:
+      - "5001:5001"
+
+    volumes:
+      - ./backend/server:/usr/src/app/server
+    environment:
+      - PORT=5001
+      - NODE_ENV=development

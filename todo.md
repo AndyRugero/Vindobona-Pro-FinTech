@@ -16,6 +16,8 @@ Banks prioritize security above all else. A simple password login is not enough;
 - [ ] **Secure JWT & Cookie Management**
   - Transition from storing JWT tokens in local storage (vulnerable to XSS attacks) to **HTTP-Only, Secure cookies**.
   - Implement access tokens (short-lived) and refresh tokens (long-lived) to manage user sessions professionally.
+- [ ] **Secure Session Management & Inactivity Timeout**
+  - Detect user inactivity and automatically log users out after 15 minutes of idle time.
 
 ---
 
@@ -37,26 +39,57 @@ Financial dashboards must load instantly, display complex data cleanly, and be a
 ## 🚢 Phase 3: Enterprise Backend & DevOps
 Banking teams look for developers who understand deployment environments and how databases scale.
 
-- [ ] **Containerization with Docker** (Lesson 48)
+- [x] **Containerization with Docker** (Completed: Lesson 48)
   - Write a `Dockerfile` for your backend server.
   - Write a `docker-compose.yml` file to orchestrate the Node backend and database services together in one command.
-  - Ensure local development matches production exactly using containers.
-- [ ] **Database Integrity & ACID Transactions** (Lesson 49)
+- [x] **Database Integrity & ACID Transactions** (Completed: Lesson 49)
   - Implement **SQL Transactions** (`BEGIN TRANSACTION`, `COMMIT`, `ROLLBACK`) for transactions and money transfers.
-  - *Why banks look for this:* If a user transfers money, the money must be deducted from Account A AND added to Account B. If one step fails, the entire transaction must roll back to prevent money from disappearing.
-- [ ] **Automated Testing (Unit & Integration)** (Lesson 50)
-  - Write unit tests for your authentication helper functions.
+- [x] **Automated Testing (Unit & Integration)** (Completed: Lesson 50)
+  - Write unit tests for authentication helper functions.
   - Write API integration tests using **Jest** and **Supertest** to test your endpoints automatically.
+- [ ] **Developer Documentation & User Guides** (Lesson 50b - Deferred to end of project)
+  - Write clean markdown API documentation and structural user guides for the financial portal.
 
 ---
 
-## 🌟 Vienna Bank-Specific Portfolio "Wow-Factors"
-These are bonus additions you can implement to blow hiring managers away during your technical interview.
+## 🎨 Phase 4: Advanced Features & UI Polish
+Making the project look premium and fully match your 80-Day PDF roadmap.
 
-- [ ] **Secure Audit Trail Logs**
-  - Implement a logging service (like Winston) that tracks critical actions (e.g., `"User [X] logged in from IP [Y]"`, `"Transaction [ID] completed by user [Z]"`).
-  - *Bank Relevance:* Compliance laws (like PSD2 and GDPR) require detailed access logs for financial systems.
-- [ ] **Financial Report Export**
-  - Build a feature to export transaction histories and charts as formatted **PDFs** or **CSV spreadsheets**.
-- [ ] **Strict TypeScript Types**
-  - Ensure the entire codebase is fully type-safe on both the frontend and backend to show you know how to write self-documenting, crash-resistant code.
+- [ ] **User Roles (Admin vs. Standard User)** (Lesson 51)
+  - Implement role-based access control (RBAC) to restrict admin settings.
+- [ ] **Secure Audit Trail Logs** (Lesson 52)
+  - Build an audit log system to track all balance and database changes.
+- [ ] **PSD2-Compliant "Transaction Signing" (Strong Customer Authentication)** (Lesson 52b)
+  - Require a 6-digit Google Authenticator code verification for every transaction to comply with PSD2 banking regulations.
+- [ ] **Full-Text Search & Filtering** (Lesson 53)
+  - Add search input for descriptions and categories with server-side text queries.
+- [ ] **AI Chatbot Financial Assistant API** (Lesson 53b)
+  - Integrate a chat interface to ask an AI bot questions about your account and financial metrics.
+- [ ] **Google Maps API integration (Vienna ATM / Branch Finder)** (Lesson 53c)
+  - Display interactive maps showing active banks and ATMs in Vienna.
+- [ ] **Budget Tracking & Expense Alerts** (Lesson 53d)
+  - Implement dynamic category budget limits with percentage progress warnings.
+- [ ] **Financial Report Export (PDF & CSV)** (Lesson 54)
+  - Add buttons to export financial records into spreadsheets and bank statements.
+- [ ] **Interactive "Freeze Card" Panel** (Lesson 54b)
+  - Build a realistic 3D debit card widget with a "Freeze Card" toggle that locks out backend transaction processing.
+- [ ] **Real-time Currency Exchange & FX Converter** (Lesson 54c)
+  - Fetch live FX exchange rates to convert funds between multiple currency wallets (EUR/USD/GBP).
+- [ ] **UI Polish & Web Design Fundamentals (Part 1)** (Lesson 55)
+  - Learn color systems, spacing, card layouts, and typography to make the UI look highly premium.
+- [ ] **Micro-Animations & Dark Mode (Part 2)** (Lesson 56)
+  - Build smooth CSS transitions, interactive hover states, and a toggleable Dark/Light Mode.
+
+---
+
+## ☁️ Phase 5: Production Cloud Orchestration
+Bonus enterprise tools that will make your CV stand out to major Austrian banks.
+
+- [ ] **Nginx Web Server & Reverse Proxy** (Lesson 56b)
+  - Learn how to configure Nginx to route frontend and backend requests securely.
+- [ ] **Kubernetes (K8s) Orchestration** (Lesson 57)
+  - Write deployment configurations and manage running containers with the `kubectl` CLI.
+- [ ] **Enterprise Cloud Deployment on Microsoft Azure** (Lesson 58)
+  - Deploy containers to Azure App Services, set up Azure Database for PostgreSQL, and manage cloud assets.
+- [ ] **[Deferred] Developer Documentation & User Guides** (Lesson 50b)
+  - Write clean markdown API documentation and structural user guides for the financial portal.

@@ -6,9 +6,6 @@ const path = require('path'); // 📥 Builds safe file paths compatible with Win
 const sqlite3 = require('sqlite3'); // 📥 Core SQLite3 database driver
 const { open } = require('sqlite'); // 📥 Promise wrapper to allow using async/await with SQLite
 const { rateLimit } = require('express-rate-limit');
-const authenticationToken = require('./middleware/authGuard');
-const { authenticator } = require('otplib');
-const qrcode = require('qrcode');
 
 
 //  2. SERVER CONFIGURATION
@@ -50,11 +47,21 @@ const initializeDatabase = async () => {
             reset_token TEXT ,-- 🔑 Temporary reset token for forgotenPass
             reset_token_expiry INTEGER,-- 🔑 Expiry time for the reset token
             two_factor_secret TEXT, -- 🔑 2FA secret key
-            two_factor_enabled INTEGER NOT NULL DEFAULT 0 -- 1 =2FA enabled, 0 = disabled
+            two_factor_enabled INTEGER NOT NULL DEFAULT 0, -- 1 =2FA enabled, 0 = disabled
+            balance REAL NOT NULL DEFAULT 1000.0 -- 🏦 Set default balance of $1000 for new users
             
             
         );
     `);
+
+    // 🏦 Safe Schema Migration: Add balance column to existing users table if it doesn't exist
+    try {
+        await db.run('ALTER TABLE users ADD COLUMN balance REAL NOT NULL DEFAULT 1000.0');
+        console.log('Database Schema Migration: Added balance column to users table! 🏦');
+    } catch (error) {
+        // If it already exists, SQLite will throw an error. We catch it and ignore it safely!
+    }
+
     console.log('Database connected and tables initialized successfully! 🎉');
 };
 
