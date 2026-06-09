@@ -1,18 +1,51 @@
 const express = require('express'); // 📥 Import Express
 const router = express.Router(); // 🏗️ Initialize the Express Router
 const authenticateToken = require('../middleware/authGuard'); // 🛡️ Import the auth guard middleware
+const { authenticator } = require('otplib'); // 📱 Import otplib for PSD2 transaction verification
+const { logAuditEntry } = require('../services/auditService'); // 📜 Import our secure audit logger
 
 // 📤 We export a function that accepts the database connection 'db'
 module.exports = (db) => {
 
-    // 📖 GET: Fetch all transactions for the logged-in user
+    // 📖 GET: Fetch and filter transactions for the logged-in user (Lesson 53a)
     // Path: GET http://localhost:5001/api/transactions
     router.get('/', authenticateToken, async (req, res) => {
         try {
-            // Query only transactions belonging to the logged-in user
-            const rows = await db.all('SELECT * FROM transactions WHERE user_id = ?', req.user.userId);
+            // 📥 1. Read query parameters from the URL (search, category, and type)
+            const { search, category, type } = req.query;
 
-            // 🗺️ Map database fields to what React expects (camelCase and string types)
+            // 🏗️ 2. Base SQL Query (Starts by querying transactions for the current user)
+            let sqlQuery = 'SELECT * FROM transactions WHERE user_id = ?';
+            const queryParams = [req.user.userId]; // Start parameters list with the user's ID
+
+            // 🔍 3. Search Filter (checks if search word is in receiver or category)
+            if (search) {
+                // We use += to append the filter, and notice the space before 'AND'
+                sqlQuery += ' AND (receiver LIKE ? OR category LIKE ?)';
+                const searchPattern = `%${search}%`; // e.g. "%bill%" matches "Billa"
+                queryParams.push(searchPattern, searchPattern); // We push twice because we have two '?' placeholders
+            }
+
+            // 📁 4. Category Filter (filters by exact category name, e.g. "Food" or "Rent")
+            if (category) {
+                sqlQuery += ' AND category = ?';
+                queryParams.push(category); // We push one parameter for the '?' placeholder
+            }
+
+            // 🔄 5. Type Filter (income vs expense)
+            if (type) {
+                const lowerType = type.toLowerCase();
+                if (lowerType === 'expense') {
+                    sqlQuery += ' AND is_negative = 1'; // 1 means spending (negative)
+                } else if (lowerType === 'income') {
+                    sqlQuery += ' AND is_negative = 0'; // 0 means earning (positive)
+                }
+            }
+
+            // 🗄️ 6. Run the dynamically built query in our SQLite database
+            const rows = await db.all(sqlQuery, queryParams);
+
+            // 🗺️ 7. Map database fields to what React expects (camelCase and string types)
             const transactions = rows.map(row => ({
                 id: row.id,
                 date: row.date,
@@ -23,6 +56,7 @@ module.exports = (db) => {
                 status: row.status
             }));
 
+            // 📤 8. Send the final filtered list back to the frontend
             res.json(transactions);
         } catch (error) {
             console.error('Error fetching transactions:', error);
@@ -96,7 +130,7 @@ module.exports = (db) => {
     // POST: Safe funds transfer between users using SQL transactions
     // Path: POST http://localhost:5001/api/transactions/transfer
     router.post('/transfer', authenticateToken, async (req, res) => {
-        const { receiverUsername, amount } = req.body;
+        const { receiverUsername, amount, twoFactorCode } = req.body;
         const senderId = req.user.userId;
         const senderUsername = req.user.username;
 
@@ -123,8 +157,8 @@ module.exports = (db) => {
                 return res.status(404).json({ error: 'Receiver not found' });
             }
 
-            // Fetch the sender's current balance
-            const sender = await db.get('SELECT balance FROM users WHERE id = ?', senderId);
+            // Fetch the sender's current balance and 2FA settings
+            const sender = await db.get('SELECT balance, two_factor_enabled, two_factor_secret FROM users WHERE id = ?', senderId);
             if (!sender) {
                 return res.status(404).json({ error: 'Sender not found' });
             }
@@ -133,12 +167,33 @@ module.exports = (db) => {
             if (sender.balance < transferAmount) {
                 return res.status(400).json({ error: 'Insufficient balance' });
             }
+
+            // 📱 PSD2 Security Check: If sender has 2FA enabled, verify their transaction signing code
+            if (sender.two_factor_enabled === 1) {
+                if (!twoFactorCode) {
+                    return res.status(403).json({ error: 'Two-factor authentication code is required to sign this transaction.' });
+                }
+                const isValid = authenticator.verify({
+                    token: twoFactorCode,
+                    secret: sender.two_factor_secret
+                });
+                if (!isValid) {
+                    return res.status(403).json({ error: 'Invalid two-factor authentication code.' });
+                }
+            }
+
             // ----------------------------------------------------
             // 🏦 STEP 3: TRANSACTION & DATABASE UPDATES (Stage 1)
             // ----------------------------------------------------
 
             // A. Open the secure transaction envelope
             await db.run('BEGIN TRANSACTION');
+
+            // 📜 1. Log that the transfer was signed/authorized in the ledger
+            const signDetails = sender.two_factor_enabled === 1
+                ? `Transfer of €${transferAmount} to ${receiver.username} was signed with 2FA.`
+                : `Transfer of €${transferAmount} to ${receiver.username} was authorized.`;
+            await logAuditEntry(db, senderId, 'TRANSFER_SIGNED', signDetails, req.ip);
 
             // B. Subtract transfer amount from the sender's balance
             await db.run(
@@ -147,39 +202,50 @@ module.exports = (db) => {
             );
 
             // C. Add transfer amount to the receiver's balance
-            //an outgoing ledger record for the sender (is_negative = 1)
-            const senderTxId = Date.now().toString() + '-send';
-            await db.run(
-                `INSERT INTO transactions (id, date, receiver , amount , category, is_negative, status, user_id)
-                VALUES (?,?,?,?,?,?,?,?)`,
-                [senderTxId, new Date().toLocaleDateString('en-Us', { weekday: 'short' }),
-                    receiver.username,// who the sender sent money
-                    transferAmount, 'Transfer', 1, // 1 = negative (expense)
-                    'Complete', senderId // Linked to sender's dashboard
-                ]
-            );
-
-
-            // incoming ledger record for the receiver (is_negative = 0)
-
-            const receiverTxId = (Date.now() + 1).toString() + '-recv';
-            await db.run(
-                `INSERT INTO transactions (id , date, receiver , amount , category , is_negative, status, user_id)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-                [receiverTxId, new Date().toLocaleDateString('en-Us', { weekday: 'short' }),
-
-                    senderUsername,//whosends
-                    transferAmount,//whoreceives
-                    'Transfer', 0,//0 = positive (incoming)
-                    'Complete', receiver.id // Linked to the recever on the dashboard
-                ]
-            );
-
-
             await db.run(
                 'UPDATE users SET balance = balance + ? WHERE id = ?',
                 [transferAmount, receiver.id]
             );
+
+            // Create an outgoing ledger record for the sender (is_negative = 1)
+            const senderTxId = Date.now().toString() + '-send';
+            await db.run(
+                `INSERT INTO transactions (id, date, receiver, amount, category, is_negative, status, user_id)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    senderTxId,
+                    new Date().toLocaleDateString('en-US', { weekday: 'short' }),
+                    receiver.username,
+                    transferAmount,
+                    'Transfer',
+                    1, // 1 = negative (expense)
+                    'Complete',
+                    senderId
+                ]
+            );
+
+            // Create an incoming ledger record for the receiver (is_negative = 0)
+            const receiverTxId = (Date.now() + 1).toString() + '-recv';
+            await db.run(
+                `INSERT INTO transactions (id, date, receiver, amount, category, is_negative, status, user_id)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    receiverTxId,
+                    new Date().toLocaleDateString('en-US', { weekday: 'short' }),
+                    senderUsername,
+                    transferAmount,
+                    'Transfer',
+                    0, // 0 = positive (incoming)
+                    'Complete',
+                    receiver.id
+                ]
+            );
+
+            // 📜 2. Log outgoing transfer for sender
+            await logAuditEntry(db, senderId, 'TRANSFER_SENT', `Sent €${transferAmount} to ${receiver.username}`, req.ip);
+
+            // 📜 3. Log incoming transfer for receiver
+            await logAuditEntry(db, receiver.id, 'TRANSFER_RECEIVED', `Received €${transferAmount} from ${senderUsername}`, req.ip);
 
             // D. Seal the transaction envelope and write changes permanently to disk
             await db.run('COMMIT');

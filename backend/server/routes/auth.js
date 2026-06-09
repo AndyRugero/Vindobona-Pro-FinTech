@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken'); // 📥 Import JWT library
 const passport = require('passport'); // 📥 Import Passport
 const GoogleStrategy = require('passport-google-oauth20').Strategy; // Import Google OAuth Strategy
 const { sendEmail } = require('../services/emailService'); // 📧 Import our email service!
+const { logAuditEntry } = require('../services/auditService'); // 📜 Import our secure audit log service
 const { getVerificationEmailHelper, ResetPasswordEmail } = require('../Verifyer/emailTemplates'); // 📧 Import email formatting helper!
 const crypto = require('crypto');
 const authenticationToken = require('../middleware/authGuard');
@@ -33,7 +34,7 @@ module.exports = (db) => {
                         'INSERT INTO users (id, username, password_hash, google_id, is_verified) VALUES (?, ?, ?, ?, ?)',
                         [userId, profile.displayName, 'OAUTH_USER', profile.id, 1]
                     );
-                    user = { id: userId, username: profile.displayName };
+                    user = { id: userId, username: profile.displayName, role: 'user' };
                 }
 
                 // Pass the user details back to Passport
@@ -54,7 +55,7 @@ module.exports = (db) => {
         (req, res) => {
             // Google authenticated them successfully! Generate our JWT token for their session:
             const token = jwt.sign(
-                { userId: req.user.id, username: req.user.username },
+                { userId: req.user.id, username: req.user.username, role: req.user.role },
                 process.env.JWT_SECRET,
                 { expiresIn: '2h' }
             );
@@ -125,6 +126,8 @@ module.exports = (db) => {
                 'INSERT INTO users (id, username, email, password_hash, is_verified, verification_code) VALUES (?, ?, ?, ?, ?, ?)',
                 [userId, cleanUsername, cleanEmail, passwordHash, 0, verificationCode]
             );
+            // 📜 Log the successful registration event
+            await logAuditEntry(db, userId, 'REGISTER_SUCCESS', `New user registered: ${cleanUsername}`, req.ip);
 
             // 5. Send verification email in the background
             const emailHtml = getVerificationEmailHelper(cleanUsername, verificationCode);
@@ -164,12 +167,16 @@ module.exports = (db) => {
             // 2. Look up the user in the database
             const user = await db.get('SELECT * FROM users WHERE username = ?', username);
             if (!user) {
+                // 📜 Log failed login: Username does not exist
+                await logAuditEntry(db, null, 'LOGIN_FAILED', `Failed login attempt: username '${username}' does not exist`, req.ip);
                 return res.status(401).json({ error: 'Invalid username or password' });
             }
 
             // 3. Compare the entered password with the hashed password stored in the DB
             const isMatch = await bcrypt.compare(password, user.password_hash);
             if (!isMatch) {
+                // 📜 Log failed login: Incorrect password
+                await logAuditEntry(db, user.id, 'LOGIN_FAILED', `Failed login attempt for user: ${user.username} (incorrect password)`, req.ip);
                 return res.status(401).json({ error: 'Invalid username or password' });
             }
 
@@ -193,10 +200,12 @@ module.exports = (db) => {
 
             // 4. Generate a JWT Token signed with a secret key
             const token = jwt.sign(
-                { userId: user.id, username: user.username },
+                { userId: user.id, username: user.username, role: user.role },
                 process.env.JWT_SECRET,
                 { expiresIn: '2h' } // Token expires in 2 hours
             );
+
+            await logAuditEntry(db, user.id, 'LOGIN_SUCCESS', `User logged in successfully:${user.username}`, req.ip);
 
             // 5. Send the token back to the React frontend
             res.status(200).json({
@@ -233,7 +242,7 @@ module.exports = (db) => {
             if (user.is_verified === 1) {
                 // Generate token and login immediately anyway
                 const token = jwt.sign(
-                    { userId: user.id, username: user.username },
+                    { userId: user.id, username: user.username, role: user.role },
                     process.env.JWT_SECRET,
                     { expiresIn: '2h' }
                 );
@@ -257,7 +266,7 @@ module.exports = (db) => {
 
             // Log them in immediately: generate a JWT token
             const token = jwt.sign(
-                { userId: user.id, username: user.username },
+                { userId: user.id, username: user.username, role: user.role },
                 process.env.JWT_SECRET,
                 { expiresIn: '2h' }
             );
@@ -308,6 +317,8 @@ module.exports = (db) => {
                 'UPDATE users SET reset_token = ?, reset_token_expiry = ? WHERE id = ?',
                 [resetToken, resetTokenExpiry, user.id]
             );
+            await logAuditEntry(db, user.id,
+                'PASSWORD_RESET_REQUESTED', `password reset token requested for email: ${cleanEmail}`, req.ip);
 
             // 6. Build the reset link pointing to our React frontend
             const resetLink = `http://localhost:5173/reset-password?token=${resetToken}`;
@@ -373,6 +384,9 @@ module.exports = (db) => {
                 'UPDATE users SET password_hash = ?, reset_token = NULL, reset_token_expiry = NULL WHERE id = ?',
                 [newPasswordHash, user.id]
             );
+
+            // 📜 Log the successful password reset event after DB update is complete
+            await logAuditEntry(db, user.id, 'PASSWORD_RESET_SUCCESS', `Password reset successfully for user: ${user.username}`, req.ip);
 
             // 7. Respond with a success message!
             res.status(200).json({
@@ -467,6 +481,9 @@ module.exports = (db) => {
                 'UPDATE users SET two_factor_enabled = 1 WHERE id = ?',
                 req.user.userId
             );
+            // 📜 Log the 2FA enabling
+            await logAuditEntry(db, req.user.userId, '2FA_ENABLED', `2FA enabled successfully for user: ${req.user.username}`, req.ip);
+
 
             res.status(200).json({ message: 'Two-Factor Authentication enabled successfully! 🎉' });
         } catch (error) {
@@ -509,7 +526,7 @@ module.exports = (db) => {
 
             // 5. Code is valid! Generate the final JWT token
             const token = jwt.sign(
-                { userId: user.id, username: user.username },
+                { userId: user.id, username: user.username, role: user.role },
                 process.env.JWT_SECRET,
                 { expiresIn: '2h' }
             );
@@ -520,6 +537,9 @@ module.exports = (db) => {
                 token,
                 username: user.username
             });
+            // 📜 Log the successful 2FA login
+            await logAuditEntry(db, user.id, 'LOGIN_2FA_SUCCESS', `2FA login successful for user: ${user.username}`, req.ip);
+
         } catch (error) {
             console.error('2FA login error:', error);
             res.status(500).json({ error: 'Failed to verify 2FA login.' });

@@ -55,11 +55,11 @@ Banking teams look for developers who understand deployment environments and how
 ## 🎨 Phase 4: Advanced Features & UI Polish
 Making the project look premium and fully match your 80-Day PDF roadmap.
 
-- [ ] **User Roles (Admin vs. Standard User)** (Lesson 51)
+- [x] **User Roles (Admin vs. Standard User)** (Completed: Lesson 51)
   - Implement role-based access control (RBAC) to restrict admin settings.
-- [ ] **Secure Audit Trail Logs** (Lesson 52)
+- [x] **Secure Audit Trail Logs** (Lesson 52)
   - Build an audit log system to track all balance and database changes.
-- [ ] **PSD2-Compliant "Transaction Signing" (Strong Customer Authentication)** (Lesson 52b)
+- [x] **PSD2-Compliant "Transaction Signing" (Strong Customer Authentication)** (Lesson 52b)
   - Require a 6-digit Google Authenticator code verification for every transaction to comply with PSD2 banking regulations.
 - [ ] **Full-Text Search & Filtering** (Lesson 53)
   - Add search input for descriptions and categories with server-side text queries.

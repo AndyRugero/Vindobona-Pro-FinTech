@@ -48,10 +48,34 @@ const initializeDatabase = async () => {
             reset_token_expiry INTEGER,-- 🔑 Expiry time for the reset token
             two_factor_secret TEXT, -- 🔑 2FA secret key
             two_factor_enabled INTEGER NOT NULL DEFAULT 0, -- 1 =2FA enabled, 0 = disabled
-            balance REAL NOT NULL DEFAULT 1000.0 -- 🏦 Set default balance of $1000 for new users
-            
-            
+            balance REAL NOT NULL DEFAULT 1000.0, -- 🏦 Set default balance of $1000 for new users
+            role TEXT NOT NULL DEFAULT 'user' -- 🛡️ Set default role to 'user' for new accounts
         );
+
+        --audit_logs table
+        CREATE TABLE IF NOT EXISTS audit_logs(
+        id TEXT PRIMARY KEY, -- UNIQUE LOG ENTRY ID
+        user_id TEXT,
+        
+        action TEXT NOT NULL,
+        details TEXT,
+        
+        ip_address TEXT,
+        timestamp TEXT NOT NULL,
+        FOREIGN KEY(user_id) REFERENCES users(id)
+        );
+
+        -- 📊 budgets table for monthly spending caps (Lesson 53d)
+        CREATE TABLE IF NOT EXISTS budgets (
+            id TEXT PRIMARY KEY,                       -- Unique identifier for each budget setting
+            user_id TEXT,                              -- Links the budget to a specific user ID
+            category TEXT NOT NULL,                    -- The category name (e.g. 'Food', 'Travel')
+            amount REAL NOT NULL,                      -- The maximum monthly spending limit (REAL means decimal)
+            FOREIGN KEY(user_id) REFERENCES users(id), -- Connects user_id to the users table
+            UNIQUE(user_id, category)                  -- Prevents duplicate budgets for the same category
+        );
+        
+
     `);
 
     // 🏦 Safe Schema Migration: Add balance column to existing users table if it doesn't exist
@@ -60,6 +84,14 @@ const initializeDatabase = async () => {
         console.log('Database Schema Migration: Added balance column to users table! 🏦');
     } catch (error) {
         // If it already exists, SQLite will throw an error. We catch it and ignore it safely!
+    }
+    // safe Migration : add role column existing users table if it doesnt exist
+    try {
+        await db.run("ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'user'")
+        console.log("Database schema Migration: Added role column to users table!")
+    } catch (error) {
+        //if it already exist, log error and ignore it
+
     }
 
     console.log('Database connected and tables initialized successfully! 🎉');
@@ -88,6 +120,10 @@ initializeDatabase()
         // Mount Auth Router under /api (handles /api/users/register and /api/auth/login)
         const authRouter = require('./routes/auth')(db);
         app.use('/api', authRouter);
+
+        // Mount Admin Router under /api/admin
+        const adminRouter = require('./routes/admin')(db);
+        app.use('/api/admin', adminRouter);
 
         // Mount Transactions Router under /api/transactions
         const transactionsRouter = require('./routes/transactions')(db);
