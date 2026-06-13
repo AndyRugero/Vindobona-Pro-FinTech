@@ -11,7 +11,8 @@ import {
     Settings,
     HelpCircle,
     UserPlus,
-    RefreshCw
+    RefreshCw,
+    Coins
 } from 'lucide-react';
 
 // 📐 Define the TypeScript types for the props our Sidebar expects:
@@ -78,6 +79,14 @@ const Sidebar: React.FC<{
                     onClick={() => onViewChange('cards')}
                 >
                     <CreditCard size={18} className="nav-icon" /> Payment Methods
+                </div>
+
+                {/* 💱 FX Converter: Swaps to our currency conversion and wallets dashboard */}
+                <div
+                    className={`nav-item ${currentView === 'exchange' ? 'active' : ''}`}
+                    onClick={() => onViewChange('exchange')}
+                >
+                    <Coins size={18} className="nav-icon" /> FX Converter
                 </div>
 
                 {/* ⚙️ Settings link: Custom verification, 2FA setup, and configurations */}
