@@ -37,3 +37,20 @@ Here is the checklist of tasks to implement on Tuesday. We will build the fronte
 * [ ] Commit all code changes to GitHub repository.
 * [ ] Trigger Vercel production deployment build.
 * [ ] Verify HTTPS connectivity and functional testing of wallets, exchanges, card freezing, map locations, and AI chat directly on the live custom domain.
+
+---
+
+## 🔮 4. Future Dashboard & Feature Extensions (Roadmap)
+
+### 👤 Profile Picture Uploads
+* [ ] **Backend**: Add a file upload route (`POST /api/users/avatar`) storing images locally or via cloud storage, updating the `users.avatar_url` database column.
+* [ ] **Frontend**: Add an image upload picker in [SettingsView.tsx](file:///c:/Vindobona-Pro-FinTech/src/Components/SettingsView.tsx) and dynamically display the custom profile picture in [Sidebar.tsx](file:///c:/Vindobona-Pro-FinTech/src/Components/Sidebar.tsx).
+
+### 👥 Registered Member Transfers (Fake Money Transfers)
+* [ ] **Manage Members UI**: Add a tab/panel to show list of all registered users on the system (excluding current user).
+* [ ] **Simulated Transfers**: Add an interactive transfer form where you select a registered member, enter an amount, and trigger `POST /api/transactions/transfer` to securely debit your wallet and credit theirs inside an atomic SQLite transaction.
+
+### 📄 Bank Statement Document Downloads (Lesson 54)
+* [ ] **Ledger Header Buttons**: Insert two button icons ("Export CSV" & "Export PDF") inside [TransactionList.tsx](file:///c:/Vindobona-Pro-FinTech/src/Components/TransactionList.tsx) or your Ledger view header.
+* [ ] **File Streams**: Fetch `/api/transactions/export/csv` and `/api/transactions/export/pdf` with the secure token and trigger file downloads directly in the user's browser using anchor elements (`window.URL.createObjectURL(blob)`).
+

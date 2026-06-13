@@ -75,6 +75,7 @@
     font-weight: 800;
     letter-spacing: 2px;
     background: linear-gradient(to right, #fbbf24, #f59e0b);
+    background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
