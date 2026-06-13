@@ -61,19 +61,19 @@ Making the project look premium and fully match your 80-Day PDF roadmap.
   - Build an audit log system to track all balance and database changes.
 - [x] **PSD2-Compliant "Transaction Signing" (Strong Customer Authentication)** (Lesson 52b)
   - Require a 6-digit Google Authenticator code verification for every transaction to comply with PSD2 banking regulations.
-- [ ] **Full-Text Search & Filtering** (Lesson 53)
+- [x] **Full-Text Search & Filtering** (Lesson 53)
   - Add search input for descriptions and categories with server-side text queries.
-- [ ] **AI Chatbot Financial Assistant API** (Lesson 53b)
+- [x] **AI Chatbot Financial Assistant API** (Lesson 53b)
   - Integrate a chat interface to ask an AI bot questions about your account and financial metrics.
-- [ ] **Google Maps API integration (Vienna ATM / Branch Finder)** (Lesson 53c)
+- [x] **Google Maps API integration (Vienna ATM / Branch Finder)** (Lesson 53c)
   - Display interactive maps showing active banks and ATMs in Vienna.
-- [ ] **Budget Tracking & Expense Alerts** (Lesson 53d)
+- [x] **Budget Tracking & Expense Alerts** (Lesson 53d)
   - Implement dynamic category budget limits with percentage progress warnings.
-- [ ] **Financial Report Export (PDF & CSV)** (Lesson 54)
+- [x] **Financial Report Export (PDF & CSV)** (Lesson 54)
   - Add buttons to export financial records into spreadsheets and bank statements.
-- [ ] **Interactive "Freeze Card" Panel** (Lesson 54b)
+- [x] **Interactive "Freeze Card" Panel** (Lesson 54b)
   - Build a realistic 3D debit card widget with a "Freeze Card" toggle that locks out backend transaction processing.
-- [ ] **Real-time Currency Exchange & FX Converter** (Lesson 54c)
+- [x] **Real-time Currency Exchange & FX Converter** (Lesson 54c)
   - Fetch live FX exchange rates to convert funds between multiple currency wallets (EUR/USD/GBP).
 - [ ] **UI Polish & Web Design Fundamentals (Part 1)** (Lesson 55)
   - Learn color systems, spacing, card layouts, and typography to make the UI look highly premium.

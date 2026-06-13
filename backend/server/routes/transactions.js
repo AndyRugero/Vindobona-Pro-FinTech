@@ -3,6 +3,7 @@ const router = express.Router(); // 🏗️ Initialize the Express Router
 const authenticateToken = require('../middleware/authGuard'); // 🛡️ Import the auth guard middleware
 const { authenticator } = require('otplib'); // 📱 Import otplib for PSD2 transaction verification
 const { logAuditEntry } = require('../services/auditService'); // 📜 Import our secure audit logger
+const PDFDocument = require('pdfkit'); // 📑 Import PDFKit for generating PDF bank statements
 
 // 📤 We export a function that accepts the database connection 'db'
 module.exports = (db) => {
@@ -68,6 +69,12 @@ module.exports = (db) => {
     // Path: POST http://localhost:5001/api/transactions
     router.post('/', authenticateToken, async (req, res) => {
         try {
+
+            //card freeze check: Query db to see if the card is frozen
+            const user = await db.get('SELECT is_card_frozen FROM users WHERE id = ?', req.user.userId);
+            if (user && user.is_card_frozen == 1) {
+                return res.status(403).json({ error: 'Transaction declined. your card is frozen!' });
+            }
             const { receiver, amount, category } = req.body;
             const isNegativeBool = amount.includes('-');
 
@@ -99,6 +106,35 @@ module.exports = (db) => {
                 category: dbTx.category,
                 status: dbTx.status
             };
+
+            // 📊 Budget Limit Verification: Check if this expense triggers an over-budget alert
+            const budget = await db.get(
+                'SELECT amount FROM budgets WHERE user_id = ? AND category = ?',
+                [req.user.userId, dbTx.category]
+            );
+
+            if (budget && isNegativeBool) {
+                // Sum all expenses in this category (including the one we just inserted)
+                const spentRow = await db.get(
+                    `SELECT SUM(ABS(amount)) as spent 
+                     FROM transactions 
+                     WHERE user_id = ? AND category = ? AND is_negative = 1`,
+                    [req.user.userId, dbTx.category]
+                );
+
+                const totalSpent = spentRow.spent || 0;
+
+                // If total monthly expenditures exceed the limit, add a warning object
+                if (totalSpent > budget.amount) {
+                    responseTx.budgetWarning = {
+                        exceeded: true,
+                        spent: totalSpent,
+                        limit: budget.amount
+                    };
+                }
+            }
+
+
 
             res.status(201).json(responseTx);
         } catch (error) {
@@ -147,6 +183,8 @@ module.exports = (db) => {
         }
 
         try {
+
+
             // Database query to find receiver if they exist
             const receiver = await db.get(
                 'SELECT id, username FROM users WHERE LOWER(username) = ?',
@@ -158,9 +196,14 @@ module.exports = (db) => {
             }
 
             // Fetch the sender's current balance and 2FA settings
-            const sender = await db.get('SELECT balance, two_factor_enabled, two_factor_secret FROM users WHERE id = ?', senderId);
+            const sender = await db.get('SELECT balance, two_factor_enabled, two_factor_secret , is_card_frozen FROM users WHERE id = ?', senderId);
             if (!sender) {
                 return res.status(404).json({ error: 'Sender not found' });
+            }
+
+            // card freeze check : rejects the transfer if the sender's card id frozen
+            if (sender.is_card_frozen === 1) {
+                return res.status(403).json({ error: 'Transaction declined , your card is frozen' })
             }
 
             // Wallet Check: if the balance is less than the transfer amount, block transfer
@@ -266,6 +309,275 @@ module.exports = (db) => {
                 console.error('Failed to rollback transaction:', rollbackError);
             }
             return res.status(500).json({ error: 'Database verification failed' });
+        }
+    });
+    // =========================================================================
+    // 📊 GET: Export transactions as a CSV spreadsheet (Lesson 54)
+    // =========================================================================
+    router.get('/export/csv', authenticateToken, async (req, res) => {
+        try {
+            // A. Fetch all transactions belonging to the logged-in user from the database
+            const rows = await db.all(
+                'SELECT * FROM transactions WHERE user_id = ? ORDER BY date DESC',
+                [req.user.userId]
+            );
+
+            // B. Define the CSV header row
+            const csvHeaders = 'ID,Date,Receiver,Amount,Category,Type,Status\n';
+
+            // C. Build CSV rows, wrapping text fields in double quotes to prevent comma splits
+            const csvRows = rows.map(row => {
+                // Determine transaction type (Expense if is_negative is 1, else Income)
+                const typeLabel = row.is_negative === 1 ? 'Expense' : 'Income';
+
+                // Escape internal quotes in receiver and category names
+                const cleanReceiver = row.receiver ? row.receiver.replace(/"/g, '""') : '';
+                const cleanCategory = row.category ? row.category.replace(/"/g, '""') : '';
+
+                return `"${row.id}","${row.date}","${cleanReceiver}","${row.amount}","${cleanCategory}","${typeLabel}","${row.status}"`;
+            }).join('\n');
+
+            const csvContent = csvHeaders + csvRows;
+
+            // D. Set file attachment headers to force browser download
+            res.setHeader('Content-Type', 'text/csv');
+            res.setHeader('Content-Disposition', 'attachment; filename=vindobona_transactions.csv');
+
+            // E. Send the CSV payload back as a text response
+            return res.status(200).send(csvContent);
+        } catch (error) {
+            console.error('❌ CSV Export Failure:', error);
+            return res.status(500).json({ error: 'Failed to generate CSV export.' });
+        }
+
+    });
+    // =========================================================================
+    // 📑 GET: Export transactions as a PDF bank statement (Lesson 54)
+    // =========================================================================
+    router.get('/export/pdf', authenticateToken, async (req, res) => {
+        try {
+            // A. Fetch all transactions belonging to the logged-in user
+            const rows = await db.all(
+                'SELECT * FROM transactions WHERE user_id = ? ORDER BY date DESC',
+                [req.user.userId]
+            );
+
+            // B. Fetch username to personalize the bank statement
+            const userRow = await db.get('SELECT username FROM users WHERE id = ?', [req.user.userId]);
+            const username = userRow ? userRow.username : 'Customer';
+
+            // C. Configure PDF download response headers
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', `attachment; filename=vindobona_statement_${username}.pdf`);
+
+            // D. Initialize PDF document with professional A4 margins
+            const doc = new PDFDocument({ margin: 50, size: 'A4' });
+
+            // E. Stream the PDF layout directly into the Express HTTP response
+            doc.pipe(res);
+
+            // F. Premium Styling & Header Layout (Belvedere, Vienna Office)
+            doc.fillColor('#1a365d').fontSize(26).text('Vindobona Pro FinTech', { align: 'left' });
+            doc.fontSize(10).fillColor('#718096').text('Am Belvedere 1, 1100 Wien, Austria', { align: 'left' });
+            doc.text('support@vindobonafintech.com', { align: 'left' });
+            doc.moveDown(2);
+
+            // G. Statement Metadata Box
+            doc.fillColor('#2d3748').fontSize(16).text('OFFICIAL ACCOUNT STATEMENT', { underline: true });
+            doc.fontSize(10).fillColor('#4a5568');
+            doc.text(`Account Holder: ${username}`);
+            doc.text(`Statement Date: ${new Date().toLocaleDateString('de-AT')}`);
+            doc.text(`Total Transactions: ${rows.length}`);
+            doc.moveDown(2);
+
+            // Draw horizontal dividing line
+            doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor('#e2e8f0').stroke();
+            doc.moveDown(1.5);
+
+            // H. Transaction Table Headers
+            doc.fillColor('#1a365d').fontSize(11);
+            let yPosition = doc.y;
+            doc.text('Date', 50, yPosition, { width: 80 });
+            doc.text('Receiver', 130, yPosition, { width: 150 });
+            doc.text('Category', 280, yPosition, { width: 100 });
+            doc.text('Type', 380, yPosition, { width: 80 });
+            doc.text('Amount', 460, yPosition, { width: 80, align: 'right' });
+            doc.moveDown(0.5);
+
+            // Draw line under table header
+            doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor('#cbd5e0').lineWidth(1).stroke();
+            doc.moveDown(1);
+
+            // I. Write transaction entries
+            doc.fillColor('#2d3748').fontSize(10);
+            for (const row of rows) {
+                // If drawing exceeds safety margins (close to bottom), create a new page
+                if (doc.y > 700) {
+                    doc.addPage();
+                    // Redraw headers on new page
+                    doc.fillColor('#1a365d').fontSize(11);
+                    yPosition = doc.y;
+                    doc.text('Date', 50, yPosition, { width: 80 });
+                    doc.text('Receiver', 130, yPosition, { width: 150 });
+                    doc.text('Category', 280, yPosition, { width: 100 });
+                    doc.text('Type', 380, yPosition, { width: 80 });
+                    doc.text('Amount', 460, yPosition, { width: 80, align: 'right' });
+                    doc.moveDown(0.5);
+                    doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor('#cbd5e0').stroke();
+                    doc.moveDown(1);
+                    doc.fillColor('#2d3748').fontSize(10);
+                }
+
+                yPosition = doc.y;
+                const typeLabel = row.is_negative === 1 ? 'Expense' : 'Income';
+                const formattedAmount = `${row.is_negative === 1 ? '-' : '+'}${row.amount.toFixed(2)} EUR`;
+
+                // Dynamic coloring: Green for income, red for expense
+                const amountColor = row.is_negative === 1 ? '#e53e3e' : '#38a169';
+
+                doc.text(row.date, 50, yPosition, { width: 80 });
+                doc.text(row.receiver || 'N/A', 130, yPosition, { width: 150 });
+                doc.text(row.category || 'General', 280, yPosition, { width: 100 });
+                doc.text(typeLabel, 380, yPosition, { width: 80 });
+
+                doc.fillColor(amountColor);
+                doc.text(formattedAmount, 460, yPosition, { width: 80, align: 'right' });
+                doc.fillColor('#2d3748'); // Reset font color for next rows
+
+                doc.moveDown(1.5);
+            }
+
+            // J. Finalize and output stream to client
+            doc.end();
+        } catch (error) {
+            console.error('❌ PDF Export Failure:', error);
+            if (!res.headersSent) {
+                res.status(500).json({ error: 'Failed to generate PDF statement.' });
+            }
+        }
+    });
+
+    // 💱 POST: Exchange money between different currency wallets (Lesson 54c)
+    // Path: POST http://localhost:5001/api/transactions/exchange
+    // Importance: Securely moves funds between currency slots using atomic database transactions.
+    router.post('/exchange', authenticateToken, async (req, res) => {
+        const { fromCurrency, toCurrency, amount, rate } = req.body;
+        const userId = req.user.userId;
+
+        // 1. Basic validation: Make sure currencies, amount, and rate are provided
+        if (!fromCurrency || !toCurrency || !amount || !rate) {
+            return res.status(400).json({ error: 'Source currency, target currency, amount, and rate are required.' });
+        }
+
+        const exchangeAmount = parseFloat(amount);
+        const exchangeRate = parseFloat(rate);
+
+        if (isNaN(exchangeAmount) || exchangeAmount <= 0) {
+            return res.status(400).json({ error: 'Invalid exchange amount.' });
+        }
+        if (isNaN(exchangeRate) || exchangeRate <= 0) {
+            return res.status(400).json({ error: 'Invalid exchange rate.' });
+        }
+        if (fromCurrency.toUpperCase() === toCurrency.toUpperCase()) {
+            return res.status(400).json({ error: 'Cannot exchange between the same currency.' });
+        }
+
+        try {
+            // 2. Security Check: Block exchanges if the user's debit card is frozen
+            const user = await db.get('SELECT is_card_frozen FROM users WHERE id = ?', userId);
+            if (user && user.is_card_frozen === 1) {
+                return res.status(403).json({ error: 'Transaction declined. Your card is frozen!' });
+            }
+
+            // 3. Verify the user has the source wallet (e.g., 'EUR') and enough funds
+            const sourceWallet = await db.get(
+                'SELECT balance FROM wallets WHERE user_id = ? AND currency = ?',
+                [userId, fromCurrency.toUpperCase()]
+            );
+
+            if (!sourceWallet || sourceWallet.balance < exchangeAmount) {
+                return res.status(400).json({ error: `Insufficient balance in your ${fromCurrency.toUpperCase()} wallet.` });
+            }
+
+            // 4. Ensure the target wallet exists (create it with 0.0 balance if it doesn't exist yet)
+            let targetWallet = await db.get(
+                'SELECT id, balance FROM wallets WHERE user_id = ? AND currency = ?',
+                [userId, toCurrency.toUpperCase()]
+            );
+
+            if (!targetWallet) {
+                const newWalletId = Date.now().toString() + '-' + Math.random().toString();
+                await db.run(
+                    'INSERT INTO wallets (id, user_id, currency, balance) VALUES (?, ?, ?, 0.0)',
+                    [newWalletId, userId, toCurrency.toUpperCase()]
+                );
+                targetWallet = { id: newWalletId, balance: 0.0 };
+            }
+
+            const convertedAmount = parseFloat((exchangeAmount * exchangeRate).toFixed(2));
+
+            // 🏦 5. Open a secure SQL Transaction to update balances atomically
+            await db.run('BEGIN TRANSACTION');
+
+            // A. Subtract amount from the source wallet
+            await db.run(
+                'UPDATE wallets SET balance = balance - ? WHERE user_id = ? AND currency = ?',
+                [exchangeAmount, userId, fromCurrency.toUpperCase()]
+            );
+
+            // B. Add the converted amount to the target wallet
+            await db.run(
+                'UPDATE wallets SET balance = balance + ? WHERE user_id = ? AND currency = ?',
+                [convertedAmount, userId, toCurrency.toUpperCase()]
+            );
+
+            // C. Log the audit ledger entry for security tracking
+            const auditDetails = `Exchanged ${exchangeAmount} ${fromCurrency.toUpperCase()} for ${convertedAmount} ${toCurrency.toUpperCase()} at rate ${exchangeRate}`;
+            await logAuditEntry(db, userId, 'CURRENCY_EXCHANGE', auditDetails, req.ip);
+
+            // D. Insert a standard transaction record so it shows up in the user's ledger log
+            const txId = Date.now().toString() + '-fx';
+            const txDate = new Date().toLocaleDateString('en-US', { weekday: 'short' });
+            await db.run(
+                `INSERT INTO transactions (id, date, receiver, amount, category, is_negative, status, user_id) 
+                 VALUES (?, ?, ?, ?, 'Exchange', 1, 'Complete', ?)`,
+                [txId, txDate, `FX Exchange: ${fromCurrency.toUpperCase()} to ${toCurrency.toUpperCase()}`, exchangeAmount, userId]
+            );
+
+            // Commit the transaction
+            await db.run('COMMIT');
+
+            return res.status(200).json({
+                message: `Exchanged ${exchangeAmount} ${fromCurrency.toUpperCase()} to ${convertedAmount} ${toCurrency.toUpperCase()} successfully! 💱`,
+                sourceBalance: sourceWallet.balance - exchangeAmount,
+                targetBalance: targetWallet.balance + convertedAmount
+            });
+
+        } catch (error) {
+            // Rollback the transaction in case of SQL failures to prevent money from disappearing
+            await db.run('ROLLBACK');
+            console.error('❌ Currency exchange route failure:', error);
+            return res.status(500).json({ error: 'Failed to complete currency exchange.' });
+        }
+    });
+
+    // 📖 GET: Fetch all currency wallets and balances for the logged-in user
+    // Path: GET http://localhost:5001/api/transactions/wallets
+    // Importance: Allows the React frontend to display the user's balances.
+    router.get('/wallets', authenticateToken, async (req, res) => {
+        try {
+            const userId = req.user.userId;
+
+            // Retrieve all wallet records belonging to this user
+            const wallets = await db.all(
+                'SELECT currency, balance FROM wallets WHERE user_id = ? ORDER BY currency ASC',
+                [userId]
+            );
+
+            return res.status(200).json({ wallets });
+        } catch (error) {
+            console.error('❌ Failed to fetch wallets:', error);
+            return res.status(500).json({ error: 'Failed to retrieve wallet balances.' });
         }
     });
 

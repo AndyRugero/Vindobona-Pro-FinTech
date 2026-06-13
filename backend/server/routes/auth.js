@@ -545,5 +545,72 @@ module.exports = (db) => {
             res.status(500).json({ error: 'Failed to verify 2FA login.' });
         }
     });
+
+    // ❄️ POST: Toggle the card freeze status (Lesson 54b)
+    // Path: POST http://localhost:5001/api/users/freeze
+    router.post('/users/freeze', authenticationToken, async (req, res) => {
+        try {
+            const userId = req.user.userId;
+
+            // 1. Fetch user's current card status and username
+            const user = await db.get('SELECT is_card_frozen, username FROM users WHERE id = ?', userId);
+            if (!user) {
+                return res.status(404).json({ error: 'User not found.' });
+            }
+
+            // 2. Toggle the state (if 1 -> 0, if 0 -> 1)
+            const newFrozenState = user.is_card_frozen === 1 ? 0 : 1;
+
+            // 3. Update the database record
+            await db.run('UPDATE users SET is_card_frozen = ? WHERE id = ?', [newFrozenState, userId]);
+
+            // 4. Log the security audit trail entry
+            const auditAction = newFrozenState === 1 ? 'CARD_FROZEN' : 'CARD_UNFROZEN';
+            const auditDetails = newFrozenState === 1
+                ? `Debit card was frozen by user: ${user.username}`
+                : `Debit card was unfrozen by user: ${user.username}`;
+            await logAuditEntry(db, userId, auditAction, auditDetails, req.ip);
+
+            // 5. Respond with the updated status
+            return res.status(200).json({
+                message: newFrozenState === 1
+                    ? 'Your card has been frozen successfully. Outgoing payments are locked! ❄️'
+                    : 'Your card has been unfrozen successfully. Outgoing payments are unlocked! 🔥',
+                isCardFrozen: newFrozenState === 1
+            });
+
+        } catch (error) {
+            console.error('❌ Card freeze toggle failure:', error);
+            return res.status(500).json({ error: 'Failed to toggle card freeze status.' });
+        }
+    });
+    // chack the card freeze status
+    //importance: ths lets our fronted check if the user's card is rozen
+    //on page load , without changing /toggling the status
+    router.get('/users/card-status', authenticationToken, async (req, res) => {
+
+        try {
+            // retrieve the logged in users database id from the secure token
+
+            const userId = req.user.userId;
+            //fetch the is_card_frozen column for this usere
+            const user = await db.get('SELECT is_card_frozen FROM users WHERE id =?', userId);
+            //if user is not found--error
+            if (!user)
+                return res.status(404).json({ error: 'User not found' });
+            //responding back with a bool status
+            return res.status(200).json({ isCardFrozen: user.is_card_frozen === 1 });
+
+        }
+        catch (error) {
+            console.error('Card status check failed', error);
+            return res.status(500).json({ error: 'Failed to check card freeze status.' });
+        }
+
+
+    }
+
+    )
+
     return router; // 📤 Return the router back to server.js
 };

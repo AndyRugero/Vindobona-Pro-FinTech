@@ -1,0 +1,323 @@
+/* 💱 FX Converter Premium Stylesheet */
+
+.fx-container {
+    max-width: 680px;
+    margin: 40px auto;
+    background: rgba(30, 41, 59, 0.75);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 30px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+    color: #ffffff;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.fx-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.fx-header-icon {
+    background: linear-gradient(135deg, #06b6d4, #0891b2);
+    padding: 12px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3);
+}
+
+.fx-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.fx-subtitle {
+    color: #94a3b8;
+    font-size: 0.85rem;
+    margin: 3px 0 0 0;
+}
+
+/* Wallet Grid */
+.fx-balance-section {
+    background: rgba(15, 23, 42, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+}
+
+.fx-balance-title {
+    font-size: 0.9rem;
+    color: #94a3b8;
+    margin: 0 0 12px 0;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.fx-balance-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 12px;
+}
+
+.fx-balance-item {
+    background: rgba(30, 41, 59, 0.85);
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    text-align: center;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.fx-balance-item:hover {
+    transform: translateY(-2px);
+    border-color: rgba(6, 182, 212, 0.3);
+}
+
+.fx-currency-code {
+    font-size: 0.85rem;
+    color: #06b6d4;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 4px;
+    letter-spacing: 0.5px;
+}
+
+.fx-balance-amount {
+    font-size: 1.15rem;
+    font-weight: 700;
+    font-family: monospace;
+}
+
+.fx-empty-wallets {
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+/* Alert styles */
+.fx-alert-success {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    color: #34d399;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+}
+
+.fx-alert-error {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #f87171;
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+}
+
+/* Form Styling */
+.fx-form-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+.fx-input-group {
+    flex: 1;
+}
+
+.fx-form-group {
+    margin-bottom: 20px;
+}
+
+.fx-input-label {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+}
+
+.fx-select {
+    width: 100%;
+    background: #0f172a;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.fx-select:focus {
+    border-color: #06b6d4;
+}
+
+.fx-swap-arrow {
+    margin-top: 22px;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.fx-input {
+    width: 100%;
+    background: #0f172a;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 1.15rem;
+    font-weight: 600;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.fx-input:focus {
+    border-color: #06b6d4;
+    box-shadow: 0 0 10px rgba(6, 182, 212, 0.2);
+}
+
+/* Preview details */
+.fx-preview-box {
+    background: rgba(15, 23, 42, 0.5);
+    padding: 18px;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    margin-bottom: 25px;
+}
+
+.fx-preview-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.fx-preview-row:last-child {
+    margin-bottom: 0;
+    padding-top: 8px;
+    border-top: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+.fx-preview-label {
+    color: #94a3b8;
+    font-size: 0.9rem;
+}
+
+.fx-preview-value {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.fx-preview-result {
+    color: #10b981;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+/* Charts and graphics */
+.fx-chart-box {
+    background: rgba(15, 23, 42, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 25px;
+}
+
+.fx-chart-title {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    margin: 0 0 15px 0;
+    font-weight: 600;
+}
+
+.fx-chart-wrapper {
+    width: 100%;
+    height: 160px;
+}
+
+/* Button & Spin Animation */
+.fx-submit-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #06b6d4, #0891b2);
+    color: #ffffff;
+    border: none;
+    padding: 14px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: opacity 0.2s, transform 0.1s;
+    box-shadow: 0 4px 15px rgba(6, 182, 212, 0.25);
+}
+
+.fx-submit-btn:disabled {
+    background: #475569;
+    color: #94a3b8;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+.fx-submit-btn:active:not(:disabled) {
+    transform: scale(0.98);
+}
+
+.ice-spin {
+    animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Recharts & SVG Component Styles (Extracted from TSX) */
+.fx-coins {
+    stroke: #ffffff;
+}
+
+.fx-axis text {
+    fill: #64748b;
+    font-size: 10px;
+}
+
+.fx-gradient-start {
+    stop-color: #06b6d4;
+    stop-opacity: 0.3;
+}
+
+.fx-gradient-stop {
+    stop-color: #06b6d4;
+    stop-opacity: 0;
+}
+
+.fx-area {
+    stroke: #06b6d4;
+    stroke-width: 2px;
+    fill: url(#rateColor);
+    fill-opacity: 1;
+}

@@ -12,6 +12,8 @@ import CashFlowTrend from './Components/CashFlowTrend';
 import AuthScreen from './Components/AuthScreen'; // 📥 Import AuthScreen
 import { TransactionProvider } from './Context/TransactionContext'; // 📥 Import Provider
 import SettingsView from './Components/SettingsView';
+import CardWidget from './Components/CardWidget';
+import FXConverter from './Components/FXConverter';
 
 // ⏱Define timeout limit: 10 seconds (10 * 1000ms) for quick testing!
 // Once we verify it works, we will set this to 15 minutes (15 * 60 * 1000ms).
@@ -103,8 +105,12 @@ function App() {
             <CSVImportView
               onBack={() => setCurrentView('dashboard')}
             />
+          ) : currentView === 'cards' ? (
+            <CardWidget token={token} />
           ) : currentView === 'settings' ? (
             <SettingsView token={token} username={localStorage.getItem('username')} />
+          ) : currentView === 'exchange' ? (
+            <FXConverter token={token} />
           ) : (
             <>
               <DashboardHeader />

@@ -1,17 +1,16 @@
 // 📥 1. IMPORT NECESSARY MODULES
-require('dotenv').config(); // 📥 Load environment variables from the .env file!
-const express = require('express'); // 📥 Core framework for building our backend API routes
-const cors = require('cors'); // 📥 Allows our React frontend to talk to this backend
-const path = require('path'); // 📥 Builds safe file paths compatible with Windows and Mac
-const sqlite3 = require('sqlite3'); // 📥 Core SQLite3 database driver
-const { open } = require('sqlite'); // 📥 Promise wrapper to allow using async/await with SQLite
+require('dotenv').config(); // Load environment variables from the .env file!
+const express = require('express'); // Core framework for building our backend API routes
+const cors = require('cors'); // Allows our React frontend to talk to this backend
+const path = require('path'); // Builds safe file paths compatible with Windows and Mac
+const sqlite3 = require('sqlite3'); // Core SQLite3 database driver
+const { open } = require('sqlite'); // Promise wrapper to allow using async/await with SQLite
 const { rateLimit } = require('express-rate-limit');
 
-
-//  2. SERVER CONFIGURATION
-const app = express(); // 🏗️ Create an instance of the Express application
-const PORT = 5001; // 🔌 The door number (port) our server will listen on
-let db; // 🗄️ A global variable to store our active database connection once opened
+// 2. SERVER CONFIGURATION
+const app = express(); // Create an instance of the Express application
+const PORT = 5001; // The door number (port) our server will listen on
+let db; // A global variable to store our active database connection once opened
 
 // 🏗️ 3. DATABASE INITIALIZATION
 // This function runs when the server boots to connect to the database and setup tables
@@ -49,20 +48,19 @@ const initializeDatabase = async () => {
             two_factor_secret TEXT, -- 🔑 2FA secret key
             two_factor_enabled INTEGER NOT NULL DEFAULT 0, -- 1 =2FA enabled, 0 = disabled
             balance REAL NOT NULL DEFAULT 1000.0, -- 🏦 Set default balance of $1000 for new users
-            role TEXT NOT NULL DEFAULT 'user' -- 🛡️ Set default role to 'user' for new accounts
+            role TEXT NOT NULL DEFAULT 'user', -- 🛡️ Set default role to 'user' for new accounts
+            is_card_frozen INTEGER NOT NULL DEFAULT 0 -- 🛡️ 1 = card frozen, 0 = card active/unfrozen
         );
 
-        --audit_logs table
-        CREATE TABLE IF NOT EXISTS audit_logs(
-        id TEXT PRIMARY KEY, -- UNIQUE LOG ENTRY ID
-        user_id TEXT,
-        
-        action TEXT NOT NULL,
-        details TEXT,
-        
-        ip_address TEXT,
-        timestamp TEXT NOT NULL,
-        FOREIGN KEY(user_id) REFERENCES users(id)
+        -- audit_logs table
+        CREATE TABLE IF NOT EXISTS audit_logs (
+            id TEXT PRIMARY KEY, -- UNIQUE LOG ENTRY ID
+            user_id TEXT,
+            action TEXT NOT NULL,
+            details TEXT,
+            ip_address TEXT,
+            timestamp TEXT NOT NULL,
+            FOREIGN KEY(user_id) REFERENCES users(id)
         );
 
         -- 📊 budgets table for monthly spending caps (Lesson 53d)
@@ -74,8 +72,16 @@ const initializeDatabase = async () => {
             FOREIGN KEY(user_id) REFERENCES users(id), -- Connects user_id to the users table
             UNIQUE(user_id, category)                  -- Prevents duplicate budgets for the same category
         );
-        
 
+        -- 💱 Wallets table creation holding the dynamic currency world-wide (e.g. USD, EUR, etc.)
+        CREATE TABLE IF NOT EXISTS wallets (
+            id TEXT PRIMARY KEY,
+            user_id TEXT NOT NULL,
+            currency TEXT NOT NULL,
+            balance REAL NOT NULL DEFAULT 0.0,
+            FOREIGN KEY (user_id) REFERENCES users (id),
+            UNIQUE(user_id, currency)
+        );
     `);
 
     // 🏦 Safe Schema Migration: Add balance column to existing users table if it doesn't exist
@@ -85,23 +91,56 @@ const initializeDatabase = async () => {
     } catch (error) {
         // If it already exists, SQLite will throw an error. We catch it and ignore it safely!
     }
-    // safe Migration : add role column existing users table if it doesnt exist
-    try {
-        await db.run("ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'user'")
-        console.log("Database schema Migration: Added role column to users table!")
-    } catch (error) {
-        //if it already exist, log error and ignore it
 
+    // Safe Migration : add role column existing users table if it doesnt exist
+    try {
+        await db.run("ALTER TABLE users ADD COLUMN role TEXT NOT NULL DEFAULT 'user'");
+        console.log("Database schema Migration: Added role column to users table!");
+    } catch (error) {
+        // If it already exists, ignore it
     }
 
-    console.log('Database connected and tables initialized successfully! 🎉');
+    // SAFE MIGRATION : is_card_frozen
+    try {
+        await db.run("ALTER TABLE users ADD COLUMN is_card_frozen INTEGER NOT NULL DEFAULT 0");
+        console.log("Database schema Migration: Added is_card_frozen column to users table!");
+    } catch (error) {
+        // If column already exists, ignore error
+    }
+
+    // SAFE MIGRATION: Initialize primary EUR wallets for existing users
+    // Importance: Transfers existing user balances into the modular wallets system.
+    try {
+        const users = await db.all("SELECT id, balance FROM users");
+        for (const user of users) {
+            // Check if this user already has a EUR wallet setup
+            const existingWallet = await db.get(
+                "SELECT id FROM wallets WHERE user_id = ? AND currency = 'EUR'",
+                [user.id]
+            );
+            
+            // If they don't have a EUR wallet yet, create one using their existing balance
+            if (!existingWallet) {
+                await db.run(
+                    "INSERT INTO wallets (id, user_id, currency, balance) VALUES (?, ?, 'EUR', ?)",
+                    [Date.now().toString() + Math.random().toString(), user.id, user.balance]
+                );
+                console.log(`Generated primary EUR wallet for user ID: ${user.id}`);
+            }
+        }
+    } catch (error) {
+        console.error("❌ Failed to migrate user wallets:", error);
+    }
+
+
+    console.log('Database connected and tables initialized successfully!');
 };
 
 // ⚙️ 4. GLOBAL MIDDLEWARES
 app.use(cors()); // Allow frontend to talk to backend
 app.use(express.json()); // Allow reading JSON body data in POST requests
-//Global Rate Limiter
 
+// Global Rate Limiter
 const globalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 100,
@@ -110,8 +149,6 @@ const globalLimiter = rateLimit({
     legacyHeaders: false,
 });
 app.use('/api', globalLimiter);
-
-
 
 // 🚀 5. START DATABASE & BIND ROUTERS
 // Connect to the database first, then mount routes and start listening for requests
@@ -128,6 +165,18 @@ initializeDatabase()
         // Mount Transactions Router under /api/transactions
         const transactionsRouter = require('./routes/transactions')(db);
         app.use('/api/transactions', transactionsRouter);
+
+        // Mount Chat Router under /api/chat (Lesson 53b)
+        const chatRouter = require('./routes/chat')(db);
+        app.use('/api/chat', chatRouter);
+
+        // Mount Locations Router under /api/locations (Lesson 53c)
+        const locationsRouter = require('./routes/locations')(db);
+        app.use('/api/locations', locationsRouter);
+
+        // Mount Budgets Router under /api/budgets (Lesson 53d)
+        const budgetsRouter = require('./routes/budgets')(db);
+        app.use('/api/budgets', budgetsRouter);
 
         // Start listening
         app.listen(PORT, () => {
