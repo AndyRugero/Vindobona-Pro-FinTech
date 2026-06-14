@@ -46,17 +46,62 @@ Welcome to the study log for Lessons 54, 54b, and 54c. In this section, we expan
         }
         ```
 
-### 5. Multi-Currency Wallets & Live Exchange (Lesson 54c)
-*   **The Concept**: Banking apps must handle international transactions.
-*   **The Schema**: We add dedicated columns to store balances for different currencies in the `users` table:
-    *   `balance_eur` (Primary currency wallet)
-    *   `balance_usd` (US Dollar wallet)
-    *   `balance_gbp` (British Pound wallet)
-*   **Conversion Math**: When converting funds between wallets, we fetch currency exchange rates and run atomic database transactions:
-    1. Subtract `X` amount from the source wallet.
-    2. Multiply `X` by the rate.
-    3. Add the resulting converted balance to the target wallet.
-    4. Commit both operations atomically.
+### 5. Multi-Currency Wallets & Live Exchange — Global Edition (Lesson 54c)
+
+*   **The Concept**: Banking apps must handle international transactions for users worldwide — not just EUR, USD, and GBP, but also Rwandan Francs (RWF), Nepalese Rupees (NPR), Azerbaijani Manat (AZN), and 160+ more.
+
+*   **The Schema**: The backend stores currency balances in a dedicated `wallets` table:
+    ```
+    wallets table:
+    ┌────────────┬──────────┬──────────┬─────────┐
+    │ id         │ user_id  │ currency │ balance │
+    ├────────────┼──────────┼──────────┼─────────┤
+    │ 1781...    │ 42       │ EUR      │ 1000.00 │
+    │ 1782...    │ 42       │ RWF      │ 150000  │
+    └────────────┴──────────┴──────────┴─────────┘
+    ```
+    When a user exchanges from EUR → RWF, we atomically subtract from one row and add to another using `BEGIN TRANSACTION ... COMMIT`.
+
+*   **The API Source Upgrade — Frankfurter → open.er-api.com**:
+    | Feature              | Old: Frankfurter API          | New: open.er-api.com               |
+    |----------------------|-------------------------------|------------------------------------|
+    | Currencies supported | ~30 (ECB only)                | **160+** (worldwide)               |
+    | API key required     | No                            | No                                 |
+    | Historical data      | Yes (7-day)                   | Pro plan only (free = live only)   |
+    | Rwanda (RWF)         | ❌ Not supported              | ✅ Supported                       |
+    | Nepal (NPR)          | ❌ Not supported              | ✅ Supported                       |
+    | Azerbaijan (AZN)     | ❌ Not supported              | ✅ Supported                       |
+
+*   **How to Call It**:
+    ```typescript
+    // Fetch the live rate for ANY base currency (no API key needed!)
+    const res = await fetch(`https://open.er-api.com/v6/latest/${fromCurrency}`);
+    const data = await res.json();
+    const rate = data.rates[toCurrency]; // e.g. 1 EUR → 1468 RWF
+    ```
+    The URL's last segment is the ISO 4217 base currency code. It works for any of the 160+ supported currencies.
+
+*   **The CURRENCIES Dictionary Pattern**:
+    Since there is no live API to resolve a currency code like `RWF` to its symbol `FRw`, we maintain a frontend dictionary:
+    ```typescript
+    const CURRENCIES = {
+        RWF: { name: 'Rwandan Franc',   symbol: 'FRw' },
+        NPR: { name: 'Nepalese Rupee',  symbol: 'रू'  },
+        AZN: { name: 'Azerbaijani Manat', symbol: '₼' },
+        // ...120+ entries
+    };
+    const getCurrencySymbol = (code: string) => CURRENCIES[code]?.symbol || code;
+    ```
+    The `?.` (optional chaining) ensures unknown codes degrade gracefully to the code itself (e.g. `XAF` → `XAF`) rather than crashing.
+
+*   **The Simulated Trendline Chart**:
+    Since the free tier of open.er-api.com does not provide historical daily data, we generate a realistic ±0.8% fluctuation trendline anchored to the live rate using `Math.sin()` for smooth natural curves:
+    ```typescript
+    const noise = liveRate * (Math.sin(i * 1.3 + 0.7) * 0.008 + (Math.random() - 0.5) * 0.006);
+    ```
+    The last data point is always pinned to the exact live rate, so the chart ends at the truth.
+
+*   **Open Access Endpoint Discovery**: The free `open.er-api.com` endpoint is documented under **"Open Access"** in the ExchangeRate-API sidebar at `exchangerate-api.com/docs`. It is publicly cached with no registration needed.
 
 ---
 
@@ -71,6 +116,8 @@ Welcome to the study log for Lessons 54, 54b, and 54c. In this section, we expan
 *   **Goal**: Create route `POST /api/users/freeze` to toggle status, and update transaction controllers to intercept request actions.
 *   **Files modified**: `routes/auth.js`, `routes/transactions.js`, and `tests/transactions.test.js`.
 
-### Phase C: Multi-Currency FX Converter (Lesson 54c)
-*   **Goal**: Update user wallet schemas and implement currency transfer/exchange APIs.
-*   **Files modified**: `server.js` (schemas), `routes/transactions.js` (FX routing), and `tests/transactions.test.js`.
+### Phase C: Multi-Currency FX Converter — Global Edition (Lesson 54c)
+*   **Goal**: Support 160+ world currencies using `open.er-api.com`. Populate dropdown from the `CURRENCIES` dictionary. Resolve symbols dynamically using `getCurrencySymbol()`. Render simulated 7-day trendline anchored to live rate.
+*   **API Source**: `https://open.er-api.com/v6/latest/{baseCurrency}` — free, no API key.
+*   **Files modified**: `src/Components/FXConverter.tsx`, `lessons/Lesson_54_Summary.md`.
+

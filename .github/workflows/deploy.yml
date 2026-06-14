@@ -1,0 +1,42 @@
+# .github/workflows/deploy.yml
+
+# 🚀 GITHUB ACTIONS CI/CD WORKFLOW
+# This workflow automates building and pushing our Docker container to Docker Hub in the cloud.
+# It runs automatically on GitHub's free cloud servers whenever we push code changes.
+
+name: Build and Push Docker Image to Docker Hub
+
+# ⏱️ TRIGGER RULE
+# This tells GitHub to run this script ONLY when code is pushed to the 'main' branch.
+on:
+  push:
+    branches: 
+       - main
+
+# 🏗️ AUTOMATION JOBS
+jobs:
+  build-and-push:
+    # 🖥️ Operating System: Run on a clean, temporary Linux virtual machine hosted by GitHub
+    runs-on: ubuntu-latest
+
+    steps:
+      # 📥 Step 1: Copy our project files from the GitHub repository into the virtual builder server
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # 🔑 Step 2: Log in to Docker Hub using our encrypted Repository Secrets
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          # Reads the encrypted DOCKER_USERNAME and DOCKER_PASSWORD from your GitHub Settings
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      
+      # 📦 Step 3: Compile the backend folder into a Docker image and push it to Docker Hub
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v4
+        with:
+           context: ./backend # Location of our backend code and Dockerfile
+           push: true # Automatically upload the compiled image to Docker Hub
+           # Tags the image with your Docker Hub username (Rugero) and sets it as 'latest'
+           tags: rugero/vindobona-backend:latest

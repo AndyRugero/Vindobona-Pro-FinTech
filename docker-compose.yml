@@ -2,20 +2,37 @@ version: '3.8'
 
 services:
 
-  # Configuration for our Node.js backend container
+  # 🌐 Configuration for our Node.js backend container
   backend:
-
     # Tell Docker where the Dockerfile is located
     build: ./backend
-
     # Give our running container a friendly name
     container_name: vindobona-backend
-
     ports:
       - "5001:5001"
-
     volumes:
       - ./backend/server:/usr/src/app/server
     environment:
       - PORT=5001
       - NODE_ENV=development
+      - DB_TYPE=sqlite
+      - DATABASE_URL=postgresql://vindobona_user:bank_pass123@postgres:5432/vindobona_db
+    depends_on:
+      - postgres
+
+  # 🐘 Configuration for our local PostgreSQL database container
+  postgres:
+    image: postgres:15-alpine
+    container_name: vindobona-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=vindobona_user
+      - POSTGRES_PASSWORD=bank_pass123
+      - POSTGRES_DB=vindobona_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+# Persists PostgreSQL data on your hard drive so container restarts don't erase it
+volumes:
+  pgdata:

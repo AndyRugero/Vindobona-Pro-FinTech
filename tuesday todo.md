@@ -33,10 +33,23 @@ Here is the checklist of tasks to implement on Tuesday. We will build the fronte
 
 ---
 
-## 🚀 3. Production Launch on `.com` Custom Domain
+## 📊 3. Budget Management UI (Lesson 53d)
+* [ ] **Create Component**: Build `src/Components/BudgetManager.tsx`
+  * Fetch and display active budgets and their progress from `GET /api/budgets`.
+  * Create a form to set a new budget cap with fields: Category (dropdown), Limit amount, and Time period/Reason.
+  * Submit new budgets to `POST /api/budgets`.
+  * Display a progress bar for each category showing `spent` vs `limit` indicating if the user has exceeded their budget.
+* [ ] **Create Stylesheet**: Build `src/Styles/BudgetManager.css`
+  * Add clean, modern cards for each budget category with progress bar indicators (green for good, red for exceeded).
+* [ ] **Router Connection**:
+  * Import and conditional-render `<BudgetManager token={token} />` when `currentView === 'budgets'` in `src/App.tsx`, and add a sidebar link.
+
+---
+
+## 🚀 4. Production Launch on `.com` Custom Domain
 * [ ] Commit all code changes to GitHub repository.
 * [ ] Trigger Vercel production deployment build.
-* [ ] Verify HTTPS connectivity and functional testing of wallets, exchanges, card freezing, map locations, and AI chat directly on the live custom domain.
+* [ ] Verify HTTPS connectivity and functional testing of wallets, exchanges, card freezing, map locations, budgets, and AI chat directly on the live custom domain.
 
 ---
 
