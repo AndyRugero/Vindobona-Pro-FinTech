@@ -3,7 +3,7 @@ require('dotenv').config(); // Load environment variables from the .env file!
 const express = require('express'); // Core framework for building our backend API routes
 const cors = require('cors'); // Allows our React frontend to talk to this backend
 const path = require('path'); // Builds safe file paths compatible with Windows and Mac
-const db = require('../utils/db');
+const db = require('./utils/db');
 const { rateLimit } = require('express-rate-limit');
 
 // 2. SERVER CONFIGURATION
