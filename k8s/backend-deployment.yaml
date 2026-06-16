@@ -1,0 +1,69 @@
+# ☸️ KUBERNETES BACKEND DEPLOYMENT MANIFEST (Lesson 57)
+# This file defines how our application containers are run and scaled.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  # The name of our deployment resource in the Kubernetes cluster.
+  name: vindobona-backend
+  labels:
+    app: vindobona-backend
+spec:
+  # 👥 REPLICAS: Run 3 identical copies (Pods) of our server side-by-side.
+  # If one crashes, the other 2 will handle your users.
+  replicas: 3
+  
+  # 🎯 SELECTOR: Tells this deployment which pods it is responsible for managing.
+  selector:
+    matchLabels:
+      app: vindobona-backend
+      
+  # 📦 TEMPLATE: This is the blueprint for creating our 3 application containers (Pods).
+  template:
+    metadata:
+      labels:
+        # Tag each container with the label 'app: vindobona-backend'
+        app: vindobona-backend
+    spec:
+      containers:
+      - name: backend-server
+        # 🐳 DOCKER IMAGE: The image containing our code, pulled from Docker Hub.
+        image: andyrugero/vindobona-backend:latest
+        
+        # 🚪 PORT: Open port 5001 inside the container so network traffic can enter.
+        ports:
+        - containerPort: 5001
+        
+        # ⚙️ ENVIRONMENT VARIABLES: Passed to our server code on startup.
+        env:
+        - name: PORT
+          value: "5001"
+        - name: JWT_SECRET
+          # Securely pull the JWT password from the Kubernetes Secret we created in Step 2.
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: jwt-secret
+              
+        # 🏥 HEALTH MONITORING (Self-Healing)
+        
+        # 1. Liveness Probe: Checks if the application is frozen or deadlocked.
+        # If this fails, Kubernetes automatically kills the container and starts a fresh one.
+        livenessProbe:
+          httpGet:
+            path: /api/health
+            port: 5001
+          # Wait 15 seconds after booting up before performing the first check.
+          initialDelaySeconds: 15
+          # Repeat the health check every 10 seconds.
+          periodSeconds: 10
+          
+        # 2. Readiness Probe: Checks if the application is ready to accept user requests.
+        # If this fails, Kubernetes stops sending user traffic here until it succeeds.
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 5001
+          # Wait 5 seconds after booting before performing the first check.
+          initialDelaySeconds: 5
+          # Repeat the readiness check every 5 seconds.
+          periodSeconds: 5

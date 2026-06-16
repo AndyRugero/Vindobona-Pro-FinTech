@@ -148,6 +148,12 @@ app.use('/api', globalLimiter);
 // Connect to the database first, then mount routes and start listening for requests
 initializeDatabase()
     .then(() => {
+        // 🚀 HEALTH CHECK ENDPOINT (Added for Kubernetes Lesson 57)
+        // Kubernetes will periodically call this endpoint to check if our backend is up and running.
+        // If this returns HTTP 200, Kubernetes knows our server is healthy.
+        app.get('/api/health', (req, res) => { 
+            res.status(200).json({ status: 'UP', timestamp: new Date() }); 
+        });
         // Mount Auth Router under /api (handles /api/users/register and /api/auth/login)
         const authRouter = require('./routes/auth')(db);
         app.use('/api', authRouter);

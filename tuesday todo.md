@@ -46,24 +46,46 @@ Here is the checklist of tasks to implement on Tuesday. We will build the fronte
 
 ---
 
-## 🚀 4. Production Launch on `.com` Custom Domain
-* [ ] Commit all code changes to GitHub repository.
-* [ ] Trigger Vercel production deployment build.
-* [ ] Verify HTTPS connectivity and functional testing of wallets, exchanges, card freezing, map locations, budgets, and AI chat directly on the live custom domain.
+## 👥 4. Registered Member Transfers UI (Fake Money Transfers)
+* [ ] **Create Component**: Build `src/Components/MemberTransfers.tsx`
+  * Fetch active user members from `GET /api/users/members` (excluding the current user).
+  * Design user cards listing member usernames, emails, and transaction links.
+  * Build a slider modal with a money transfer form (amount input, confirmation button).
+  * On submit, send `POST /api/transactions/transfer` to transfer funds securely.
+  * Show success checkmark animations and update balances in real time.
+* [ ] **Sidebar Connection**: Add "Send Money" navigation link to [Sidebar.tsx](file:///c:/Vindobona-Pro-FinTech/src/Components/Sidebar.tsx).
+* [ ] **Router Connection**: Render `<MemberTransfers token={token} />` when `currentView === 'transfer'` in `src/App.tsx`.
 
 ---
 
-## 🔮 4. Future Dashboard & Feature Extensions (Roadmap)
+## 🛡️ 5. Admin Panel & Audit Logs UI (Role-Based Access)
+* [ ] **Create Component**: Build `src/Components/AdminPanel.tsx`
+  * Restrict access: Only render if logged-in user's role is `'admin'`.
+  * **User Directory**: Table displaying all users, roles, and balances.
+  * **Admin Controls**: Add switches/actions to freeze/unfreeze cards and promote users to admin.
+  * **Live Audit Log**: Scrolling feed fetching security/event records from `GET /api/admin/logs` showing timestamps, IP addresses, and actions.
+* [ ] **Create Stylesheet**: Build `src/Styles/AdminPanel.css` (tables, status badges, code/terminal style audit feed).
+* [ ] **Sidebar Link**: Render the `🛡️ Admin` link at the bottom of [Sidebar.tsx](file:///c:/Vindobona-Pro-FinTech/src/Components/Sidebar.tsx) visible only to admin users.
+
+---
+
+## 🚀 6. Production Launch & Public Pages on `.com` Custom Domain
+* [ ] **Build Public Info Pages**:
+  * Build **About Us** page (Vindobona Pro vision, secure local Vienna-focused banking).
+  * Build **FAQ** page (frequently asked questions about multi-currency wallets, 2FA security, card freezing, and ATM locations).
+  * Design a modern, premium footer containing landing links.
+* [ ] Commit all code changes to GitHub repository.
+* [ ] Trigger Vercel production deployment build.
+* [ ] Verify HTTPS connectivity and functional testing of wallets, exchanges, card freezing, map locations, budgets, member transfers, admin audit logs, and AI chat directly on the live custom domain.
+
+---
+
+## 🔮 7. Future Dashboard & Feature Extensions (Roadmap)
 
 ### 👤 Profile Picture Uploads
 * [ ] **Backend**: Add a file upload route (`POST /api/users/avatar`) storing images locally or via cloud storage, updating the `users.avatar_url` database column.
 * [ ] **Frontend**: Add an image upload picker in [SettingsView.tsx](file:///c:/Vindobona-Pro-FinTech/src/Components/SettingsView.tsx) and dynamically display the custom profile picture in [Sidebar.tsx](file:///c:/Vindobona-Pro-FinTech/src/Components/Sidebar.tsx).
 
-### 👥 Registered Member Transfers (Fake Money Transfers)
-* [ ] **Manage Members UI**: Add a tab/panel to show list of all registered users on the system (excluding current user).
-* [ ] **Simulated Transfers**: Add an interactive transfer form where you select a registered member, enter an amount, and trigger `POST /api/transactions/transfer` to securely debit your wallet and credit theirs inside an atomic SQLite transaction.
-
 ### 📄 Bank Statement Document Downloads (Lesson 54)
 * [ ] **Ledger Header Buttons**: Insert two button icons ("Export CSV" & "Export PDF") inside [TransactionList.tsx](file:///c:/Vindobona-Pro-FinTech/src/Components/TransactionList.tsx) or your Ledger view header.
 * [ ] **File Streams**: Fetch `/api/transactions/export/csv` and `/api/transactions/export/pdf` with the secure token and trigger file downloads directly in the user's browser using anchor elements (`window.URL.createObjectURL(blob)`).
-

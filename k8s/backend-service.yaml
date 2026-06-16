@@ -1,0 +1,22 @@
+# 🌐 KUBERNETES BACKEND SERVICE MANIFEST (Lesson 57)
+# This file acts as a stable DNS load balancer for our replicated server pods.
+apiVersion: v1
+kind: Service
+metadata:
+  # The name of our service resource (all lowercase is standard in K8s).
+  name: vindobona-backend-service
+spec:
+  # 🎯 SELECTOR: Route incoming traffic to any Pod tagged with the label 'app: vindobona-backend'.
+  selector:
+    app: vindobona-backend
+    
+  # 🔌 PORTS: Map the external cluster port to the internal container port.
+  ports:
+    - protocol: TCP
+      # The stable port exposed by this service inside the cluster (standard web port 80).
+      port: 80
+      # The target port our actual Node server is listening on inside the container (port 5001).
+      targetPort: 5001
+      
+  # 🌐 TYPE: ClusterIP makes this service accessible only from inside the cluster.
+  type: ClusterIP
