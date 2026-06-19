@@ -12,6 +12,7 @@ const crypto = require('crypto');
 const authenticationToken = require('../middleware/authGuard');
 const { authenticator } = require('otplib');
 const qrcode = require('qrcode');
+const authenticateToken = require('../middleware/authGuard');
 // 📤 We export a function that accepts the database connection 'db'
 module.exports = (db) => {
 
@@ -611,6 +612,23 @@ module.exports = (db) => {
     }
 
     )
+    router.get('/users/members', authenticateToken, async (req, res) => {
+        try {
+            const currentUserId = req.user.id;
+
+            const members = await db.all(
+                'SELECT id, username, email FROM users WHERE id !=?',
+                [currentUserId]
+            );
+            return res.status(200).json(members);
+        }
+        catch (error) {
+            console.error('Failed to fech user members list:', error);
+            return res.status(500).json({
+                error: 'Failed to retrive registered members'
+            })
+        }
+    })
 
     return router; // 📤 Return the router back to server.js
 };
