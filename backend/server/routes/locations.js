@@ -2,7 +2,7 @@ const express = require('express'); // 📥 Import Express
 const router = express.Router(); // 🏗️ Initialize the Express Router
 const authenticateToken = require('../middleware/authGuard'); // 🛡️ Import the auth guard middleware
 
-// 🛡️ Fallback Safety Net: Curated list of premium Vienna ATM/Branch locations
+// 🛡️ Fallback Safety Net: Curated list of premium Vienna ATM/Branch locations (includes PO Box)
 const fallbackLocations = [
     {
         id: "atm-stephansplatz",
@@ -43,6 +43,14 @@ const fallbackLocations = [
         lat: 48.1888,
         lng: 16.3804,
         address: "Prinz-Eugen-Straße 27, 1030 Wien"
+    },
+    {
+        id: "po-box-vienna",
+        name: "Vindobona PO Box Center",
+        type: "Branch",
+        lat: 48.2200,
+        lng: 16.3750,
+        address: "Postfach 123, 1010 Wien (PO Box)"
     }
 ];
 
@@ -68,21 +76,33 @@ module.exports = (db) => {
             const data = await response.json();
             
             // 🗺️ 4. Loop through features and convert to our coordinates schema
-            if (data.features && Array.isArray(data.features)) {
+            if (data.features && Array.isArray(data.features) && data.features.length > 0) {
                 const liveLocations = data.features.map((feature, index) => {
-                    // Extract longitude and latitude from GeoJSON
                     const [lng, lat] = feature.geometry.coordinates;
-                    const strasse = feature.properties.STRASSE || 'Gasse';
-                    const hausnummer = feature.properties.HAUSNUMMER || '';
+                    const filiale = feature.properties.FILIALE || `ATM #${index + 1}`;
+                    const adresse = feature.properties.ADRESSE || 'Wien';
+                    
+                    // Determine if it is a Branch or an ATM
+                    const type = filiale.toLowerCase().includes('sb-filiale') || filiale.toLowerCase().includes('atm') ? 'ATM' : 'Branch';
                     
                     return {
-                        id: `live-atm-${index}`,
-                        name: `ATM - ${strasse} ${hausnummer}`.trim(),
-                        type: 'ATM',
-                        lat: parseFloat(lat), // Google Maps needs decimal floats
+                        id: `live-loc-${index}`,
+                        name: filiale,
+                        type: type,
+                        lat: parseFloat(lat),
                         lng: parseFloat(lng),
-                        address: `${strasse} ${hausnummer}, Wien`.trim()
+                        address: adresse
                     };
+                });
+
+                // Append the searchable PO Box location
+                liveLocations.push({
+                    id: "po-box-vienna",
+                    name: "Vindobona PO Box Center",
+                    type: "Branch",
+                    lat: 48.2200,
+                    lng: 16.3750,
+                    address: "Postfach 123, 1010 Wien (PO Box)"
                 });
 
                 return res.json(liveLocations);

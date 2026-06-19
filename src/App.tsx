@@ -14,6 +14,9 @@ import { TransactionProvider } from './Context/TransactionContext'; // 📥 Impo
 import SettingsView from './Components/SettingsView';
 import CardWidget from './Components/CardWidget';
 import FXConverter from './Components/FXConverter';
+import Chatbot from './Components/Chatbot';
+import ATMMap from './Components/ATMMap';
+import BudgetManager from './Components/BudgetManager';
 
 // ⏱Define timeout limit: 10 seconds (10 * 1000ms) for quick testing!
 // Once we verify it works, we will set this to 15 minutes (15 * 60 * 1000ms).
@@ -111,24 +114,33 @@ function App() {
             <SettingsView token={token} username={localStorage.getItem('username')} />
           ) : currentView === 'exchange' ? (
             <FXConverter token={token} />
-          ) : (
-            <>
-              <DashboardHeader />
-              <StatsRow />
+          ) : currentView === 'budgets' ? (
+            <BudgetManager token={token} />
+          ) :
 
-              <section className="analytic-grid">
-                <CashFlowTrend />
-                <SpendingDistribution />
-              </section>
+            (
+              <>
+                <DashboardHeader />
+                <StatsRow />
 
-              <div className="dashboard-content">
-                <TransactionList />
-                <TransactionForm />
-              </div>
-            </>
-          )}
+                <section className="analytic-grid">
+                  <CashFlowTrend />
+                  <SpendingDistribution />
+                </section>
+
+                <div className="dashboard-content">
+                  <div className="dashboard-left-column">
+                    <TransactionList />
+                    <ATMMap token={token} />
+                  </div>
+                  <TransactionForm />
+
+                </div>
+              </>
+            )}
         </main>
       </div>
+      <Chatbot token={token} />
     </TransactionProvider >
   );
 }

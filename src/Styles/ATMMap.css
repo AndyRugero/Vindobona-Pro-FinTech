@@ -1,0 +1,289 @@
+/* 🗺️ MAP GRID STRUCTURE */
+.map-view-container {
+    height: calc(100vh - 100px);
+    /* Fill the screen minus the topbar height */
+    background: #050a18;
+    color: white;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+}
+
+.map-loading-screen {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    background: #0a0f1e;
+}
+
+.map-grid-layout {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    /* 350px sidebar list, remaining space for map */
+    height: 100%;
+}
+
+/* 📜 LEFT SIDEBAR PANEL */
+.map-sidebar-panel {
+    background: #0a0f1e;
+    border-right: 1px solid #1e293b;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.map-sidebar-header {
+    padding: 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.map-sidebar-header h3 {
+    margin: 0 0 6px 0;
+    color: #eab308;
+    /* Bank Gold Accent */
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.map-sidebar-header p {
+    margin: 0;
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+/* 🔍 SEARCH BAR */
+.map-search-bar {
+    margin: 16px 24px;
+    background: #0f172a;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.map-search-bar input {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 13px;
+    outline: none;
+    width: 100%;
+}
+
+.search-icon {
+    color: #64748b;
+}
+
+/* 📜 SCROLLABLE CARDS LIST */
+.map-locations-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 24px 24px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Scrollbar styling */
+.map-locations-list::-webkit-scrollbar {
+    width: 6px;
+}
+
+.map-locations-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+}
+
+/* LOCATION CARDS */
+.map-location-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.map-location-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(234, 179, 8, 0.3);
+    /* Gold outline on hover */
+    transform: translateY(-2px);
+}
+
+.map-card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.map-card-title {
+    color: #f1f5f9;
+    font-weight: 600;
+    font-size: 13.5px;
+    line-height: 1.4;
+}
+
+/* NEON CLASSIFICATION BADGES */
+.map-card-badge {
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 20px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.map-card-badge.branch {
+    background: rgba(6, 182, 212, 0.1);
+    color: #06b6d4;
+    /* Neon Cyan */
+    border: 1px solid rgba(6, 182, 212, 0.2);
+}
+
+.map-card-badge.atm {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+    /* Neon Blue */
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+.map-card-addr {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #94a3b8;
+    font-size: 11.5px;
+}
+
+.pin-icon {
+    color: #64748b;
+}
+
+.map-empty-message {
+    color: #64748b;
+    font-size: 12px;
+    text-align: center;
+    margin-top: 24px;
+}
+
+/* 🗺️ RIGHT MAP VIEWPORT CANVAS */
+.map-view-canvas {
+    height: 100%;
+    position: relative;
+    background: #050a18;
+}
+
+.map-canvas-element {
+    height: 100%;
+    width: 100%;
+    z-index: 1;
+    cursor: grab;
+}
+
+.map-canvas-element:active {
+    cursor: grabbing;
+}
+
+/* 📍 CUSTOM LEAFLET MAP MARKER PIN SYSTEM */
+.custom-map-icon-container {
+    background: transparent;
+    border: none;
+}
+
+/* Glowing Neon pin bodies */
+.map-pin {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid white;
+    transition: transform 0.2s ease;
+    cursor: pointer;
+}
+
+.map-pin:hover {
+    transform: scale(1.3);
+}
+
+.map-pin.branch {
+    background-color: #eab308;
+    box-shadow: 0 0 8px #eab308, 0 0 16px rgba(234, 179, 8, 0.6);
+}
+
+.map-pin.atm {
+    background-color: #facc15;
+    box-shadow: 0 0 8px #facc15, 0 0 16px rgba(250, 204, 21, 0.6);
+}
+
+/* 💬 DARK LEAFLET POPUP STYLING (OVERWRITING DEFAULTS) */
+.leaflet-popup-content-wrapper {
+    background: rgba(10, 15, 30, 0.95) !important;
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #f1f5f9 !important;
+    border-radius: 12px !important;
+    padding: 4px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+}
+
+.leaflet-popup-tip {
+    background: rgba(10, 15, 30, 0.95) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.map-popup-card h4 {
+    margin: 0 0 6px 0;
+    font-size: 14px;
+    color: #f1f5f9;
+    font-weight: 600;
+}
+
+.map-popup-card .popup-badge {
+    display: inline-block;
+    font-size: 9px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    background: rgba(234, 179, 8, 0.1);
+    color: #eab308;
+    border: 1px solid rgba(234, 179, 8, 0.2);
+}
+
+.map-popup-card p {
+    margin: 0;
+    font-size: 11.5px;
+    color: #94a3b8;
+    line-height: 1.4;
+}
+
+/* 🗺️ MAP GRID STRUCTURE */
+.map-view-container {
+    height: 360px;
+    /* 👈 Set a fixed height so it integrates beautifully as a card widget */
+    background: #050a18;
+    color: white;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+}
+
+.map-error-banner {
+    margin: 16px 24px;
+    padding: 10px;
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border-radius: 8px;
+    font-size: 12px;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    text-align: center;
+}

@@ -69,7 +69,13 @@ Here is the checklist of tasks to implement on Tuesday. We will build the fronte
 
 ---
 
-## 🚀 6. Production Launch & Public Pages on `.com` Custom Domain
+## 📄 6. Bank Statement Document Downloads (Lesson 54)
+* [ ] **Ledger Header Buttons**: Insert two button icons ("Export CSV" & "Export PDF") inside [TransactionList.tsx](file:///c:/Vindobona-Pro-FinTech/src/Components/TransactionList.tsx) or your Ledger view header.
+* [ ] **File Streams**: Fetch `/api/transactions/export/csv` and `/api/transactions/export/pdf` with the secure token and trigger file downloads directly in the user's browser using anchor elements (`window.URL.createObjectURL(blob)`).
+
+---
+
+## 🚀 7. Production Launch & Public Pages on `.com` Custom Domain
 * [ ] **Build Public Info Pages**:
   * Build **About Us** page (Vindobona Pro vision, secure local Vienna-focused banking).
   * Build **FAQ** page (frequently asked questions about multi-currency wallets, 2FA security, card freezing, and ATM locations).
@@ -80,12 +86,9 @@ Here is the checklist of tasks to implement on Tuesday. We will build the fronte
 
 ---
 
-## 🔮 7. Future Dashboard & Feature Extensions (Roadmap)
+## 🔮 8. Future Dashboard & Feature Extensions (Roadmap)
 
 ### 👤 Profile Picture Uploads
 * [ ] **Backend**: Add a file upload route (`POST /api/users/avatar`) storing images locally or via cloud storage, updating the `users.avatar_url` database column.
 * [ ] **Frontend**: Add an image upload picker in [SettingsView.tsx](file:///c:/Vindobona-Pro-FinTech/src/Components/SettingsView.tsx) and dynamically display the custom profile picture in [Sidebar.tsx](file:///c:/Vindobona-Pro-FinTech/src/Components/Sidebar.tsx).
 
-### 📄 Bank Statement Document Downloads (Lesson 54)
-* [ ] **Ledger Header Buttons**: Insert two button icons ("Export CSV" & "Export PDF") inside [TransactionList.tsx](file:///c:/Vindobona-Pro-FinTech/src/Components/TransactionList.tsx) or your Ledger view header.
-* [ ] **File Streams**: Fetch `/api/transactions/export/csv` and `/api/transactions/export/pdf` with the secure token and trigger file downloads directly in the user's browser using anchor elements (`window.URL.createObjectURL(blob)`).

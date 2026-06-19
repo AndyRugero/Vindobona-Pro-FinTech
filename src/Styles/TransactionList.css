@@ -1,5 +1,6 @@
 .central-ledger {
     flex: 1;
+    min-height: 450px;
     background-color: #0c1222;
     border-radius: 16px;
     padding: 24px;

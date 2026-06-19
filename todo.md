@@ -68,7 +68,7 @@ Making the project look premium and fully match your 80-Day PDF roadmap.
 - [x] **Google Maps API integration (Vienna ATM / Branch Finder)** (Lesson 53c)
   - Display interactive maps showing active banks and ATMs in Vienna.
 - [x] **Budget Tracking & Expense Alerts** (Lesson 53d)
-  - Implement dynamic category budget limits with percentage progress warnings.
+  - Implement dynamic category budget limits with percentage progress warnings
 - [x] **Financial Report Export (PDF & CSV)** (Lesson 54)
   - Add buttons to export financial records into spreadsheets and bank statements.
 - [x] **Interactive "Freeze Card" Panel** (Lesson 54b)

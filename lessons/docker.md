@@ -14,8 +14,33 @@ Docker Desktop is a desktop application installed on your host system to monitor
     *   *Function:* Clicking a container displays stdout/stderr console prints. Essential for reading server boot errors and database query logs in real-time.
 *   **Terminal Tab:**
     *   *Function:* Opens an interactive terminal session inside the container's isolated Linux sandbox. Allows you to run directory listings (`ls`) and inspect database files (`database.db`) inside the virtual system.
-*   **Images Tab:**
+*   **Images Tab:*
     *   *Function:* Lists locally downloaded or compiled Docker Images. Shows version tags, compilation dates, and file size on your hard drive.
+
+---
+
+## 🏗️ 1.5. Container Isolation Mechanics & Image Settings
+
+### A. Deep Level Container Isolation
+Docker achieves isolation by leveraging native Linux Kernel features:
+1.  **Namespaces (Isolation Boundary)**: Isolates what the container can *see*.
+    *   `pid` namespace: The container only sees its own processes (e.g. Node is PID 1), hiding host processes.
+    *   `net` namespace: Gives the container its own virtual IP address and network stack, separating its network from your laptop.
+    *   `mnt` namespace: Isolates the file system. The container cannot access your host drive unless explicitly mapped via a Volume.
+2.  **Control Groups / cgroups (Resource Limiting)**: Limits how much the container can *use*.
+    *   cgroups prevent a single leaking container from eating 100% of your laptop's RAM or CPU, which could crash the host system.
+3.  **Read-Only Filesystems**: In banking, a common security hardening step is mounting the container's file system as read-only. This prevents hackers from downloading malicious scripts (e.g. into `/tmp`) if the app is compromised.
+
+### B. Image Settings: Optimizing Size for Cloud Deployments
+By default, official Docker images can be massive (e.g., the default `node:20` image is over 1GB because it contains full Debian operating system libraries and Python build compilers).
+In production, we use **lightweight base images**:
+
+*   **Slim Version (`node:20-slim`)**: Contains only the bare minimum package libraries to run Node.js. Wipes out compilers. Cuts size down to ~150MB.
+*   **Alpine Version (`node:20-alpine`)**: Uses **Alpine Linux**, a security-hardened Linux distribution that is only 5MB in size. Cuts total Node image size down to **under 80MB**.
+
+#### 💡 Why Small Images Matter in Banking:
+1.  **Minimized Attack Surface**: Fewer packages mean fewer security vulnerabilities (CVEs) for hackers to exploit.
+2.  **Faster Deployments**: An 80MB image transfers across network pipes and boots up on Azure/AWS in seconds, whereas a 1GB image takes minutes.
 
 ---
 
@@ -38,6 +63,36 @@ Open your terminal (PowerShell, CMD, or Bash) in the project root directory and 
     *   *What it does:* Prints the history of console outputs since the container booted.
 *   **`docker exec -it <container_name> sh`** (e.g., `docker exec -it vindobona-backend sh`)
     *   *What it does:* Connects your terminal directly into the container's shell (`sh`). You can type `exit` to disconnect.
+
+---
+
+## 🚢 2.5. Graphical Dashboard Alternative: Portainer Guide
+If you do not like command line commands but want something more advanced than Docker Desktop, developers use **Portainer**. It is an open-source visual manager tool that runs *inside* a container itself.
+
+### A. How to Install Portainer
+To spin up a local Portainer instance on your machine, run these two commands in your terminal:
+```bash
+# 1. Create a persistent volume so Portainer settings are saved
+docker volume create portainer_data
+
+# 2. Run the Portainer container mapping ports 9000 (HTTP) and 9443 (HTTPS)
+# It mounts your local docker.sock so Portainer can command the host's Docker engine.
+docker run -d -p 9000:9000 -p 9443:9443 --name portainer \
+  --restart=always \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v portainer_data:/data \
+  portainer/portainer-ce:latest
+```
+
+### B. How to Use Portainer (Visual Interface Workflow)
+1.  **Access the Dashboard**: Open your web browser and go to `http://localhost:9000`.
+2.  **Initial Setup**: Set up your admin account password, then select **"Get Started"** to connect to your local Docker environment.
+3.  **Explore the Navigation Panel**:
+    *   **Dashboard**: Shows a high-level summary of your images, volumes, networks, and containers.
+    *   **Containers**: Lists all containers. You can select multiple containers and click **Start**, **Stop**, or **Restart** with a single click.
+    *   **Stats**: Displays real-time charts showing RAM usage, CPU percentage, and network bandwidth of a running container.
+    *   **Console**: Click the `>_` Console icon next to any container to spawn a web-terminal shell inside your browser tab without typing `docker exec`.
+    *   **App Templates**: Spawns popular containers (like Nginx, MySQL, or Redis) from pre-configured cards instantly.
 
 ---
 
@@ -89,3 +144,5 @@ Here is what tech leads in banks will ask you to test your container knowledge:
     *   **Answer:** *"Containers run in isolated sandboxes with their own virtual network interfaces. Port mapping connects a port on the host machine (our laptop) to a port inside the container so external HTTP clients can route requests into the Express server."*
 *   **Question:** *"How do you persist SQLite database changes in a container?"*
     *   **Answer:** *"Since container storage is ephemeral (erased when the container is deleted), I configure a Docker Volume inside docker-compose.yml. This maps a local directory on the host hard drive directly to the database file directory inside the container."*
+*   **Question:** *"How does Docker isolate data and filesystem changes from the host system?"*
+    *   **Answer:** *"Docker uses namespaces to isolate the mounting boundaries (mnt namespace). Changes made inside the container filesystem are written to a copy-on-write scratch layer inside the container sandbox. These changes do not affect the host files unless a volume has been mounted, keeping files isolated."*

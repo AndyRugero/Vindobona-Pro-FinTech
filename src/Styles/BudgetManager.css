@@ -1,0 +1,319 @@
+/* 📊 BUDGET MANAGER MAIN LAYOUT */
+.budget-manager-container {
+    padding: 24px;
+    background: #050a18;
+    min-height: calc(100vh - 100px);
+    color: white;
+    font-family: 'Inter', sans-serif;
+}
+
+.budget-header {
+    margin-bottom: 32px;
+}
+
+.budget-header h2 {
+    margin: 0 0 8px 0;
+    font-size: 26px;
+    font-weight: 700;
+    color: #f8fafc;
+}
+
+.budget-header p {
+    margin: 0;
+    color: #94a3b8;
+    font-size: 14px;
+}
+
+/* 📐 RESPONSIVE SIDE-BY-SIDE GRID */
+.budget-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 32px;
+    align-items: start;
+}
+
+@media (max-width: 968px) {
+    .budget-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 💳 BUDGET PROGRESS CARDS PANE */
+.budgets-list-pane {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.budgets-list-pane h3,
+.budget-form-pane h3 {
+    margin: 0 0 16px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #eab308;
+    /* Bank Gold Accent */
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* EMPTY STATE CARD */
+.empty-budgets-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 48px;
+    text-align: center;
+    color: #64748b;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.empty-icon {
+    color: #334155;
+    margin-bottom: 8px;
+}
+
+.empty-budgets-card p {
+    margin: 0;
+    font-size: 16px;
+    color: #94a3b8;
+    font-weight: 600;
+}
+
+.empty-budgets-card span {
+    font-size: 13px;
+    color: #64748b;
+}
+
+/* BUDGET CARD ITEM */
+.budget-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 14px;
+    padding: 20px;
+    transition: all 0.2s ease-in-out;
+}
+
+.budget-card:hover {
+    border-color: rgba(234, 179, 8, 0.2);
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.budget-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.budget-card-category {
+    font-size: 16px;
+    font-weight: 600;
+    color: #f1f5f9;
+}
+
+/* NEON BADGES */
+.budget-status-badge {
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.badge-good {
+    background: rgba(6, 182, 212, 0.1);
+    color: #06b6d4;
+    border: 1px solid rgba(6, 182, 212, 0.2);
+}
+
+.badge-warning {
+    background: rgba(234, 179, 8, 0.1);
+    color: #eab308;
+    border: 1px solid rgba(234, 179, 8, 0.2);
+}
+
+.badge-exceeded {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.1);
+}
+
+.budget-limit-details {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13.5px;
+    color: #94a3b8;
+    margin-bottom: 8px;
+}
+
+.budget-limit-details strong {
+    color: #f1f5f9;
+}
+
+/* PROGRESS BAR COMPONENT */
+.budget-progress-track {
+    background: #0f172a;
+    height: 8px;
+    width: 100%;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+.budget-progress-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease-out;
+}
+
+.progress-normal {
+    background: linear-gradient(90deg, #06b6d4, #0891b2);
+    box-shadow: 0 0 8px rgba(6, 182, 212, 0.4);
+}
+
+.progress-warning {
+    background: linear-gradient(90deg, #fbbf24, #d97706);
+    box-shadow: 0 0 8px rgba(234, 179, 8, 0.4);
+}
+
+.progress-exceeded {
+    background: linear-gradient(90deg, #f87171, #dc2626);
+    box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+}
+
+.budget-card-footer {
+    font-size: 12.5px;
+}
+
+.budget-alert-text.green {
+    color: #10b981;
+}
+
+.budget-alert-text.red {
+    color: #f87171;
+    font-weight: 500;
+}
+
+/* 📝 BUDGET FORM CONFIG PANEL */
+.budget-form-pane {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 24px;
+}
+
+.budget-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.budget-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.budget-form-group label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+}
+
+.budget-select-input,
+.budget-text-input {
+    background: #0f172a;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.2s ease;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.budget-select-input:focus,
+.budget-text-input:focus {
+    border-color: #eab308;
+    box-shadow: 0 0 8px rgba(234, 179, 8, 0.25);
+}
+
+.budget-select-input option {
+    background: #0f172a;
+    color: white;
+}
+
+/* STATUS CHANNELS BANNERS */
+.budget-status-banner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.budget-status-banner.error {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.budget-status-banner.success {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+/* SAVE BUTTON */
+.budget-submit-btn {
+    background: #eab308;
+    color: #0f172a;
+    border: none;
+    border-radius: 8px;
+    padding: 14px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.budget-submit-btn:hover:not(:disabled) {
+    background: #facc15;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(234, 179, 8, 0.3);
+}
+
+.budget-submit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* FADE-IN MICRO ANIMATION */
+.animate-fade-in {
+    animation: fadeIn 0.25s ease-out forwards;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
