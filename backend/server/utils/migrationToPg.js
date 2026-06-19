@@ -2,7 +2,7 @@
 
 const path = require('path');
 // Load environment variables from backend/.env relative to this script
-require('dotenv').config({ path: path.join(__dirname, '..', '..', '.env') });
+require('dotenv').config({ path: path.join(__dirname, '..', '..', '.env'), override: true });
 
 const sqlite3 = require('sqlite3');
 const { open } = require('sqlite');
