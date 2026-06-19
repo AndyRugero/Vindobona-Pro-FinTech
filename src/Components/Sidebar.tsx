@@ -69,6 +69,15 @@ const Sidebar: React.FC<{
                     <RefreshCw size={18} className="nav-icon" /> Import CSV
                 </div>
 
+                {/* 🔄 Transfers link: Swaps to Member Transfers dashboard */}
+                <div
+                    className={`nav-item ${currentView === 'transfer' ? 'active' : ''}`}
+                    onClick={() => onViewChange('transfer')}
+                >
+                    <ArrowRightLeft size={18} className="nav-icon" /> Member Transfer
+                </div>
+
+
                 {/* 🔄 Transfers link (Static Placeholder) */}
                 <div className="nav-item">
                     <ArrowRightLeft size={18} className="nav-icon" /> Transfers
