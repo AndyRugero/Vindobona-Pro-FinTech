@@ -17,6 +17,12 @@ const authenticateToken = require('../middleware/authGuard');
 module.exports = (db) => {
 
     // 🛡️ 1. CONFIGURE PASSPORT GOOGLE STRATEGY
+    console.log("--- Google OAuth Env Diagnostics ---");
+    console.log("GOOGLE_CLIENT_ID:", process.env.GOOGLE_CLIENT_ID ? "FOUND" : "MISSING");
+    console.log("GOOGLE_CLIENT_SECRET:", process.env.GOOGLE_CLIENT_SECRET ? "FOUND" : "MISSING");
+    console.log("GOOGLE_CALLBACK_URL:", process.env.GOOGLE_CALLBACK_URL || "MISSING (using default localhost)");
+    console.log("-------------------------------------");
+
     passport.use(new GoogleStrategy({
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
