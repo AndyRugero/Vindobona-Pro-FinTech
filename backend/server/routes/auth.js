@@ -20,7 +20,7 @@ module.exports = (db) => {
     passport.use(new GoogleStrategy({
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: "http://localhost:5001/api/auth/google/callback" // The callback door
+        callbackURL: process.env.GOOGLE_CALLBACK_URL || "http://localhost:5001/api/auth/google/callback" // The callback door
     },
         async (accessToken, refreshToken, profile, done) => {
             try {
@@ -62,7 +62,8 @@ module.exports = (db) => {
             );
 
             // Redirect the user back to the React app and pass the token in the URL!
-            res.redirect(`http://localhost:5173?token=${token}&username=${req.user.username}`);
+            const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+            res.redirect(`${frontendUrl}?token=${token}&username=${req.user.username}`);
         }
     );
     // Limit Login attempts to 5 every 15 minutes
