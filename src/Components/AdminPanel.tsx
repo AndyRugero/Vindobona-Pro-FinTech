@@ -1,0 +1,263 @@
+import { useState, useEffect } from 'react';
+import { Shield, ShieldAlert, UserCheck, Lock, Unlock, Terminal, RefreshCw } from 'lucide-react';
+import '../Styles/AdminPanel.css';
+
+// Base API endpoint URL for Azure hosted service
+const API_BASE_URL = 'https://vindobona-api-andy-ffapb3end8fwffdm.westeurope-01.azurewebsites.net';
+
+// 📋 Type definition for User record returned from the backend database
+interface User {
+    id: string;
+    email: string;
+    username: string;
+    role: string;
+    balance: number;
+    is_card_frozen: number; // 0 = active, 1 = frozen
+}
+
+// 📋 Type definition for Audit log security entries
+interface AuditLog {
+    id: string;
+    user_id: string;
+    username?: string;
+    action: string;
+    details: string;
+    timestamp: string;
+    ip_address: string;
+}
+
+// 📋 Expected props containing the JWT session authorization token
+interface AdminPanelProps {
+    token: string;
+}
+
+export default function AdminPanel({ token }: AdminPanelProps) {
+    const [users, setUsers] = useState<User[]>([]);
+    const [logs, setLogs] = useState<AuditLog[]>([]);
+    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string>('');
+    const [successMessage, setSuccessMessage] = useState<string>('');
+
+    // 🔄 Fetch user directory and live security logs from the backend API
+    const fetchAdminData = async () => {
+        setIsLoading(true);
+        setError('');
+        try {
+            // A. Retrieve registered user directory list
+            const usersRes = await fetch(`${API_BASE_URL}/api/admin/users`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (!usersRes.ok) throw new Error('Failed to retrieve user directory.');
+            const usersData = await usersRes.json();
+
+            // B. Retrieve security audit log events
+            const logsRes = await fetch(`${API_BASE_URL}/api/admin/audit-logs`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (!logsRes.ok) throw new Error('Failed to retrieve audit log records.');
+            const logsData = await logsRes.json();
+
+            // C. Update state variables with loaded database rows
+            setUsers(usersData);
+            setLogs(logsData);
+        } catch (err: any) {
+            setError(err.message || 'Server connection failed.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    // Trigger data load automatically when the component mounts or the token changes
+    useEffect(() => {
+        fetchAdminData();
+    }, [token]);
+
+    // 🔒 Toggle the card freeze/unfreeze state for a user
+    const handleToggleFreeze = async (userId: string) => {
+        setError('');
+        setSuccessMessage('');
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/admin/users/${userId}/freeze`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to update card status');
+            
+            setSuccessMessage(data.message || 'Card status updated');
+            // Refresh directory grid to display updated card status
+            fetchAdminData();
+        } catch (err: any) {
+            setError(err.message || 'Failed to update card status');
+        }
+    };
+
+    // 🛡️ Promote a registered user to the 'admin' role
+    const handlePromoteUser = async (userId: string) => {
+        setError('');
+        setSuccessMessage('');
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/admin/users/${userId}/role`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({ role: 'admin' })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to promote user');
+            
+            setSuccessMessage(data.message || 'User promoted successfully');
+            // Refresh directory grid to show user's new admin status
+            fetchAdminData();
+        } catch (err: any) {
+            setError(err.message || 'Failed to promote user');
+        }
+    };
+
+    // 🖥️ UI layout structure
+    return (
+        <div className="admin-container">
+            {/* Header Block containing panel title and manual refresh trigger */}
+            <header className="admin-header">
+                <div className="header-title">
+                    <Shield className="neon-shield" size={28} />
+                    <h1>Vindobona Admin Dashboard</h1>
+                </div>
+                <button 
+                    onClick={fetchAdminData} 
+                    className="refresh-btn" 
+                    disabled={isLoading}
+                    aria-label="Refresh directory details"
+                >
+                    <RefreshCw size={16} />
+                    {isLoading ? 'Refreshing...' : 'Refresh Directory'}
+                </button>
+            </header>
+
+            {/* Error and Success status banners */}
+            {error && (
+                <div className="feedback-banner error-banner">
+                    <ShieldAlert size={16} />
+                    {error}
+                </div>
+            )}
+            {successMessage && (
+                <div className="feedback-banner success-banner">
+                    {successMessage}
+                </div>
+            )}
+
+            {/* Grid display dividing user records from security audit terminal */}
+            <div className="admin-grid">
+                
+                {/* Panel 1: User Directory List & Actions */}
+                <div className="admin-panel">
+                    <h2>User Directory</h2>
+                    {isLoading && users.length === 0 ? (
+                        <div className="empty-logs">
+                            Retrieving user list...
+                        </div>
+                    ) : (
+                        <div className="table-responsive">
+                            <table className="user-table">
+                                <thead>
+                                    <tr>
+                                        <th>Username</th>
+                                        <th>Email</th>
+                                        <th>Role</th>
+                                        <th>Card Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {users.map((user) => (
+                                        <tr key={user.id}>
+                                            <td className="username-cell">{user.username}</td>
+                                            <td>{user.email}</td>
+                                            <td>
+                                                <span className={`role-badge ${user.role.toLowerCase()}`}>
+                                                    {user.role}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <span className={`card-badge ${user.is_card_frozen === 1 ? 'frozen' : 'active'}`}>
+                                                    {user.is_card_frozen === 1 ? 'Frozen' : 'Active'}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div className="action-buttons">
+                                                    {/* Freeze/Unfreeze Button toggler */}
+                                                    {user.is_card_frozen === 1 ? (
+                                                        <button
+                                                            onClick={() => handleToggleFreeze(user.id)}
+                                                            className="action-btn unfreeze-btn"
+                                                            title="Unlock user card status"
+                                                        >
+                                                            <Unlock size={14} />
+                                                            Unfreeze Card
+                                                        </button>
+                                                    ) : (
+                                                        <button
+                                                            onClick={() => handleToggleFreeze(user.id)}
+                                                            className="action-btn freeze-btn"
+                                                            title="Lock user card status"
+                                                        >
+                                                            <Lock size={14} />
+                                                            Freeze Card
+                                                        </button>
+                                                    )}
+
+                                                    {/* Promotion button: only shows if the target is not already an admin */}
+                                                    {user.role !== 'admin' && (
+                                                        <button
+                                                            onClick={() => handlePromoteUser(user.id)}
+                                                            className="action-btn promote-btn"
+                                                            title="Promote user to administrator role"
+                                                        >
+                                                            <UserCheck size={14} />
+                                                            Promote
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </div>
+
+                {/* Panel 2: Live Security/Audit Logs */}
+                <div className="admin-panel">
+                    <div className="panel-subheader">
+                        <Terminal className="terminal-icon" size={20} />
+                        <h2>Live Security Audit Logs</h2>
+                    </div>
+                    <div className="audit-feed">
+                        {logs.length === 0 ? (
+                            <div className="empty-logs">No security events found in logs database.</div>
+                        ) : (
+                            logs.map((log) => (
+                                <div key={log.id} className="audit-entry">
+                                    <span className="log-timestamp">
+                                        [{new Date(log.timestamp).toLocaleString()}]
+                                    </span>{' '}
+                                    <span className="log-ip">[IP: {log.ip_address}]</span>{' '}
+                                    <span className="log-action">{log.action}</span>
+                                    <p className="log-details">{log.details}</p>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    );
+}

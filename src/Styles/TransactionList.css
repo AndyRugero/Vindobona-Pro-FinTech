@@ -95,3 +95,46 @@
     color: #ef4444 !important; /* Premium vibrant ruby red for Expenses */
     font-weight: 600;
 }
+
+/* --- EXPORT ACTION BUTTONS (LESSON 54) --- */
+.ledger-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.ledger-header .ledger-title {
+    margin-bottom: 0;
+}
+
+.export-btn-group {
+    display: flex;
+    gap: 10px;
+}
+
+.export-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #cbd5e1;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.export-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+}
+
+.export-btn svg {
+    color: #38bdf8; /* Cyan color accent for download icons */
+}
+

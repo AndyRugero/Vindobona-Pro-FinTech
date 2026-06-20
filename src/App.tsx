@@ -18,6 +18,7 @@ import Chatbot from './Components/Chatbot';
 import ATMMap from './Components/ATMMap';
 import BudgetManager from './Components/BudgetManager';
 import MemberTransfers from './Components/MemberTransfers';
+import AdminPanel from './Components/AdminPanel';
 
 // ⏱Define timeout limit: 10 seconds (10 * 1000ms) for quick testing!
 // Once we verify it works, we will set this to 15 minutes (15 * 60 * 1000ms).
@@ -100,7 +101,7 @@ function App() {
   return (
     <TransactionProvider>
       <div className="app-shell">
-        <Sidebar currentView={currentView} onViewChange={setCurrentView} />
+        <Sidebar currentView={currentView} onViewChange={setCurrentView} token={token} />
 
         <main className="main-content">
           <Topbar onLogout={handleLogout} />
@@ -123,6 +124,8 @@ function App() {
                 <FXConverter token={token} />
               ) : currentView === 'budgets' ? (
                 <BudgetManager token={token} />
+              ) : currentView === 'admin' ? (
+                <AdminPanel token={token} />
               ) :
 
                 (

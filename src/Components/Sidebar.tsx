@@ -13,16 +13,36 @@ import {
     UserPlus,
     RefreshCw,
     Coins,
-    PiggyBank
+    PiggyBank,
+    Shield
 } from 'lucide-react';
 
 // 📐 Define the TypeScript types for the props our Sidebar expects:
 // - currentView: The active view name string (e.g. 'dashboard', 'settings', 'cards')
 // - onViewChange: A callback function to update the view state in App.tsx
+// - token: The JWT authorization token to identify user roles
 const Sidebar: React.FC<{
     currentView: string;
     onViewChange: (view: string) => void;
-}> = ({ currentView, onViewChange }) => {
+    token: string | null;
+}> = ({ currentView, onViewChange, token }) => {
+    // Decode user role from JWT token payload to conditionally show administrator options
+    //user role
+    const getUserRole = (): string => {
+        if (!token) return 'user';
+
+        try {
+            const payload = token.split('.')[1];
+            const decoded = JSON.parse(atob(payload));
+            return decoded.role || 'user';
+        }
+        catch (e) {
+            return 'user';
+        }
+
+    };
+    const role = getUserRole();
+
     return (
         <aside className="sidebar">
             {/* 🏷️ 1. The Logo / Brand Header */}
@@ -118,6 +138,16 @@ const Sidebar: React.FC<{
                 >
                     <Settings size={18} className="nav-icon" /> Settings
                 </div>
+
+                {/* 🛡️ Admin Link: Visible only if the user has an 'admin' role in their JWT token */}
+                {role === 'admin' && (
+                    <div
+                        className={`nav-item ${currentView === 'admin' ? 'active' : ''}`}
+                        onClick={() => onViewChange('admin')}
+                    >
+                        <Shield size={18} className="nav-icon" /> Admin Panel
+                    </div>
+                )}
 
                 {/* ❓ Help Center (Static Placeholder) */}
                 <div className="nav-item">
