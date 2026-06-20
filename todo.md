@@ -93,3 +93,5 @@ Bonus enterprise tools that will make your CV stand out to major Austrian banks.
   - Deploy containers to Azure App Services, set up Azure Database for PostgreSQL, and manage cloud assets.
 - [ ] **[Deferred] Developer Documentation & User Guides** (Lesson 50b)
   - Write clean markdown API documentation and structural user guides for the financial portal.
+- [x] Configure Docker Hub secrets in GitHub Actions for automated deployment.
+
