@@ -26,15 +26,15 @@ jobs:
         uses: docker/login-action@v2
         with:
           registry: index.docker.io/
-          username: ${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME_528A6144911B45239B57C51C2F795FDB }}
-          password: ${{ secrets.AZUREAPPSERVICE_CONTAINERPASSWORD_D9FA25CBB2F7463093DAEB1218B841A8 }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Build and push container image to registry
         uses: docker/build-push-action@v3
         with:
           context: ./backend
           push: true
-          tags: index.docker.io/${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME_528A6144911B45239B57C51C2F795FDB }}/vindobona-backend:${{ github.sha }}
+          tags: index.docker.io/${{ secrets.DOCKER_USERNAME }}/vindobona-backend:${{ github.sha }}
           file: ./backend/Dockerfile
   deploy:
     runs-on: ubuntu-latest
@@ -59,5 +59,5 @@ jobs:
         with:
           app-name: 'vindobona-api-andy'
           slot-name: 'Production'
-          images: 'index.docker.io/${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME_528A6144911B45239B57C51C2F795FDB }}/vindobona-backend:${{ github.sha }}'
+          images: 'index.docker.io/${{ secrets.DOCKER_USERNAME }}/vindobona-backend:${{ github.sha }}'
           
