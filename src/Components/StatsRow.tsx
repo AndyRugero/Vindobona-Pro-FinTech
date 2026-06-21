@@ -23,7 +23,7 @@ const StatsRow = () => {
     <section className="stats-row">
       <StatCard
         label="Monthly Income"
-        value={`$${income.toLocaleString()}`}
+        value={`€${income.toLocaleString()}`}
         icon={<TrendingUp size={20} />}
         type="savings"
         chartData={getMiniTrend('income')}
@@ -31,7 +31,7 @@ const StatsRow = () => {
 
       <StatCard
         label="Monthly Expenses"
-        value={`$${Math.abs(expenses).toLocaleString()}`}
+        value={`€${Math.abs(expenses).toLocaleString()}`}
         icon={<ArrowDownCircle size={20} />}
         type="expenses"
         chartData={getMiniTrend('expenses')}
@@ -39,7 +39,7 @@ const StatsRow = () => {
 
       <StatCard
         label="Net Savings"
-        value={`$${(income - Math.abs(expenses)).toLocaleString()}`}
+        value={`€${(income - Math.abs(expenses)).toLocaleString()}`}
         icon={<Wallet size={20} />}
         type="income"
         chartData={getMiniTrend('income')}

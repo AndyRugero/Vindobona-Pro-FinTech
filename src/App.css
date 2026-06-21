@@ -12,12 +12,21 @@ body {
     padding: 0;
     font-family: 'Inter', sans-serif;
     background-color: var(--bg-dark);
+
+
 }
 
 .app-shell {
     display: flex;
     min-height: 100vh;
-    background-color: var(--bg-dark);
+
+    background-color: transparent;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-image: linear-gradient(rgba(5, 10, 24, 0.65),
+            rgba(5, 10, 24, 0.65)),
+        url('/HoneyKomb.jpg');
 }
 
 .main-content {
@@ -99,4 +108,24 @@ body.light-mode {
     /* Medium slate secondary text */
     --accent: #d97706;
     /* Darker gold accent for high contrast readability */
+}
+
+
+.app-shell.view-exchange {
+    background-image:
+        linear-gradient(rgba(5, 10, 24, 0.75), rgba(5, 10, 24, 0.8)),
+        url('/exchange.jpg');
+}
+
+/* ── LIGHT MODE: frosted white-mirror overlay for ALL views ── */
+body.light-mode .app-shell {
+    background-image:
+        linear-gradient(rgba(248, 250, 252, 0.88), rgba(248, 250, 252, 0.88)),
+        url('/HoneyKomb.jpg');
+}
+
+body.light-mode .app-shell.view-exchange {
+    background-image:
+        linear-gradient(rgba(248, 250, 252, 0.88), rgba(248, 250, 252, 0.88)),
+        url('/exchange.jpg');
 }

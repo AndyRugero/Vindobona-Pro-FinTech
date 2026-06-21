@@ -212,7 +212,13 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    background: radial-gradient(circle at top right, #101c38 0%, #050a18 70%);
+    background-color: #050a18;
+    background-image: 
+        radial-gradient(circle at center, rgba(5, 10, 24, 0.4) 0%, rgba(5, 10, 24, 0.85) 100%),
+        url('/honeycomb.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
 /* ── TOP NAVIGATION BAR ── */

@@ -4,14 +4,16 @@
     align-items: center;
 }
 
-.dashboard-header__title h2 {
-    color: #eab308;
+.header-info h1 {
+    color: var(--text-primary);
     margin: 0;
 }
 
-.dashboard-header__title p {
-    color: #94a3b8;
+.header-info p {
+    /* Uses the secondary text variable (grey in dark mode, dark grey in light mode) */
+    color: var(--text-secondary);
     font-size: 14px;
+    margin: 4px 0 0 0;
 }
 
 .balance-card {

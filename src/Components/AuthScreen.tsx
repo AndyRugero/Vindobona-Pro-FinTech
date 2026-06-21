@@ -343,10 +343,10 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
                     <div className="info-values-grid">
                         {[
                             { icon: <Lock size={24} />, title: 'Bank-Grade Security', desc: '256-bit encryption, 2FA authentication, and real-time fraud detection keep your money safe 24/7.' },
-                            { icon: <RefreshCw size={24} />, title: 'Multi-Currency Wallets', desc: 'Hold, convert, and manage EUR, USD, GBP, CHF and more — all in one place with live exchange rates.' },
+                            { icon: <RefreshCw size={24} />, title: 'Multi-Currency Wallets', desc: 'Hold, convert, and manage EUR, USD, GBP, CHF and more  all in one place with live exchange rates.' },
                             { icon: <BarChart3 size={24} />, title: 'Smart Analytics', desc: 'Visual spending charts, budget managers, and cash flow trends help you stay in control of your finances.' },
                             { icon: <Globe size={24} />, title: 'Vienna-Based & EU Licensed', desc: 'Regulated under FMA Austria and fully compliant with PSD2, GDPR, and EU financial standards.' },
-                            { icon: <Bot size={24} />, title: 'AI Financial Assistant', desc: 'Andy, your personal AI, answers questions about your balance, spending and account — instantly.' },
+                            { icon: <Bot size={24} />, title: 'AI Financial Assistant', desc: 'Andy, your personal AI, answers questions about your balance, spending and account  instantly.' },
                             { icon: <Zap size={24} />, title: 'Instant Transactions', desc: 'Send and receive money in seconds. Freeze your card instantly if you ever feel unsafe.' },
                         ].map((card) => (
                             <div key={card.title} className="info-value-card">
@@ -382,10 +382,10 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
                             { q: 'Is my money safe with Vindobona Pro?', a: 'Yes. All accounts are protected by 256-bit AES encryption and 2FA. We are licensed under FMA Austria and your deposits are covered up to €100,000 under EU protection schemes.' },
                             { q: 'How do I open an account?', a: 'Click "Portal" at the top, then "Sign Up". Enter your username, email and password. A 6-digit verification code will be sent to your email to activate your account.' },
                             { q: 'What currencies can I hold?', a: 'You can hold and convert EUR, USD, GBP, CHF, JPY and more using the FX Converter. Live exchange rates are applied automatically.' },
-                            { q: 'How do I freeze my card?', a: 'Go to Payment Methods in the sidebar after logging in, then click the Freeze Card toggle. Your card is instantly frozen — toggle again to unfreeze.' },
+                            { q: 'How do I freeze my card?', a: 'Go to Payment Methods in the sidebar after logging in, then click the Freeze Card toggle. Your card is instantly frozen toggle again to unfreeze.' },
                             { q: 'Where can I find ATMs?', a: 'Log in and scroll to the ATM Map at the bottom of your dashboard. It shows your nearest Vindobona Pro ATMs on an interactive live map.' },
                             { q: 'What is the FX Converter?', a: 'The FX Converter lets you exchange money between your currency wallets at live market rates. Access it from the FX Converter menu in the sidebar.' },
-                            { q: 'How do I contact support?', a: 'Call us at +43 1 234 5678 (Mon–Fri, 08:00–20:00 CET) or email support@vindobonapro.at. You can also chat with Andy, our AI assistant, after logging in.' },
+                            { q: 'How do I contact support?', a: 'Call us at +43 676 9781 869 (Mon–Fri, 08:00–20:00 CET) or email andrun1@yahoo.com. You can also chat with Andy, our AI assistant, after logging in.' },
                             { q: 'Can I set spending budgets?', a: 'Yes! Go to Budgets in the sidebar. Set monthly limits per category (Food, Shopping, Travel etc.) and a visual progress bar tracks your spending.' },
                             { q: 'Is there a mobile app?', a: 'Our web app is fully mobile-responsive. A dedicated iOS and Android app is coming soon!' },
                         ].map((item, i) => (
@@ -509,7 +509,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
 
             {/* ══ FOOTER ══ */}
             <footer className="auth-footer">
-                <p>© 2025 Vindobona Pro FinTech &nbsp;·&nbsp; Regulated by FMA Austria &nbsp;·&nbsp; PSD2 &nbsp;·&nbsp; GDPR</p>
+                <p>© 2026 Vindobona Pro FinTech &nbsp;·&nbsp; Developed by Eng, Andy Rugero. Austria - Vienna &nbsp;·&nbsp; PSD2 &nbsp;·&nbsp; GDPR</p>
                 <p>
                     <Phone size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
                     <strong>+43 6769781869</strong> &nbsp;·&nbsp;

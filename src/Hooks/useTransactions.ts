@@ -5,11 +5,11 @@ import { TransactionService } from './TransactionService';
 
 export const useTransactions = () => {
     const [ledgerData, setLedgerData] = useState<Transaction[]>([
-        { id: '1', date: '15.05.2026', amount: '-$33.50', category: 'Groceries', receiver: 'BILLA AG', isNegative: true, status: 'completed' },
-        { id: '2', date: '16.05.2026', amount: '-$10.99', category: 'Music', receiver: 'Spotify Premium', isNegative: true, status: 'completed' },
-        { id: '3', date: '17.05.2026', amount: '-$55.00', category: 'Transport', receiver: 'OMV Petrol Station', isNegative: true, status: 'completed' },
-        { id: '4', date: '18.05.2026', amount: '+$2800.00', category: 'Income', receiver: 'Monthly Salary', isNegative: false, status: 'completed' },
-        { id: '8', date: '22.05.2026', amount: '-$42.00', category: 'Dining', receiver: 'Pizza Palace', isNegative: true, status: 'completed' },
+        { id: '1', date: '15.05.2026', amount: '-€33.50', category: 'Groceries', receiver: 'BILLA AG', isNegative: true, status: 'completed' },
+        { id: '2', date: '16.05.2026', amount: '-€10.99', category: 'Music', receiver: 'Spotify Premium', isNegative: true, status: 'completed' },
+        { id: '3', date: '17.05.2026', amount: '-€55.00', category: 'Transport', receiver: 'OMV Petrol Station', isNegative: true, status: 'completed' },
+        { id: '4', date: '18.05.2026', amount: '+€2800.00', category: 'Income', receiver: 'Monthly Salary', isNegative: false, status: 'completed' },
+        { id: '8', date: '22.05.2026', amount: '-€42.00', category: 'Dining', receiver: 'Pizza Palace', isNegative: true, status: 'completed' },
     ]);
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);

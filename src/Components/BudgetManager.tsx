@@ -187,7 +187,7 @@ const BudgetManager: React.FC<{ token: string | null }> = ({ token }) => {
                                 {/* Details: Spent amount of total limit */}
                                 <div className="budget-limit-details">
                                     <span className="spent-label">
-                                        Spent: <strong>${b.spent.toLocaleString(undefined, { minimumFractionDigits: 2 })}</strong> of ${b.limit.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                        Spent: <strong>€{b.spent.toLocaleString(undefined, { minimumFractionDigits: 2 })}</strong> of €{b.limit.toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                     </span>
                                     <span className="percentage-label">{percent.toFixed(0)}%</span>
                                 </div>
@@ -204,11 +204,11 @@ const BudgetManager: React.FC<{ token: string | null }> = ({ token }) => {
                                 <div className="budget-card-footer">
                                     {b.isExceeded ? (
                                         <span className="budget-alert-text red">
-                                            Over budget by ${Math.abs(b.limit - b.spent).toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                            Over budget by €{Math.abs(b.limit - b.spent).toLocaleString(undefined, { minimumFractionDigits: 2 })}
                                         </span>
                                     ) : (
                                         <span className="budget-alert-text green">
-                                            ${b.remaining.toLocaleString(undefined, { minimumFractionDigits: 2 })} remaining limit
+                                            €{b.remaining.toLocaleString(undefined, { minimumFractionDigits: 2 })} remaining limit
                                         </span>
                                     )}
                                 </div>
@@ -253,7 +253,7 @@ const BudgetManager: React.FC<{ token: string | null }> = ({ token }) => {
 
                         {/* Monthly spending numeric limit input */}
                         <div className="budget-form-group">
-                            <label>Monthly Spending Cap ($)</label>
+                            <label>Monthly Spending Cap (€)</label>
                             <input 
                                 type="number" 
                                 step="0.01" 

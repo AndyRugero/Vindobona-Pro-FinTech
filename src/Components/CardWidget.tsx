@@ -28,7 +28,7 @@ const CardWidget: React.FC<CardWidgetProps> = ({ token }) => {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await res.json();
-                
+
                 if (res.ok) {
                     setIsFrozen(data.isCardFrozen); // Set our screen state to match database
                 } else {
@@ -74,15 +74,15 @@ const CardWidget: React.FC<CardWidgetProps> = ({ token }) => {
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
         const card = e.currentTarget;
         const rect = card.getBoundingClientRect(); // Get physical size/position of the card
-        
+
         // Find cursor coordinates relative to the card's top-left corner
         const x = e.clientX - rect.left;
         const y = e.clientY - rect.top;
-        
+
         // Find the absolute center of the card
         const centerX = rect.width / 2;
         const centerY = rect.height / 2;
-        
+
         // Calculate tilt degrees (Max tilt is 15 degrees in any direction)
         const tiltX = ((centerY - y) / centerY) * 15;
         const tiltY = ((x - centerX) / centerX) * 15;
@@ -110,11 +110,12 @@ const CardWidget: React.FC<CardWidgetProps> = ({ token }) => {
     };
 
     return (
-        <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
-            <h2 style={{ color: '#fff', marginBottom: '10px' }}>Card Settings</h2>
-            <p style={{ color: '#94a3b8', marginBottom: '30px' }}>
+        <div className="card-settings-container">
+            <h2 className="card-settings-title">Card Settings</h2>
+            <p className="card-settings-subtitle">
                 Securely manage your debit cards. Freeze your card instantly if lost to prevent unauthorized payments.
             </p>
+
 
             {/* Error banner: Shows up if the server fails */}
             {error && (
@@ -126,7 +127,7 @@ const CardWidget: React.FC<CardWidgetProps> = ({ token }) => {
 
             {/* 3D Card Area */}
             <div className="card-perspective-container">
-                <div 
+                <div
                     className={`debit-card-3d ${isFrozen ? 'frozen' : ''}`}
                     onMouseMove={handleMouseMove}
                     onMouseLeave={handleMouseLeave}
@@ -172,8 +173,8 @@ const CardWidget: React.FC<CardWidgetProps> = ({ token }) => {
             <div className="card-controls-panel">
                 <label className="switch-label">
                     <span>{isFrozen ? 'Unfreeze Card' : 'Freeze Card'}</span>
-                    <input 
-                        type="checkbox" 
+                    <input
+                        type="checkbox"
                         className="toggle-switch-input"
                         checked={isFrozen}
                         onChange={handleToggleFreeze}
@@ -181,13 +182,13 @@ const CardWidget: React.FC<CardWidgetProps> = ({ token }) => {
                     />
                     <div className="toggle-slider"></div>
                 </label>
-                
+
                 {/* Security status text below the card */}
                 <div style={{ marginTop: '20px', display: 'flex', alignItems: 'center', gap: '8px', color: isFrozen ? '#ef4444' : '#10b981' }}>
                     {isFrozen ? <ShieldAlert size={16} /> : <ShieldCheck size={16} />}
                     <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>
-                        {isFrozen 
-                            ? 'All standard transactions and transfers are currently BLOCKED' 
+                        {isFrozen
+                            ? 'All standard transactions and transfers are currently BLOCKED'
                             : 'Card is active. Outgoing payments enabled.'}
                     </span>
                 </div>

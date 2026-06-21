@@ -150,8 +150,10 @@ function App() {
   // 🚀 Render the dashboard when authenticated
   return (
     <TransactionProvider>
-      <div className="app-shell">
-        <Sidebar currentView={currentView} onViewChange={setCurrentView} token={token} avatarUrl={avatarUrl} username={username} />
+      <div className={`app-shell view-${currentView}`}>
+        <Sidebar currentView={currentView}
+          onViewChange={setCurrentView} token={token}
+          avatarUrl={avatarUrl} username={username} />
 
         <main className="main-content">
           <Topbar onLogout={handleLogout} theme={theme} onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')} username={username} />

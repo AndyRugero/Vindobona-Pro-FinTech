@@ -42,7 +42,7 @@ const TransactionForm: React.FC = () => {
 
       <div className="form-group">
         <label>Amount</label>
-        <input value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="-$25.00" />
+        <input value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="-€25.00" />
       </div>
 
       <div className="form-group">

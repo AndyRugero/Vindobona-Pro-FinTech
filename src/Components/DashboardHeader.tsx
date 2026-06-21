@@ -25,7 +25,7 @@ const DashboardHeader = () => {
 
         <div className="balance-card">
           <div className="balance-card__label">Total Balance</div>
-          <div className="balance-card__amount">${totalBalance.toLocaleString()}</div>
+          <div className="balance-card__amount">€{totalBalance.toLocaleString()}</div>
         </div>
       </div>
     </div>

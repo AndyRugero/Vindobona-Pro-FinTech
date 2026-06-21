@@ -10,7 +10,7 @@ import '../Styles/FXConverter.css';
 
 // 🌍 GLOBAL CURRENCY DICTIONARY
 // Source: open.er-api.com supports 160+ world currencies. We list the most commonly used
-// ones including Rwandan Franc (RWF), Nepalese Rupee (NPR), Azerbaijani Manat (AZN) and more.
+// ones including Rwandan Franc (RWF), Nepalese Rupee (NPR), Azerbaijani Manat (AZN)
 const CURRENCIES: { [key: string]: { name: string; symbol: string } } = {
     AED: { name: 'UAE Dirham',                symbol: 'د.إ'  },
     AFN: { name: 'Afghan Afghani',             symbol: '؋'    },
@@ -310,7 +310,6 @@ const FXConverter: React.FC<FXConverterProps> = ({ token }) => {
         displayWallets.push({ currency: 'EUR', balance: totalBalance });
     }
 
-    // 🖥️ 4. Return JSX Layout: Renders the premium UI controls and historical charts
     return (
         <div className="fx-container">
             {/* Header: Title section with premium coins icon */}
@@ -324,145 +323,183 @@ const FXConverter: React.FC<FXConverterProps> = ({ token }) => {
                 </div>
             </div>
 
-            {/* Wallet Balances Card: Lists active currency holdings */}
-            <div className="fx-balance-section">
-                <h4 className="fx-balance-title">Your Active Balances</h4>
-                <div className="fx-balance-grid">
-                    {displayWallets.map((w) => (
-                        <div key={w.currency} className="fx-balance-item">
-                            <span className="fx-currency-code">{w.currency}</span>
-                            <span className="fx-balance-amount">
-                                {/* 🌍 Dynamic symbol lookup: resolves ANY world currency code to its local symbol */}
-                                {getCurrencySymbol(w.currency)} {w.balance.toFixed(2)}
-                            </span>
+            <div className="fx-layout">
+                {/* Left Column: Form & Balances */}
+                <div className="fx-main-panel">
+                    {/* Wallet Balances Card: Lists active currency holdings */}
+                    <div className="fx-balance-section">
+                        <h4 className="fx-balance-title">Your Active Balances</h4>
+                        <div className="fx-balance-grid">
+                            {displayWallets.map((w) => (
+                                <div key={w.currency} className="fx-balance-item">
+                                    <span className="fx-currency-code">{w.currency}</span>
+                                    <span className="fx-balance-amount">
+                                        {/* 🌍 Dynamic symbol lookup: resolves ANY world currency code to its local symbol */}
+                                        {getCurrencySymbol(w.currency)} {w.balance.toFixed(2)}
+                                    </span>
+                                </div>
+                            ))}
+                            {displayWallets.length === 0 && (
+                                <span className="fx-empty-wallets">No wallets active. Complete an exchange to open one.</span>
+                            )}
                         </div>
-                    ))}
-                    {displayWallets.length === 0 && (
-                        <span className="fx-empty-wallets">No wallets active. Complete an exchange to open one.</span>
+                    </div>
+
+                    {/* Alert Notifications: Conditional display of backend messages */}
+                    {successMsg && (
+                        <div className="fx-alert-success">
+                            <ShieldCheck size={18} />
+                            <span>{successMsg}</span>
+                        </div>
                     )}
+                    {errorMsg && (
+                        <div className="fx-alert-error">
+                            <ShieldAlert size={18} />
+                            <span>{errorMsg}</span>
+                        </div>
+                    )}
+
+                    {/* Exchange Form */}
+                    <form onSubmit={handleExchange}>
+                        <div className="fx-form-row">
+                            {/* Source Currency Select Dropdown */}
+                            <div className="fx-input-group">
+                                <label className="fx-input-label">From Currency</label>
+                                {/* 🌍 Dynamic dropdown: lists ALL 120+ global currencies alphabetically from the dictionary */}
+                                <select 
+                                    className="fx-select"
+                                    value={fromCurrency} 
+                                    onChange={(e) => setFromCurrency(e.target.value)}
+                                >
+                                    {SORTED_CURRENCIES.map(([code, details]) => (
+                                        <option key={code} value={code}>
+                                            {code} ({details.symbol}) – {details.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Swap indicator arrow icon */}
+                            <div className="fx-swap-arrow">
+                                <ArrowRight size={20} />
+                            </div>
+
+                            {/* Target Currency Select Dropdown */}
+                            <div className="fx-input-group">
+                                <label className="fx-input-label">To Currency</label>
+                                {/* 🌍 Dynamic dropdown: same global list as the source selector */}
+                                <select 
+                                    className="fx-select"
+                                    value={toCurrency} 
+                                    onChange={(e) => setToCurrency(e.target.value)}
+                                >
+                                    {SORTED_CURRENCIES.map(([code, details]) => (
+                                        <option key={code} value={code}>
+                                            {code} ({details.symbol}) – {details.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+
+                        {/* Amount Input Field */}
+                        <div className="fx-form-group">
+                            <label className="fx-input-label">Amount to Exchange</label>
+                            <input 
+                                type="number"
+                                step="0.01"
+                                placeholder="0.00"
+                                className="fx-input"
+                                value={amount}
+                                onChange={(e) => setAmount(e.target.value)}
+                            />
+                        </div>
+
+                        {/* Historical Rate Trendline Area Chart (shown only when currency pair is valid) */}
+                        {fromCurrency !== toCurrency && chartData.length > 0 && (
+                            <div className="fx-chart-box">
+                                <h4 className="fx-chart-title">7-Day Rate History ({fromCurrency} to {toCurrency})</h4>
+                                <div className="fx-chart-wrapper">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <AreaChart data={chartData} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
+                                            <defs>
+                                                <linearGradient id="rateColor" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="5%" className="fx-gradient-start" />
+                                                    <stop offset="95%" className="fx-gradient-stop" />
+                                                </linearGradient>
+                                            </defs>
+                                            <XAxis dataKey="date" tickLine={false} axisLine={false} className="fx-axis" />
+                                            <YAxis domain={['auto', 'auto']} tickLine={false} axisLine={false} className="fx-axis" />
+                                            <Tooltip />
+                                            <Area type="monotone" dataKey="rate" className="fx-area" />
+                                        </AreaChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Live Preview Display Card (calculates conversion on the fly) */}
+                        {amount && parseFloat(amount) > 0 && (
+                            <div className="fx-preview-box">
+                                <div className="fx-preview-row">
+                                    <span className="fx-preview-label">Exchange Rate:</span>
+                                    <span className="fx-preview-value">1 {fromCurrency} = {rate.toFixed(4)} {toCurrency}</span>
+                                </div>
+                                <div className="fx-preview-row">
+                                    <span className="fx-preview-label">You will receive:</span>
+                                    <span className="fx-preview-result">
+                                        {/* 🌍 Dynamic symbol: resolves target currency to its local symbol */}
+                                        {getCurrencySymbol(toCurrency)} {(parseFloat(amount) * rate).toFixed(2)}
+                                    </span>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Submit button with loading state spinner */}
+                        <button 
+                            type="submit" 
+                            className="fx-submit-btn"
+                            disabled={loading || !amount || parseFloat(amount) <= 0}
+                        >
+                            <RefreshCw size={18} className={loading ? 'ice-spin' : ''} />
+                            <span>{loading ? 'Processing Exchange...' : 'Complete Exchange'}</span>
+                        </button>
+                    </form>
+                </div>
+
+                {/* Right Column: Realistic 3D rotating globe visualization */}
+                <div className="fx-globe-panel">
+                    <div className="globe-frame">
+                        <div className="globe-halo"></div>
+                        <div className="globe-sphere">
+                            <div className="globe-texture map-layer"></div>
+                            <div className="globe-shadow"></div>
+                        </div>
+                    </div>
+                    
+                    <div className="globe-status-card">
+                        <div className="status-header">
+                            <span className="status-dot"></span>
+                            <span className="status-text">LIQUIDITY NETWORK ACTIVE</span>
+                        </div>
+                        <div className="status-divider"></div>
+                        <div className="status-metrics">
+                            <div className="metric-item">
+                                <span className="metric-label">API Latency:</span>
+                                <span className="metric-value">18ms</span>
+                            </div>
+                            <div className="metric-item">
+                                <span className="metric-label">Active Pools:</span>
+                                <span className="metric-value">160+ currencies</span>
+                            </div>
+                            <div className="metric-item">
+                                <span className="metric-label">Status:</span>
+                                <span className="metric-value secure-glow">SSL Secure</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-
-            {/* Alert Notifications: Conditional display of backend messages */}
-            {successMsg && (
-                <div className="fx-alert-success">
-                    <ShieldCheck size={18} />
-                    <span>{successMsg}</span>
-                </div>
-            )}
-            {errorMsg && (
-                <div className="fx-alert-error">
-                    <ShieldAlert size={18} />
-                    <span>{errorMsg}</span>
-                </div>
-            )}
-
-            {/* Exchange Form */}
-            <form onSubmit={handleExchange}>
-                <div className="fx-form-row">
-                    {/* Source Currency Select Dropdown */}
-                    <div className="fx-input-group">
-                        <label className="fx-input-label">From Currency</label>
-                        {/* 🌍 Dynamic dropdown: lists ALL 120+ global currencies alphabetically from the dictionary */}
-                        <select 
-                            className="fx-select"
-                            value={fromCurrency} 
-                            onChange={(e) => setFromCurrency(e.target.value)}
-                        >
-                            {SORTED_CURRENCIES.map(([code, details]) => (
-                                <option key={code} value={code}>
-                                    {code} ({details.symbol}) – {details.name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-
-                    {/* Swap indicator arrow icon */}
-                    <div className="fx-swap-arrow">
-                        <ArrowRight size={20} />
-                    </div>
-
-                    {/* Target Currency Select Dropdown */}
-                    <div className="fx-input-group">
-                        <label className="fx-input-label">To Currency</label>
-                        {/* 🌍 Dynamic dropdown: same global list as the source selector */}
-                        <select 
-                            className="fx-select"
-                            value={toCurrency} 
-                            onChange={(e) => setToCurrency(e.target.value)}
-                        >
-                            {SORTED_CURRENCIES.map(([code, details]) => (
-                                <option key={code} value={code}>
-                                    {code} ({details.symbol}) – {details.name}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                </div>
-
-                {/* Amount Input Field */}
-                <div className="fx-form-group">
-                    <label className="fx-input-label">Amount to Exchange</label>
-                    <input 
-                        type="number"
-                        step="0.01"
-                        placeholder="0.00"
-                        className="fx-input"
-                        value={amount}
-                        onChange={(e) => setAmount(e.target.value)}
-                    />
-                </div>
-
-                {/* Historical Rate Trendline Area Chart (shown only when currency pair is valid) */}
-                {fromCurrency !== toCurrency && chartData.length > 0 && (
-                    <div className="fx-chart-box">
-                        <h4 className="fx-chart-title">7-Day Rate History ({fromCurrency} to {toCurrency})</h4>
-                        <div className="fx-chart-wrapper">
-                            <ResponsiveContainer width="100%" height="100%">
-                                <AreaChart data={chartData} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
-                                    <defs>
-                                        <linearGradient id="rateColor" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="5%" className="fx-gradient-start" />
-                                            <stop offset="95%" className="fx-gradient-stop" />
-                                        </linearGradient>
-                                    </defs>
-                                    <XAxis dataKey="date" tickLine={false} axisLine={false} className="fx-axis" />
-                                    <YAxis domain={['auto', 'auto']} tickLine={false} axisLine={false} className="fx-axis" />
-                                    <Tooltip />
-                                    <Area type="monotone" dataKey="rate" className="fx-area" />
-                                </AreaChart>
-                            </ResponsiveContainer>
-                        </div>
-                    </div>
-                )}
-
-                {/* Live Preview Display Card (calculates conversion on the fly) */}
-                {amount && parseFloat(amount) > 0 && (
-                    <div className="fx-preview-box">
-                        <div className="fx-preview-row">
-                            <span className="fx-preview-label">Exchange Rate:</span>
-                            <span className="fx-preview-value">1 {fromCurrency} = {rate.toFixed(4)} {toCurrency}</span>
-                        </div>
-                        <div className="fx-preview-row">
-                            <span className="fx-preview-label">You will receive:</span>
-                            <span className="fx-preview-result">
-                                {/* 🌍 Dynamic symbol: resolves target currency to its local symbol */}
-                                {getCurrencySymbol(toCurrency)} {(parseFloat(amount) * rate).toFixed(2)}
-                            </span>
-                        </div>
-                    </div>
-                )}
-
-                {/* Submit button with loading state spinner */}
-                <button 
-                    type="submit" 
-                    className="fx-submit-btn"
-                    disabled={loading || !amount || parseFloat(amount) <= 0}
-                >
-                    <RefreshCw size={18} className={loading ? 'ice-spin' : ''} />
-                    <span>{loading ? 'Processing Exchange...' : 'Complete Exchange'}</span>
-                </button>
-            </form>
         </div>
     );
 };
