@@ -1,0 +1,63 @@
+# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
+name: Build and deploy container app to Azure Web App - vindobona-api-andy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read #This is required for actions/checkout
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to container registry
+        uses: docker/login-action@v2
+        with:
+          registry: index.docker.io/
+          username: ${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME_528A6144911B45239B57C51C2F795FDB }}
+          password: ${{ secrets.AZUREAPPSERVICE_CONTAINERPASSWORD_D9FA25CBB2F7463093DAEB1218B841A8 }}
+
+      - name: Build and push container image to registry
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          push: true
+          tags: index.docker.io/${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME_528A6144911B45239B57C51C2F795FDB }}/rugero/vindobona-backend:${{ github.sha }}
+          file: ./Dockerfile
+
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write #This is required for requesting the JWT
+      contents: read #This is required for actions/checkout
+
+    needs: build
+    
+    steps:
+      
+      - name: Login to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_BEE82A1B57144E49A8EE0D485B8887F4 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_4F3AE81B18814F028630B27FB55B5519 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_D30D6A4D2907439290D18DF57E064FCB }}
+
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: 'vindobona-api-andy'
+          slot-name: 'Production'
+          images: 'index.docker.io/${{ secrets.AZUREAPPSERVICE_CONTAINERUSERNAME_528A6144911B45239B57C51C2F795FDB }}/rugero/vindobona-backend:${{ github.sha }}'
+          
