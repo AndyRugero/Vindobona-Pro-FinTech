@@ -43,7 +43,8 @@ const initializeDatabase = async () => {
             two_factor_enabled INTEGER NOT NULL DEFAULT 0, -- 1 =2FA enabled, 0 = disabled
             balance REAL NOT NULL DEFAULT 0.0, -- 🏦 Set default balance of $0 for new users
             role TEXT NOT NULL DEFAULT 'user', -- 🛡️ Set default role to 'user' for new accounts
-            is_card_frozen INTEGER NOT NULL DEFAULT 0 -- 🛡️ 1 = card frozen, 0 = card active/unfrozen
+            is_card_frozen INTEGER NOT NULL DEFAULT 0, -- 🛡️ 1 = card frozen, 0 = card active/unfrozen
+            avatar_url TEXT -- Profile picture Base64/URL
         );
 
         -- audit_logs table
@@ -98,6 +99,14 @@ const initializeDatabase = async () => {
     try {
         await db.run("ALTER TABLE users ADD COLUMN is_card_frozen INTEGER NOT NULL DEFAULT 0");
         console.log("Database schema Migration: Added is_card_frozen column to users table!");
+    } catch (error) {
+        // If column already exists, ignore error
+    }
+
+    // SAFE MIGRATION : avatar_url
+    try {
+        await db.run("ALTER TABLE users ADD COLUMN avatar_url TEXT");
+        console.log("Database schema Migration: Added avatar_url column to users table!");
     } catch (error) {
         // If column already exists, ignore error
     }

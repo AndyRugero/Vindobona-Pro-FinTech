@@ -637,5 +637,39 @@ module.exports = (db) => {
         }
     })
 
+    router.get('/users/profile', authenticateToken, async (req, res) => {
+        try {
+            const userId = req.user.userId || req.user.id;
+            const user = await db.get(
+                'SELECT id, username, email, avatar_url, role FROM users WHERE id = ?',
+                [userId]
+            );
+            if (!user) {
+                return res.status(404).json({ error: 'User not found' });
+            }
+            return res.status(200).json(user);
+        }
+        catch (error) {
+            console.error('Failed to fetch user profile:', error);
+            return res.status(500).json({ error: 'Failed to retrieve profile' });
+        }
+    });
+
+    router.post('/users/avatar', authenticateToken, async (req, res) => {
+        try {
+            const userId = req.user.userId || req.user.id;
+            const { avatar_url } = req.body;
+            if (avatar_url === undefined) {
+                return res.status(400).json({ error: 'avatar_url is required' });
+            }
+            await db.run('UPDATE users SET avatar_url = ? WHERE id = ?', [avatar_url, userId]);
+            return res.status(200).json({ message: 'Avatar updated successfully', avatar_url });
+        }
+        catch (error) {
+            console.error('Failed to update avatar:', error);
+            return res.status(500).json({ error: 'Failed to update avatar' });
+        }
+    });
+
     return router; // 📤 Return the router back to server.js
 };

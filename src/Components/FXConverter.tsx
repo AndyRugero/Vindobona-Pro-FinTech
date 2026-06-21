@@ -4,6 +4,7 @@ import { RefreshCw, Coins, ArrowRight, ShieldCheck, ShieldAlert } from 'lucide-r
 // 📈 Import Recharts components for historical rates graph
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from 'recharts';
 import { API_BASE_URL } from '../config';
+import { useTransactionContext } from '../Context/TransactionContext';
 // 🎨 Import CSS style sheet
 import '../Styles/FXConverter.css';
 
@@ -295,6 +296,20 @@ const FXConverter: React.FC<FXConverterProps> = ({ token }) => {
         }
     };
 
+    // Sync EUR balance with the real ledger balance from context
+    const { totalBalance } = useTransactionContext();
+    
+    const displayWallets = wallets.map(w => {
+        if (w.currency === 'EUR') {
+            return { ...w, balance: totalBalance };
+        }
+        return w;
+    });
+
+    if (!displayWallets.some(w => w.currency === 'EUR')) {
+        displayWallets.push({ currency: 'EUR', balance: totalBalance });
+    }
+
     // 🖥️ 4. Return JSX Layout: Renders the premium UI controls and historical charts
     return (
         <div className="fx-container">
@@ -313,7 +328,7 @@ const FXConverter: React.FC<FXConverterProps> = ({ token }) => {
             <div className="fx-balance-section">
                 <h4 className="fx-balance-title">Your Active Balances</h4>
                 <div className="fx-balance-grid">
-                    {wallets.map((w) => (
+                    {displayWallets.map((w) => (
                         <div key={w.currency} className="fx-balance-item">
                             <span className="fx-currency-code">{w.currency}</span>
                             <span className="fx-balance-amount">
@@ -322,7 +337,7 @@ const FXConverter: React.FC<FXConverterProps> = ({ token }) => {
                             </span>
                         </div>
                     ))}
-                    {wallets.length === 0 && (
+                    {displayWallets.length === 0 && (
                         <span className="fx-empty-wallets">No wallets active. Complete an exchange to open one.</span>
                     )}
                 </div>

@@ -54,7 +54,8 @@ beforeAll(async () => {
             two_factor_secret TEXT,
             two_factor_enabled INTEGER NOT NULL DEFAULT 0,
             balance REAL NOT NULL DEFAULT 1000.0,
-            role TEXT NOT NULL DEFAULT 'user'
+            role TEXT NOT NULL DEFAULT 'user',
+            is_card_frozen INTEGER NOT NULL DEFAULT 0
         );
 
         CREATE TABLE audit_logs (

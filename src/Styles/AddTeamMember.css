@@ -1,0 +1,49 @@
+.member-form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.member-form-group label {
+    font-size: 0.9rem;
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+.member-input {
+    padding: 11px 14px;
+    background: #0b0f19;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    color: #e2e8f0;
+    font-family: inherit;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.member-input:focus {
+    border-color: #00f2fe;
+}
+
+.member-submit-btn {
+    padding: 12px;
+    background: linear-gradient(135deg, #00f2fe, #4facfe);
+    border: none;
+    border-radius: 8px;
+    color: #0b0f19;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 10px;
+    font-size: 0.95rem;
+    transition: opacity 0.2s ease;
+}
+
+.member-submit-btn:hover {
+    opacity: 0.9;
+}
+
+.member-submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}

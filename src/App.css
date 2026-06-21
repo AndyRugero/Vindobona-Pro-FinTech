@@ -86,3 +86,17 @@ body {
     letter-spacing: 1px;
     color: #94a3b8;
 }
+
+/* --- LIGHT MODE THEME OVERRIDES --- */
+body.light-mode {
+    --bg-dark: #f8fafc;
+    /* Light grey background */
+    --bg-panel: #ffffff;
+    /* White cards and panels */
+    --text-primary: #0f172a;
+    /* Dark slate primary text */
+    --text-secondary: #475569;
+    /* Medium slate secondary text */
+    --accent: #d97706;
+    /* Darker gold accent for high contrast readability */
+}

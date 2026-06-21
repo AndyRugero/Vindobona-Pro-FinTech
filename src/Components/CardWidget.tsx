@@ -97,6 +97,18 @@ const CardWidget: React.FC<CardWidgetProps> = ({ token }) => {
         setRotateY(0);
     };
 
+    // Decode token or local storage username dynamically
+    const getCardHolderName = (): string => {
+        if (!token) return 'Card Holder';
+        try {
+            const payload = token.split('.')[1];
+            const decoded = JSON.parse(atob(payload));
+            return decoded.username || localStorage.getItem('username') || 'Card Holder';
+        } catch (e) {
+            return localStorage.getItem('username') || 'Card Holder';
+        }
+    };
+
     return (
         <div style={{ padding: '20px', maxWidth: '600px', margin: '0 auto' }}>
             <h2 style={{ color: '#fff', marginBottom: '10px' }}>Card Settings</h2>
@@ -146,7 +158,7 @@ const CardWidget: React.FC<CardWidgetProps> = ({ token }) => {
                     <div className="card-footer">
                         <div className="card-holder">
                             <h5>Card Holder</h5>
-                            <p>Andy Rugero</p>
+                            <p>{getCardHolderName()}</p>
                         </div>
                         <div className="card-expiry">
                             <h5>Expires</h5>

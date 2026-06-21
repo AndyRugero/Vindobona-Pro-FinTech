@@ -171,3 +171,137 @@
 .recharts-default-legend .recharts-legend-icon {
     filter: drop-shadow(0 0 5px currentColor);
 }
+
+/* ==========================================
+   STEP 6: Pie / Donut Chart Layout & Legend
+   ========================================== */
+
+/* 🥧 Wrapper: chart on left, legend on right */
+.pie-chart-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* 🍩 The donut chart itself — relative so center label can float inside */
+.pie-chart-container {
+    position: relative;
+    width: 100%;
+}
+
+/* 💰 Center label floating inside the donut hole */
+.pie-center-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    pointer-events: none;
+}
+
+.center-title {
+    font-size: 0.65rem;
+    color: #64748b;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-weight: 500;
+}
+
+.center-amount {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-top: 2px;
+    letter-spacing: -0.03em;
+}
+
+/* 🔑 Legend container: list of color rows */
+.pie-legend-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0 4px;
+}
+
+/* Each row in the legend */
+.pie-legend-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    /* borderLeft is applied inline per item with the category color */
+    border-left-width: 3px;
+    border-left-style: solid;
+    transition: background 0.2s ease;
+}
+
+.pie-legend-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+/* Left side: colored dot + name */
+.legend-indicator {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* 🟡 The color dot — THIS is what was missing (no size = invisible) */
+.legend-dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    /* Color glow to match the slice */
+    box-shadow: 0 0 6px currentColor;
+}
+
+.legend-name {
+    font-size: 0.82rem;
+    color: #cbd5e1;
+    font-weight: 500;
+}
+
+/* Right side: percentage + euro amount */
+.legend-values {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.legend-percentage {
+    font-size: 0.78rem;
+    color: #94a3b8;
+    font-weight: 500;
+    min-width: 42px;
+    text-align: right;
+}
+
+.legend-amount {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #ffffff;
+    min-width: 48px;
+    text-align: right;
+}
+
+/* 📭 Empty state when no transactions exist yet */
+.empty-chart-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 200px;
+    color: #475569;
+    font-size: 0.85rem;
+    font-style: italic;
+}

@@ -19,6 +19,8 @@ import ATMMap from './Components/ATMMap';
 import BudgetManager from './Components/BudgetManager';
 import MemberTransfers from './Components/MemberTransfers';
 import AdminPanel from './Components/AdminPanel';
+import AddTeamMember from './Components/AddTeamMember';
+import { API_BASE_URL } from './config';
 
 // ⏱Define timeout limit: 10 seconds (10 * 1000ms) for quick testing!
 // Once we verify it works, we will set this to 15 minutes (15 * 60 * 1000ms).
@@ -27,12 +29,58 @@ const INACTIVITY_LIMIT = 15 * 60 * 1000;
 function App() {
   const [currentView, setCurrentView] = useState('dashboard');
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+  const [username, setUsername] = useState<string | null>(localStorage.getItem('username'));
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    const saved = localStorage.getItem('theme');
+    return (saved === 'light' || saved === 'dark') ? saved : 'dark';
+  });
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (theme === 'light') {
+      document.body.classList.add('light-mode');
+    } else {
+      document.body.classList.remove('light-mode');
+    }
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  useEffect(() => {
+    if (!token) {
+      setAvatarUrl(null);
+      setUsername(null);
+      return;
+    }
+    const fetchProfile = async () => {
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/users/profile`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          if (data.avatar_url) {
+            setAvatarUrl(data.avatar_url);
+          }
+          if (data.username) {
+            setUsername(data.username);
+            localStorage.setItem('username', data.username);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to load profile avatar:', err);
+      }
+    };
+    fetchProfile();
+  }, [token]);
 
   // Callback when login is successful
-  const handleLoginSuccess = (newToken: string, username: string) => {
+  const handleLoginSuccess = (newToken: string, newUsername: string) => {
     localStorage.setItem('token', newToken);
-    localStorage.setItem('username', username);
+    localStorage.setItem('username', newUsername);
     setToken(newToken);
+    setUsername(newUsername);
   };
 
   // Callback when user logs out
@@ -40,6 +88,7 @@ function App() {
     localStorage.removeItem('token');
     localStorage.removeItem('username');
     setToken(null);
+    setUsername(null);
   };
 
   // 🕵️‍♂️ Google Callback Reader: Scans URL parameters for login keys on startup
@@ -53,6 +102,7 @@ function App() {
       localStorage.setItem('token', urlToken);
       localStorage.setItem('username', urlUsername);
       setToken(urlToken); // Update React state to log in
+      setUsername(urlUsername);
 
       // Clean the address bar back to clear "http://localhost:5173/"
       window.history.replaceState({}, document.title, window.location.pathname);
@@ -101,10 +151,10 @@ function App() {
   return (
     <TransactionProvider>
       <div className="app-shell">
-        <Sidebar currentView={currentView} onViewChange={setCurrentView} token={token} />
+        <Sidebar currentView={currentView} onViewChange={setCurrentView} token={token} avatarUrl={avatarUrl} username={username} />
 
         <main className="main-content">
-          <Topbar onLogout={handleLogout} />
+          <Topbar onLogout={handleLogout} theme={theme} onToggleTheme={() => setTheme(theme === 'dark' ? 'light' : 'dark')} username={username} />
 
           {currentView === 'import' ? (
             <CSVImportView
@@ -119,13 +169,15 @@ function App() {
             )
 
               : currentView === 'settings' ? (
-                <SettingsView token={token} username={localStorage.getItem('username')} />
+                <SettingsView token={token} username={username} avatarUrl={avatarUrl} onAvatarUpdate={setAvatarUrl} />
               ) : currentView === 'exchange' ? (
                 <FXConverter token={token} />
               ) : currentView === 'budgets' ? (
                 <BudgetManager token={token} />
               ) : currentView === 'admin' ? (
                 <AdminPanel token={token} />
+              ) : currentView === 'add-team' ? (
+                <AddTeamMember token={token} />
               ) :
 
                 (

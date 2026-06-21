@@ -1,6 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import '../Styles/AuthScreen.css';
+import {
+    Landmark,
+    Info,
+    HelpCircle,
+    Lock,
+    RefreshCw,
+    BarChart3,
+    Globe,
+    Bot,
+    Zap,
+    Phone,
+    Mail,
+    ChevronDown,
+    ChevronUp
+} from 'lucide-react';
+
 import { API_BASE_URL } from '../config';
+
 
 // 🔌 Props: This tells React what inputs this component receives from its parent (App.tsx)
 interface AuthScreenProps {
@@ -8,26 +25,29 @@ interface AuthScreenProps {
 }
 
 const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
-    // React States: These store what the user typed or which mode we are in
-    const [isLogin, setIsLogin] = useState(true);          // true = Login mode, false = Sign-Up mode
-    const [username, setUsername] = useState('');          // Stores the typed username
-    const [email, setEmail] = useState('');                // Stores the typed email (Sign-Up mode only)
-    const [password, setPassword] = useState('');          // Stores the typed password
-    const [verificationCode, setVerificationCode] = useState(''); // Stores the 6-digit verification code
-    const [isVerifying, setIsVerifying] = useState(false);  // true = shows email verification OTP screen
-    const [verifyingUsername, setVerifyingUsername] = useState(''); // Stores username currently being verified
-    const [error, setError] = useState('');                // Stores any error message from the server
-    const [successMessage, setSuccessMessage] = useState(''); // Stores any success message to show
+    // 🗂️ Top nav tab: 'portal' = login/signup, 'about' = About Us, 'faq' = FAQ
+    const [activeTab, setActiveTab] = useState<'portal' | 'about' | 'faq'>('portal');
 
-    // 🔑 NEW STATES FOR PASSWORD RESET FLOW
-    const [isForgotPassword, setIsForgotPassword] = useState(false); // Shows Forgot Password form
-    const [isResetMode, setIsResetMode] = useState(false);           // Shows Reset Password form
-    const [forgotPasswordEmail, setForgotPasswordEmail] = useState(''); // Email for forgot password form
-    const [newPassword, setNewPassword] = useState('');              // New password typed by user
-    const [confirmPassword, setConfirmPassword] = useState('');      // Confirm new password
-    const [resetToken, setResetToken] = useState('');                // Token from email URL
-    const [is2FALogin, setIs2FALogin] = useState(false); //YEs OR nO SWITCH screen to show 2FA prompt
-    const [twoFactorCode, setTwoFactorCode] = useState(''); //Memory slot for the 6 digit code user
+    // React States: These store what the user typed or which mode we are in
+    const [isLogin, setIsLogin] = useState(true);
+    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [verificationCode, setVerificationCode] = useState('');
+    const [isVerifying, setIsVerifying] = useState(false);
+    const [verifyingUsername, setVerifyingUsername] = useState('');
+    const [error, setError] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
+
+    // 🔑 PASSWORD RESET FLOW STATES
+    const [isForgotPassword, setIsForgotPassword] = useState(false);
+    const [isResetMode, setIsResetMode] = useState(false);
+    const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [resetToken, setResetToken] = useState('');
+    const [is2FALogin, setIs2FALogin] = useState(false);
+    const [twoFactorCode, setTwoFactorCode] = useState('');
 
     // 🕵️‍♂️ URL Detector: Check if the user loaded the page via a reset password link on startup
     useEffect(() => {
@@ -183,7 +203,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
             }
 
             // 8. Success! Save the session token and log in
-            setSuccessMessage('Login successful! 🚀');
+            setSuccessMessage('Login successful! ');
             onLoginSuccess(data.token, data.username);
         } catch (err: any) {
             // 9. If server or connection fails, show the error on screen
@@ -287,241 +307,231 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
     };
 
     return (
-        <div className="auth-container">
-            <div className="auth-card">
-                {/* Header Title & Subtitle */}
-                <h2>{getCardTitle()}</h2>
-                <p className="auth-subtitle">{getCardSubtitle()}</p>
+        <div className="auth-page">
 
-                {/* Notification Badges */}
-                {error && <div className="auth-error">{error}</div>}
-                {successMessage && <div className="auth-success">{successMessage}</div>}
+            {/* ══ TOP NAVIGATION BAR ══ */}
+            <header className="auth-topnav">
+                <div className="auth-topnav-brand">
+                    <span className="auth-topnav-logo">VINDOBONA</span>
+                    <span className="auth-topnav-tagline">Pro FinTech</span>
+                </div>
+                <nav className="auth-topnav-links">
+                    <button
+                        className={`auth-nav-btn ${activeTab === 'portal' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('portal')}
+                    ><Landmark size={18}
+                        className="auth-btn-icon"></Landmark> Portal</button>
+                    <button
+                        className={`auth-nav-btn ${activeTab === 'about' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('about')}
+                    ><Info size={18}
+                        className="auth-btn-icon"></Info> About Us</button>
+                    <button
+                        className={`auth-nav-btn ${activeTab === 'faq' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('faq')}
+                    ><HelpCircle size={18}></HelpCircle> FAQ</button>
+                </nav>
+            </header>
 
-                {/* Conditional Form Render */}
-                {isResetMode ? (
-                    /* 🔐 Reset Password Form */
-                    <form onSubmit={handleResetSubmit} className="auth-form">
-                        <div className="form-group">
-                            <label htmlFor="newPassword">New Password</label>
-                            <input
-                                type="password"
-                                id="newPassword"
-                                value={newPassword}
-                                onChange={(e) => setNewPassword(e.target.value)}
-                                placeholder="Min. 6 characters"
-                                required
-                            />
-                        </div>
-                        <div className="form-group">
-                            <label htmlFor="confirmPassword">Confirm Password</label>
-                            <input
-                                type="password"
-                                id="confirmPassword"
-                                value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
-                                placeholder="Confirm new password"
-                                required
-                            />
-                        </div>
-                        <button type="submit" className="auth-button">
-                            Reset Password
-                        </button>
-                    </form>
-                ) : isForgotPassword ? (
-                    /* ✉️ Forgot Password Form */
-                    <form onSubmit={handleForgotSubmit} className="auth-form">
-                        <div className="form-group">
-                            <label htmlFor="forgotEmail">Email Address</label>
-                            <input
-                                type="email"
-                                id="forgotEmail"
-                                value={forgotPasswordEmail}
-                                onChange={(e) => setForgotPasswordEmail(e.target.value)}
-                                placeholder="Enter your email"
-                                required
-                            />
-                        </div>
-                        <button type="submit" className="auth-button">
-                            Send Reset Link
-                        </button>
-                    </form>
-                ) : isVerifying ? (
-                    /* 📧 Verification Code Form */
-                    <form onSubmit={handleVerifySubmit} className="auth-form">
-                        <div className="form-group">
-
-                            <label htmlFor="verificationCode">Verification Code</label>
-                            <input
-                                type="text"
-                                id="verificationCode"
-                                value={verificationCode}
-                                onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                placeholder="Enter 6-digit code"
-                                maxLength={6}
-                                required
-                            />
-                        </div>
-                        <button type="submit" className="auth-button">
-                            Verify & Login
-                        </button>
-                    </form>
-
-                    /* 📱 2FA Code Input Form */
-                ) : is2FALogin ? (
-                    <form onSubmit={handle2FALoginSubmit} className="auth-form">
-                        <div className="form-group">
-                            <label htmlFor="twoFactorCode">Authenticator Code</label>
-                            <input
-                                type="text"
-                                id="twoFactorCode"
-                                value={twoFactorCode}
-                                onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                                placeholder="Enter 6-digit code"
-                                maxLength={6}
-                                required
-                            />
-                        </div>
-                        <button type="submit" className="auth-button">
-                            Verify & Login
-                        </button>
-                    </form>
-                ) : (
-                    /* 🚪 Login / Sign Up Form */
-                    <form onSubmit={handleSubmit} className="auth-form">
-                        {/* Username */}
-                        <div className="form-group">
-                            <label htmlFor="username">Username</label>
-                            <input
-                                type="text"
-                                id="username"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                                placeholder="Enter your username"
-                                required
-                            />
-                        </div>
-
-                        {/* Email (Sign-Up mode only) */}
-                        {!isLogin && (
-                            <div className="form-group">
-                                <label htmlFor="email">Email Address</label>
-                                <input
-                                    type="email"
-                                    id="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="Enter your email"
-                                    required
-                                />
+            {/* ══ ABOUT US PAGE ══ */}
+            {activeTab === 'about' && (
+                <div className="auth-info-page">
+                    <div className="info-hero">
+                        <h1 className="info-hero-title">About Vindobona Pro</h1>
+                        <p className="info-hero-sub">Premium FinTech Banking — Built for the modern world</p>
+                    </div>
+                    <div className="info-values-grid">
+                        {[
+                            { icon: <Lock size={24} />, title: 'Bank-Grade Security', desc: '256-bit encryption, 2FA authentication, and real-time fraud detection keep your money safe 24/7.' },
+                            { icon: <RefreshCw size={24} />, title: 'Multi-Currency Wallets', desc: 'Hold, convert, and manage EUR, USD, GBP, CHF and more — all in one place with live exchange rates.' },
+                            { icon: <BarChart3 size={24} />, title: 'Smart Analytics', desc: 'Visual spending charts, budget managers, and cash flow trends help you stay in control of your finances.' },
+                            { icon: <Globe size={24} />, title: 'Vienna-Based & EU Licensed', desc: 'Regulated under FMA Austria and fully compliant with PSD2, GDPR, and EU financial standards.' },
+                            { icon: <Bot size={24} />, title: 'AI Financial Assistant', desc: 'Andy, your personal AI, answers questions about your balance, spending and account — instantly.' },
+                            { icon: <Zap size={24} />, title: 'Instant Transactions', desc: 'Send and receive money in seconds. Freeze your card instantly if you ever feel unsafe.' },
+                        ].map((card) => (
+                            <div key={card.title} className="info-value-card">
+                                <span className="value-icon">{card.icon}</span>
+                                <h3>{card.title}</h3>
+                                <p>{card.desc}</p>
                             </div>
+                        ))}
+                    </div>
+                    <div className="info-contact-strip">
+                        <p>
+                            <Phone size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
+                            <strong>+43 6769781869</strong> &nbsp;·&nbsp;
+                            <Mail size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
+                            <strong>andrun1@yahoo.com</strong> &nbsp;·&nbsp;
+                            <Globe size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
+                            <strong>vindobonapro.at</strong>
+                        </p>
+                        <button className="auth-nav-btn active" onClick={() => setActiveTab('portal')}>→ Go to Portal</button>
+                    </div>
+                </div>
+            )}
+
+            {/* ══ FAQ PAGE ══ */}
+            {activeTab === 'faq' && (
+                <div className="auth-info-page">
+                    <div className="info-hero">
+                        <h1 className="info-hero-title">Frequently Asked Questions</h1>
+                        <p className="info-hero-sub">Everything you need to know about Vindobona Pro</p>
+                    </div>
+                    <div className="faq-list">
+                        {[
+                            { q: 'Is my money safe with Vindobona Pro?', a: 'Yes. All accounts are protected by 256-bit AES encryption and 2FA. We are licensed under FMA Austria and your deposits are covered up to €100,000 under EU protection schemes.' },
+                            { q: 'How do I open an account?', a: 'Click "Portal" at the top, then "Sign Up". Enter your username, email and password. A 6-digit verification code will be sent to your email to activate your account.' },
+                            { q: 'What currencies can I hold?', a: 'You can hold and convert EUR, USD, GBP, CHF, JPY and more using the FX Converter. Live exchange rates are applied automatically.' },
+                            { q: 'How do I freeze my card?', a: 'Go to Payment Methods in the sidebar after logging in, then click the Freeze Card toggle. Your card is instantly frozen — toggle again to unfreeze.' },
+                            { q: 'Where can I find ATMs?', a: 'Log in and scroll to the ATM Map at the bottom of your dashboard. It shows your nearest Vindobona Pro ATMs on an interactive live map.' },
+                            { q: 'What is the FX Converter?', a: 'The FX Converter lets you exchange money between your currency wallets at live market rates. Access it from the FX Converter menu in the sidebar.' },
+                            { q: 'How do I contact support?', a: 'Call us at +43 1 234 5678 (Mon–Fri, 08:00–20:00 CET) or email support@vindobonapro.at. You can also chat with Andy, our AI assistant, after logging in.' },
+                            { q: 'Can I set spending budgets?', a: 'Yes! Go to Budgets in the sidebar. Set monthly limits per category (Food, Shopping, Travel etc.) and a visual progress bar tracks your spending.' },
+                            { q: 'Is there a mobile app?', a: 'Our web app is fully mobile-responsive. A dedicated iOS and Android app is coming soon!' },
+                        ].map((item, i) => (
+                            <FaqItem key={i} question={item.q} answer={item.a} />
+                        ))}
+                    </div>
+                    <div className="info-contact-strip">
+                        <p>
+                            Still have questions? &nbsp;
+                            <Phone size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
+                            <strong>+43 6769781869</strong> &nbsp;·&nbsp;
+                            <Mail size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
+                            <strong>andrun1@yahoo.com</strong>
+                        </p>
+                        <button className="auth-nav-btn active" onClick={() => setActiveTab('portal')}>→ Go to Portal</button>
+                    </div>
+                </div>
+            )}
+
+            {/* ══ LOGIN / SIGNUP PORTAL ══ */}
+            {activeTab === 'portal' && (
+                <div className="auth-container">
+                    <div className="auth-card">
+                        {/* Header Title & Subtitle */}
+                        <h2>{getCardTitle()}</h2>
+                        <p className="auth-subtitle">{getCardSubtitle()}</p>
+
+                        {/* Notification Badges */}
+                        {error && <div className="auth-error">{error}</div>}
+                        {successMessage && <div className="auth-success">{successMessage}</div>}
+
+                        {/* Conditional Form Render */}
+                        {isResetMode ? (
+                            /* 🔐 Reset Password Form */
+                            <form onSubmit={handleResetSubmit} className="auth-form">
+                                <div className="form-group">
+                                    <label htmlFor="newPassword">New Password</label>
+                                    <input type="password" id="newPassword" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Min. 6 characters" required />
+                                </div>
+                                <div className="form-group">
+                                    <label htmlFor="confirmPassword">Confirm Password</label>
+                                    <input type="password" id="confirmPassword" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirm new password" required />
+                                </div>
+                                <button type="submit" className="auth-button">Reset Password</button>
+                            </form>
+                        ) : isForgotPassword ? (
+                            /* ✉️ Forgot Password Form */
+                            <form onSubmit={handleForgotSubmit} className="auth-form">
+                                <div className="form-group">
+                                    <label htmlFor="forgotEmail">Email Address</label>
+                                    <input type="email" id="forgotEmail" value={forgotPasswordEmail} onChange={(e) => setForgotPasswordEmail(e.target.value)} placeholder="Enter your email" required />
+                                </div>
+                                <button type="submit" className="auth-button">Send Reset Link</button>
+                            </form>
+                        ) : isVerifying ? (
+                            /* 📧 Verification Code Form */
+                            <form onSubmit={handleVerifySubmit} className="auth-form">
+                                <div className="form-group">
+                                    <label htmlFor="verificationCode">Verification Code</label>
+                                    <input type="text" id="verificationCode" value={verificationCode} onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="Enter 6-digit code" maxLength={6} required />
+                                </div>
+                                <button type="submit" className="auth-button">Verify & Login</button>
+                            </form>
+                        ) : is2FALogin ? (
+                            /* 📱 2FA Code Input Form */
+                            <form onSubmit={handle2FALoginSubmit} className="auth-form">
+                                <div className="form-group">
+                                    <label htmlFor="twoFactorCode">Authenticator Code</label>
+                                    <input type="text" id="twoFactorCode" value={twoFactorCode} onChange={(e) => setTwoFactorCode(e.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="Enter 6-digit code" maxLength={6} required />
+                                </div>
+                                <button type="submit" className="auth-button">Verify & Login</button>
+                            </form>
+                        ) : (
+                            /* 🚪 Login / Sign Up Form */
+                            <form onSubmit={handleSubmit} className="auth-form">
+                                <div className="form-group">
+                                    <label htmlFor="username">Username</label>
+                                    <input type="text" id="username" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Enter your username" required />
+                                </div>
+                                {!isLogin && (
+                                    <div className="form-group">
+                                        <label htmlFor="email">Email Address</label>
+                                        <input type="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Enter your email" required />
+                                    </div>
+                                )}
+                                <div className="form-group">
+                                    <label htmlFor="password">Password</label>
+                                    <input type="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" required />
+                                </div>
+                                {isLogin && (
+                                    <div className="forgot-password-link">
+                                        <span onClick={() => { setIsForgotPassword(true); setError(''); setSuccessMessage(''); }}>Forgot Password?</span>
+                                    </div>
+                                )}
+                                <button type="submit" className="auth-button">{isLogin ? 'Log In' : 'Sign Up'}</button>
+                                <button type="button" className="google-btn" onClick={() => window.location.href = `${API_BASE_URL}/api/auth/google`}>
+                                    <img src="/google-logo.svg" alt="Google" className="google-icon" />
+                                    <span>Sign in with Google</span>
+                                </button>
+                            </form>
                         )}
 
-                        {/* Password */}
-                        <div className="form-group">
-                            <label htmlFor="password">Password</label>
-                            <input
-                                type="password"
-                                id="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                placeholder="Enter your password"
-                                required
-                            />
-                        </div>
-
-                        {/* Forgot Password Link (Login mode only) */}
-                        {isLogin && (
-                            <div className="forgot-password-link">
-                                <span onClick={() => {
-                                    setIsForgotPassword(true);
-                                    setError('');
-                                    setSuccessMessage('');
-
-                                }}>
-                                    Forgot Password?
-                                </span>
-                            </div>
+                        {/* Bottom Toggle Navigation Links */}
+                        {isResetMode ? (
+                            <p className="auth-toggle"><span onClick={() => { setIsResetMode(false); setError(''); setSuccessMessage(''); setTwoFactorCode(''); window.history.replaceState({}, document.title, '/'); }}>Back to Login</span></p>
+                        ) : isForgotPassword ? (
+                            <p className="auth-toggle"><span onClick={() => { setIsForgotPassword(false); setError(''); setSuccessMessage(''); setTwoFactorCode(''); }}>Back to Login</span></p>
+                        ) : isVerifying ? (
+                            <p className="auth-toggle">Need to login or sign up?{' '}<span onClick={() => { setIsVerifying(false); setIsLogin(true); setError(''); setSuccessMessage(''); setVerificationCode(''); }}>Back to Login</span></p>
+                        ) : is2FALogin ? (
+                            <p className="auth-toggle"><span onClick={() => { setIs2FALogin(false); setIsLogin(true); setError(''); setSuccessMessage(''); setTwoFactorCode(''); }}>Back to Login</span></p>
+                        ) : (
+                            <p className="auth-toggle">
+                                {isLogin ? "Don't have an account? " : "Already have an account? "}
+                                <span onClick={() => { setIsLogin(!isLogin); setError(''); setSuccessMessage(''); }}>{isLogin ? 'Sign Up' : 'Log In'}</span>
+                            </p>
                         )}
+                    </div>
+                </div>
+            )}
 
-                        {/* Submit button */}
-                        <button type="submit" className="auth-button">
-                            {isLogin ? 'Log In' : 'Sign Up'}
-                        </button>
+            {/* ══ FOOTER ══ */}
+            <footer className="auth-footer">
+                <p>© 2025 Vindobona Pro FinTech &nbsp;·&nbsp; Regulated by FMA Austria &nbsp;·&nbsp; PSD2 &nbsp;·&nbsp; GDPR</p>
+                <p>
+                    <Phone size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
+                    <strong>+43 6769781869</strong> &nbsp;·&nbsp;
+                    <Mail size={14} style={{ marginRight: '6px', verticalAlign: 'middle' }} />
+                    <strong>andrun1@yahoo.com</strong>
+                </p>
+            </footer>
+        </div>
+    );
+};
 
-                        {/* Google button */}
-                        <button
-                            type="button"
-                            className="google-btn"
-                            onClick={() => window.location.href = `${API_BASE_URL}/api/auth/google`}
-                        >
-                            <img src="/google-logo.svg" alt="Google" className="google-icon" />
-                            <span>Sign in with Google</span>
-                        </button>
-                    </form>
-                )}
-
-                {/* Bottom Toggle Navigation Links */}
-                {isResetMode ? (
-                    <p className="auth-toggle">
-                        <span onClick={() => {
-                            setIsResetMode(false);
-                            setError('');
-                            setSuccessMessage('');
-                            setTwoFactorCode('');
-                            window.history.replaceState({}, document.title, '/'); // Clean URL
-                        }}>
-                            Back to Login
-                        </span>
-                    </p>
-                ) : isForgotPassword ? (
-                    <p className="auth-toggle">
-                        <span onClick={() => {
-                            setIsForgotPassword(false);
-                            setError('');
-                            setSuccessMessage('');
-                            setTwoFactorCode('');
-                        }}>
-                            Back to Login
-                        </span>
-                    </p>
-                ) : isVerifying ? (
-                    <p className="auth-toggle">
-                        Need to login or sign up?{' '}
-                        <span onClick={() => {
-                            setIsVerifying(false);
-                            setIsLogin(true);
-                            setError('');
-                            setSuccessMessage('');
-                            setVerificationCode('');
-                        }}>
-                            Back to Login
-                        </span>
-                    </p>
-                ) : is2FALogin ? (
-                    <p className="auth-toggle">
-                        <span onClick={() => {
-                            setIs2FALogin(false);
-                            setIsLogin(true);
-                            setError('');
-                            setSuccessMessage('');
-                            setTwoFactorCode('');
-                        }}>
-                            Back to Login
-                        </span>
-                    </p>
-                ) : (
-                    <p className="auth-toggle">
-                        {isLogin ? "Don't have an account? " : "Already have an account? "}
-                        <span onClick={() => {
-                            setIsLogin(!isLogin);
-                            setError('');
-                            setSuccessMessage('');
-                        }}>
-                            {isLogin ? 'Sign Up' : 'Log In'}
-                        </span>
-                    </p>
-                )}
+// ── Collapsible FAQ accordion item component ──
+const FaqItem: React.FC<{ question: string; answer: string }> = ({ question, answer }) => {
+    const [open, setOpen] = useState(false);
+    return (
+        <div className={`faq-item ${open ? 'open' : ''}`} onClick={() => setOpen(!open)}>
+            <div className="faq-question">
+                <span>{question}</span>
+                <span className="faq-chevron">{open ? <ChevronUp size={18} />
+                    : <ChevronDown size={18} />}</span>
             </div>
+            {open && <div className="faq-answer">{answer}</div>}
         </div>
     );
 };

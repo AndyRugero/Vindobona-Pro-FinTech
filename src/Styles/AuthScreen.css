@@ -202,3 +202,251 @@
 .forgot-password-link span:hover {
     text-decoration: underline;
 }
+
+/* ══════════════════════════════════════════════
+   PUBLIC PAGES — Full-page wrapper + top nav
+   ══════════════════════════════════════════════ */
+
+/* Outer wrapper — replaces auth-container as root */
+.auth-page {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: radial-gradient(circle at top right, #101c38 0%, #050a18 70%);
+}
+
+/* ── TOP NAVIGATION BAR ── */
+.auth-topnav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 40px;
+    border-bottom: 1px solid rgba(234, 179, 8, 0.15);
+    background: rgba(5, 10, 24, 0.8);
+    backdrop-filter: blur(10px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.auth-topnav-brand {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.auth-topnav-logo {
+    color: #eab308;
+    font-size: 20px;
+    font-weight: 900;
+    letter-spacing: 3px;
+}
+
+.auth-topnav-tagline {
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 1px;
+}
+
+.auth-topnav-links {
+    display: flex;
+    gap: 8px;
+}
+
+/* Nav tab buttons */
+.auth-nav-btn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #94a3b8;
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.auth-nav-btn:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: white;
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.auth-nav-btn.active {
+    background: rgba(234, 179, 8, 0.12);
+    border-color: rgba(234, 179, 8, 0.4);
+    color: #eab308;
+    font-weight: 600;
+}
+
+/* ── INFO PAGES (About Us & FAQ) ── */
+.auth-info-page {
+    flex: 1;
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 48px 24px;
+    width: 100%;
+}
+
+/* Hero title block */
+.info-hero {
+    text-align: center;
+    margin-bottom: 48px;
+}
+
+.info-hero-title {
+    font-size: 2.4rem;
+    font-weight: 800;
+    color: #f1f5f9;
+    margin: 0 0 12px 0;
+    background: linear-gradient(135deg, #eab308, #f97316);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.info-hero-sub {
+    color: #64748b;
+    font-size: 1rem;
+    margin: 0;
+}
+
+/* ── ABOUT US — 3-column value cards grid ── */
+.info-values-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+    margin-bottom: 48px;
+}
+
+.info-value-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 16px;
+    padding: 28px 24px;
+    transition: all 0.25s ease;
+}
+
+.info-value-card:hover {
+    background: rgba(234, 179, 8, 0.05);
+    border-color: rgba(234, 179, 8, 0.2);
+    transform: translateY(-2px);
+}
+
+.value-icon {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 14px;
+}
+
+.info-value-card h3 {
+    color: #f1f5f9;
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 10px 0;
+}
+
+.info-value-card p {
+    color: #64748b;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    margin: 0;
+}
+
+/* ── FAQ — accordion list ── */
+.faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 48px;
+}
+
+.faq-item {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    border-radius: 12px;
+    padding: 18px 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.faq-item:hover,
+.faq-item.open {
+    background: rgba(234, 179, 8, 0.05);
+    border-color: rgba(234, 179, 8, 0.2);
+}
+
+.faq-question {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #f1f5f9;
+    font-size: 0.95rem;
+    font-weight: 500;
+    gap: 12px;
+}
+
+.faq-chevron {
+    color: #eab308;
+    font-size: 11px;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+
+.faq-answer {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    color: #94a3b8;
+    font-size: 0.875rem;
+    line-height: 1.65;
+}
+
+/* ── CONTACT STRIP (bottom of About & FAQ pages) ── */
+.info-contact-strip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 28px;
+    border: 1px solid rgba(234, 179, 8, 0.2);
+    border-radius: 16px;
+    background: rgba(234, 179, 8, 0.05);
+    text-align: center;
+}
+
+.info-contact-strip p {
+    color: #94a3b8;
+    margin: 0;
+    font-size: 0.9rem;
+}
+
+.info-contact-strip strong {
+    color: #f1f5f9;
+}
+
+/* ── FOOTER ── */
+.auth-footer {
+    text-align: center;
+    padding: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    color: #334155;
+    font-size: 12px;
+    line-height: 1.8;
+}
+
+.auth-footer p {
+    margin: 2px 0;
+}
+
+/* Keep login portal centered */
+.auth-page .auth-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    background: none;
+    min-height: auto;
+}

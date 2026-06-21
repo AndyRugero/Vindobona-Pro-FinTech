@@ -483,6 +483,35 @@ module.exports = (db) => {
         }
 
         try {
+            // A. Recalculate real balance from transactions and sync the EUR wallet balance
+            const txSum = await db.get(
+                'SELECT SUM(amount) as total FROM transactions WHERE user_id = ?',
+                [userId]
+            );
+            const realBalance = txSum ? (txSum.total || 0.0) : 0.0;
+
+            const eurWallet = await db.get(
+                "SELECT id FROM wallets WHERE user_id = ? AND currency = 'EUR'",
+                [userId]
+            );
+
+            if (eurWallet) {
+                await db.run(
+                    "UPDATE wallets SET balance = ? WHERE user_id = ? AND currency = 'EUR'",
+                    [realBalance, userId]
+                );
+            } else {
+                await db.run(
+                    "INSERT INTO wallets (id, user_id, currency, balance) VALUES (?, ?, 'EUR', ?)",
+                    [Date.now().toString() + Math.random().toString(), userId, realBalance]
+                );
+            }
+
+            await db.run(
+                "UPDATE users SET balance = ? WHERE id = ?",
+                [realBalance, userId]
+            );
+
             // 2. Security Check: Block exchanges if the user's debit card is frozen
             const user = await db.get('SELECT is_card_frozen FROM users WHERE id = ?', userId);
             if (user && user.is_card_frozen === 1) {
@@ -568,7 +597,38 @@ module.exports = (db) => {
         try {
             const userId = req.user.userId;
 
-            // Retrieve all wallet records belonging to this user
+            // 1. Calculate the user's real balance from the transactions table
+            const txSum = await db.get(
+                'SELECT SUM(amount) as total FROM transactions WHERE user_id = ?',
+                [userId]
+            );
+            const realBalance = txSum ? (txSum.total || 0.0) : 0.0;
+
+            // 2. Ensure the EUR wallet exists and matches the real balance
+            const eurWallet = await db.get(
+                "SELECT id FROM wallets WHERE user_id = ? AND currency = 'EUR'",
+                [userId]
+            );
+
+            if (eurWallet) {
+                await db.run(
+                    "UPDATE wallets SET balance = ? WHERE user_id = ? AND currency = 'EUR'",
+                    [realBalance, userId]
+                );
+            } else {
+                await db.run(
+                    "INSERT INTO wallets (id, user_id, currency, balance) VALUES (?, ?, 'EUR', ?)",
+                    [Date.now().toString() + Math.random().toString(), userId, realBalance]
+                );
+            }
+
+            // Also keep users.balance synchronized
+            await db.run(
+                "UPDATE users SET balance = ? WHERE id = ?",
+                [realBalance, userId]
+            );
+
+            // 3. Retrieve all wallet records belonging to this user
             const wallets = await db.all(
                 'SELECT currency, balance FROM wallets WHERE user_id = ? ORDER BY currency ASC',
                 [userId]

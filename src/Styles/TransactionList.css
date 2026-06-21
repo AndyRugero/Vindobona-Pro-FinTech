@@ -25,9 +25,11 @@
 .control-panel input,
 .control-panel select {
     padding: 10px 15px;
-    background: #1e293b !important; /* Force dark background */
+    background: #1e293b !important;
+    /* Force dark background */
     font-size: 13px;
-    color: #f1f5f9 !important; /* Force white text */
+    color: #f1f5f9 !important;
+    /* Force white text */
     border-radius: 8px;
     border: 1px solid #334155;
     outline: none;
@@ -87,12 +89,14 @@
 
 /* --- DYNAMIC AMOUNT COLORS IN LEDGER --- */
 .amount.positive {
-    color: #10b981 !important; /* Premium neon emerald green for Income */
+    color: #10b981 !important;
+    /* Premium neon emerald green for Income */
     font-weight: 600;
 }
 
 .amount.negative {
-    color: #ef4444 !important; /* Premium vibrant ruby red for Expenses */
+    color: #ef4444 !important;
+    /* Premium vibrant ruby red for Expenses */
     font-weight: 600;
 }
 
@@ -135,6 +139,6 @@
 }
 
 .export-btn svg {
-    color: #38bdf8; /* Cyan color accent for download icons */
+    color: #38bdf8;
+    /* Cyan color accent for download icons */
 }
-

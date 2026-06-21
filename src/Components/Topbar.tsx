@@ -1,15 +1,18 @@
 import React from 'react';
 import '../Styles/Topbar.css';
-import { SunMoon, LogOut } from 'lucide-react'; // 📥 Import standard icons
+import { Sun, Moon, LogOut } from 'lucide-react'; // 📥 Import standard icons
 
-// 🔌 We define that Topbar can receive an 'onLogout' function from its parent
+// 🔌 We define that Topbar can receive theme status and toggle function
 interface TopbarProps {
     onLogout?: () => void;
+    theme?: 'dark' | 'light';
+    onToggleTheme?: () => void;
+    username?: string | null;
 }
 
-const Topbar: React.FC<TopbarProps> = ({ onLogout }) => {
-    // 🏷️ Get the username of the logged-in user from browser memory
-    const username = localStorage.getItem('username') || 'User';
+const Topbar: React.FC<TopbarProps> = ({ onLogout, theme = 'dark', onToggleTheme, username }) => {
+    // 🏷️ Get the username of the logged-in user
+    const displayName = username || localStorage.getItem('username') || 'User';
 
     return (
         <header className="topbar">
@@ -23,7 +26,7 @@ const Topbar: React.FC<TopbarProps> = ({ onLogout }) => {
             {/* Right side: Actions */}
             <div className="topbar__actions">
                 {/* Greeting text */}
-                <span className="user-welcome">Hello, {username}!</span>
+                <span className="user-welcome">Hello, {displayName}!</span>
 
                 {/* Notification / Mail Icon */}
                 <div className="topbar-icon notification">
@@ -34,8 +37,8 @@ const Topbar: React.FC<TopbarProps> = ({ onLogout }) => {
                 </div>
 
                 {/* Theme Toggle */}
-                <div className="theme-toggle">
-                    <SunMoon className="text-slate-400 white" />
+                <div className="theme-toggle" onClick={onToggleTheme} title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}>
+                    {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
                 </div>
 
                 {/* Logout Button: Only shows up if we passed the onLogout prop */}

@@ -36,33 +36,30 @@ module.exports = (db) => {
                 req.user.userId
             );
 
-            // ⚠️ Placeholder: In Sub-step 3, we will send this data to OpenAI.
-            // For now, let's return a success message to verify our database lookup works!
+            // Build the transaction summary text for the OpenAI system prompt
             const transactionListText = transactions.map(t => {
                 const typeLabel = t.is_negative === 1 ? 'Spent' : 'Received';
-                return `-${t.date}: ${typeLabel} €${t.amount} to/from ${t.receiver} [category: ${t.category}]`;
+                return `- ${t.date}: ${typeLabel} €${t.amount} to/from ${t.receiver} [${t.category || 'Uncategorized'}]`;
             }).join('\n');
 
-
-            //hidden system
+            // System prompt for OpenAI (used when API key is present)
             const systemPrompt = `
-            you are a helpful and Polite finacial chatbot assistant for the "Vindoboba
-            pro Fintect Bank".
-            Here is the clien's account profile:
-            -Username :${user.username}
-            -current Balance: ${user.balance.toFixed(2)} Euro
+            You are Andy, a helpful and polite financial assistant for "Vindobona Pro FinTech Bank".
+            Client profile:
+            - Username: ${user.username}
+            - Current Balance: €${user.balance.toFixed(2)}
+            Recent transactions (newest first):
+            ${transactionListText || 'No transactions found.'}
+            Rules:
+            1. Always be polite, professional and friendly.
+            2. Only answer finance or account-related questions using the data above.
+            3. For balance or transaction questions, refer to the real numbers above.
+            4. For unrelated questions, politely explain you only assist with account matters.
+            `;
 
-            Here is the most 20 recent transactions(newest First):${transactionListText || 'No transaction found.'}
-
-            strict Rules:
-            1:Always be polite, proffesssionall and freindly.
-            2. Only answer financial or account-related questions based on the provided profile and transaction list above.
-            3. If they ask about their balance or transaction history, refer to the numbers above.
-            4. If they ask to make a transfer, politely guide them to use the "Transfer" tab on their screen.
-            5. If they ask about things unrelated to their bank account, politely tell them that you can only help with account-related finance questions.
-            `
-            // call the askAi helper (sends everything to OpenAi)
-            const botReply = await askAi(systemPrompt, message)
+            // Pass real userData as third argument so the smart local engine can use it
+            const userData = { username: user.username, balance: user.balance, transactions };
+            const botReply = await askAi(systemPrompt, message, userData);
 
             res.json({ reply: botReply });
 

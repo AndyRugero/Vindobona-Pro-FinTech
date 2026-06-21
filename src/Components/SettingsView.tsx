@@ -6,9 +6,11 @@ import { API_BASE_URL } from '../config'; //imports production/development API
 interface SettingsViewProps {
     token: string | null;
     username: string | null;
+    avatarUrl?: string | null;
+    onAvatarUpdate?: (newUrl: string | null) => void;
 }
 
-const SettingsView: React.FC<SettingsViewProps> = ({ token, username }) => {
+const SettingsView: React.FC<SettingsViewProps> = ({ token, username, avatarUrl, onAvatarUpdate }) => {
     const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
     const [loading, setLoading] = useState(true);
     const [actionLoading, setActionLoading] = useState(false);
@@ -21,6 +23,62 @@ const SettingsView: React.FC<SettingsViewProps> = ({ token, username }) => {
     const [secret, setSecret] = useState('');
     const [verificationCode, setVerificationCode] = useState('');
     const [copied, setCopied] = useState(false);
+    const [uploading, setUploading] = useState(false);
+
+    const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            setError('Please select an image file (PNG/JPEG/GIF, etc.).');
+            return;
+        }
+
+        if (file.size > 2 * 1024 * 1024) {
+            setError('Image file is too large. Please choose an image smaller than 2MB.');
+            return;
+        }
+
+        setUploading(true);
+        setError('');
+        setSuccess('');
+
+        try {
+            const reader = new FileReader();
+            reader.onloadend = async () => {
+                const base64String = reader.result as string;
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/users/avatar`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ avatar_url: base64String })
+                    });
+
+                    const data = await response.json();
+                    if (response.ok) {
+                        if (onAvatarUpdate) {
+                            onAvatarUpdate(base64String);
+                        }
+                        setSuccess('Profile picture updated successfully! 👤');
+                    } else {
+                        setError(data.error || 'Failed to upload profile picture.');
+                    }
+                } catch (err) {
+                    setError('Failed to connect to the server to upload profile picture.');
+                } finally {
+                    setUploading(false);
+                }
+            };
+            reader.readAsDataURL(file);
+        } catch (err) {
+            setError('Error reading file.');
+            setUploading(false);
+        }
+    };
 
     // Fetch the 2FA Status when the component mounts
     useEffect(() => {
@@ -148,8 +206,30 @@ const SettingsView: React.FC<SettingsViewProps> = ({ token, username }) => {
                 <section className="settings-card profile-section">
                     <h3>User Profile</h3>
                     <div className="profile-details">
-                        <div className="avatar-large">
-                            {username ? username.substring(0, 2).toUpperCase() : 'UR'}
+                        <div className="avatar-large-container">
+                            <div 
+                                className="avatar-large" 
+                                onClick={() => document.getElementById('avatar-file-input')?.click()}
+                                style={{ cursor: 'pointer' }}
+                                title="Click to upload profile picture"
+                            >
+                                {avatarUrl ? (
+                                    <img src={avatarUrl} alt="Avatar" className="avatar-large-img" />
+                                ) : (
+                                    username ? username.substring(0, 2).toUpperCase() : 'UR'
+                                )}
+                            </div>
+                            <label htmlFor="avatar-file-input" className="avatar-upload-label">
+                                {uploading ? 'Uploading...' : 'Change Picture'}
+                            </label>
+                            <input
+                                type="file"
+                                id="avatar-file-input"
+                                accept="image/*"
+                                onChange={handleAvatarChange}
+                                disabled={uploading}
+                                style={{ display: 'none' }}
+                            />
                         </div>
                         <div className="details-info">
                             <div className="detail-row">

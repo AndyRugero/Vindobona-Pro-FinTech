@@ -1,6 +1,6 @@
 // 📥 1. IMPORT NECESSARY MODULES & TOOLS
 import React, { useState, useEffect, useRef } from 'react';
-// Lucide icons: MessageSquare = chat bubble icon, X = close icon, Send = send arrow icon, Bot = robot face icon
+// Lucide icons: MessageSquare = chat bubble, X = close, Send = send arrow, Bot = robot face
 import { MessageSquare, X, Send, Bot } from 'lucide-react';
 // CSS file keeps our styling separate from the TypeScript logic
 import '../Styles/Chatbot.css';
@@ -16,65 +16,73 @@ interface Message {
     id: string;             // Unique ID tag for each message
     sender: 'user' | 'bot'; // Determines who sent it (User or AI Assistant)
     text: string;           // The text contents of the message
-    timestamp: Date;        // The timestamp of the message
+    timestamp: Date;        // The time the message was sent
 }
+
+// 💡 Preset quick-questions shown as clickable chips in the chat
+const QUICK_QUESTIONS = [
+    '💰 What is my current balance?',
+    '📊 Show me my spending by category',
+    '💱 How does the FX Converter work?',
+    '🔒 How secure is my account?',
+    '💳 How do I freeze my card?',
+    '📈 What is a budget limit?',
+];
 
 // 🏗️ 3. THE CHATBOT COMPONENT FUNCTION
 const Chatbot: React.FC<ChatbotProps> = ({ token }) => {
-    // 💾 React Memory State: Controls whether the chat popup window is visible (true) or hidden (false)
+    // 💾 Controls whether the chat popup window is open or closed
     const [isOpen, setIsOpen] = useState(false);
 
-    // A. Stores the chat messages history. We initialize it with a bot welcome greeting.
+    // A. Stores the full chat message history. Initialized with a welcome greeting.
     const [messages, setMessages] = useState<Message[]>([
         {
             id: 'init-msg',
             sender: 'bot',
-            text: 'Hello! I am your Vindobona Pro AI Assistant. How can I help you with your finances today? 🏦',
+            text: 'Hi! I am Andy, your Vindobona Pro AI Assistant 🏦 Ask me anything about your account, or tap a quick question below!',
             timestamp: new Date()
         }
     ]);
-    // B. Stores the text currently being typed into the input field
+
+    // B. The text currently typed in the input field
     const [input, setInput] = useState('');
-    // C. Controls whether the three typing dots loading animation is visible
+
+    // C. Controls the three bouncing typing-dots animation
     const [isTyping, setIsTyping] = useState(false);
 
-    // 🎯 Reference to scroll the chatbot message box to the bottom automatically
+    // 🎯 Reference to auto-scroll the message box to the bottom
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    // 🕵️‍♂️ Monitor message updates: Scrolls down smoothly whenever messages or typing state changes
+    // Scroll to latest message whenever messages or typing state changes
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages, isTyping]);
 
-    // 🛫 HANDLER: Sends your typed question to the backend AI
-    const handleSend = async (e: React.FormEvent) => {
-        e.preventDefault(); // Prevent the web page from reloading when the form is submitted
-        if (!input.trim() || !token) return; // Stop if the input is empty or the user is not authenticated
+    // 🛫 Core send handler — works for both typed input AND quick-question chips
+    const sendMessage = async (text: string) => {
+        const trimmed = text.trim();
+        if (!trimmed || !token) return;
 
-        const userText = input.trim();
-        setInput(''); // Instantly clear the input bar for the next question
-
-        // 1. Add the User's message bubble to our state
+        // Add the user's bubble immediately
         const userMessage: Message = {
             id: Date.now().toString(),
             sender: 'user',
-            text: userText,
+            text: trimmed,
             timestamp: new Date()
         };
         setMessages(prev => [...prev, userMessage]);
-
-        // 2. Turn on the typing spinner dots
-        setIsTyping(true);
+        setInput('');        // Clear input box
+        setIsTyping(true);  // Show typing animation
 
         try {
-            // 3. Post user query to backend API '/api/chat'
+            // Post the message to the backend AI endpoint
             const response = await fetch(`${API_BASE_URL}/api/chat`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}` // Provide our secure JWT token
+                    'Authorization': `Bearer ${token}`
                 },
-                body: JSON.stringify({ message: userText })
+                body: JSON.stringify({ message: trimmed })
             });
 
             const data = await response.json();
@@ -83,7 +91,7 @@ const Chatbot: React.FC<ChatbotProps> = ({ token }) => {
                 throw new Error(data.error || 'Server returned an error.');
             }
 
-            // 4. Add the AI's reply bubble to our state
+            // Add Andy's reply bubble
             const botMessage: Message = {
                 id: (Date.now() + 1).toString(),
                 sender: 'bot',
@@ -92,62 +100,72 @@ const Chatbot: React.FC<ChatbotProps> = ({ token }) => {
             };
             setMessages(prev => [...prev, botMessage]);
 
-        } catch (error: any) {
+        } catch (error: unknown) {
             console.error('Chat connection failure:', error);
-            // 5. If server is down, show a help error bubble
+            // Show a friendly error bubble if the server is unreachable
             const errorMessage: Message = {
                 id: (Date.now() + 1).toString(),
                 sender: 'bot',
-                text: '⚠️ Sorry, I am having trouble connecting to the server. Please try again.',
+                text: '⚠️ Sorry, I am having trouble connecting right now. Please try again in a moment.',
                 timestamp: new Date()
             };
             setMessages(prev => [...prev, errorMessage]);
         } finally {
-            // 6. Turn off the typing spinner dots
-            setIsTyping(false);
+            setIsTyping(false); // Hide typing animation
         }
+    };
+
+    // Form submit handler (pressing Enter or clicking Send)
+    const handleSend = (e: React.FormEvent) => {
+        e.preventDefault();
+        sendMessage(input);
+    };
+
+    // Quick-question chip click handler
+    const handleQuickQuestion = (question: string) => {
+        sendMessage(question);
     };
 
     return (
         <>
-            {/* 🤖 FLOATING ACTION BUTTON (FAB) */}
-            <button 
-                className="chatbot-fab" 
-                onClick={() => setIsOpen(!isOpen)} 
-                title="Ask AI Assistant"
+            {/* 🤖 FLOATING ACTION BUTTON (FAB) — Fixed circle in the bottom-right corner */}
+            <button
+                className="chatbot-fab"
+                onClick={() => setIsOpen(!isOpen)}
+                title="Chat with Andy"
             >
-                {isOpen ? <X size={28} /> : <MessageSquare size={28} />}
+                {isOpen ? <X size={24} /> : <MessageSquare size={24} />}
             </button>
 
-            {/* 💬 THE POPUP CHAT WINDOW CONTAINER */}
+            {/* 💬 THE POPUP CHAT WINDOW — only rendered when isOpen === true */}
             {isOpen && (
                 <div className="chatbot-window">
-                    
-                    {/* Header bar */}
+
+                    {/* ── HEADER BAR ── */}
                     <div className="chatbot-header">
                         <div className="chatbot-header-info">
-                            <Bot size={22} color="#06b6d4" />
+                            <Bot size={20} color="#06b6d4" />
                             <div>
-                                <h4>Chat Assistant</h4>
+                                {/* 🏷️ Title changed to "Chat with Andy" */}
+                                <h4>Chat with Andy</h4>
                                 <span className="chatbot-status">Active</span>
                             </div>
                         </div>
-
                         <button className="chatbot-close-btn" onClick={() => setIsOpen(false)}>
-                            <X size={18} />
+                            <X size={16} />
                         </button>
                     </div>
 
-                    {/* Messages Board */}
+                    {/* ── MESSAGES BOARD ── */}
                     <div className="chatbot-messages">
-                        {/* Loop through all message bubbles and display them */}
+                        {/* Render each message bubble */}
                         {messages.map(msg => (
                             <div key={msg.id} className={`chat-bubble ${msg.sender}`}>
                                 {msg.text}
                             </div>
                         ))}
 
-                        {/* Show typing loader dots */}
+                        {/* Bouncing typing-dots shown while waiting for Andy's reply */}
                         {isTyping && (
                             <div className="typing-indicator">
                                 <span className="typing-dot"></span>
@@ -156,25 +174,43 @@ const Chatbot: React.FC<ChatbotProps> = ({ token }) => {
                             </div>
                         )}
 
+                        {/* Invisible anchor div — scrolled into view automatically */}
                         <div ref={messagesEndRef} />
                     </div>
 
-                    {/* Input form */}
-                    {/* Wrapping the input and button inside a <form> lets you press Enter to send */}
+                    {/* ── QUICK QUESTION CHIPS ── */}
+                    {/* Only shown when no conversation has started (just the welcome message) */}
+                    {messages.length <= 1 && (
+                        <div className="chatbot-quick-questions">
+                            {QUICK_QUESTIONS.map((q) => (
+                                <button
+                                    key={q}
+                                    className="quick-chip"
+                                    onClick={() => handleQuickQuestion(q)}
+                                    disabled={isTyping}
+                                >
+                                    {q}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* ── INPUT BAR ── */}
+                    {/* Wrapping in <form> allows pressing Enter to send */}
                     <form onSubmit={handleSend} className="chatbot-input-area">
-                        <input 
-                            type="text" 
+                        <input
+                            type="text"
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
-                            placeholder="Type a message..." 
-                            disabled={isTyping} 
+                            placeholder="Ask Andy anything..."
+                            disabled={isTyping}
                         />
-                        <button 
+                        <button
                             type="submit"
                             className="chatbot-send-btn"
                             disabled={isTyping || !input.trim()}
                         >
-                            <Send size={18} />
+                            <Send size={16} />
                         </button>
                     </form>
 

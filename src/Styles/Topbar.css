@@ -170,3 +170,18 @@
     color: #ef4444;
     border-color: #ef4444;
 }
+
+/* Adapt theme toggle button container for light mode */
+body.light-mode .theme-toggle {
+    background-color: #e2e8f0;
+}
+
+/* Adapt theme toggle icon inside for light mode */
+body.light-mode .theme-toggle svg {
+    color: #0f172a;
+}
+
+/* Ensure breadcrumb header text turns dark in light mode */
+body.light-mode .breadcrumb__current {
+    color: #0f172a;
+}
