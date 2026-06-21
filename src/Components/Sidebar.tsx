@@ -5,6 +5,7 @@ import '../Styles/Sidebar.css';
 import {
     UserRoundPen,
     LayoutDashboard,
+    ArrowRightLeft,
     CreditCard,
     Settings,
     HelpCircle,
@@ -87,13 +88,18 @@ const Sidebar: React.FC<{
                     <CreditCard size={18} className="nav-icon" /> Payment Methods
                 </div>
 
+                {/* 🔄 Member Transfers: Send funds to other Vindobona members (all users) */}
+                <div
+                    className={`nav-item ${currentView === 'transfer' ? 'active' : ''}`}
+                    onClick={() => onViewChange('transfer')}
+                >
+                    <ArrowRightLeft size={18} className="nav-icon" /> Member Transfers
+                </div>
 
-
-
+                {/* 📊 Budgets: Monthly spending caps and tracker */}
                 <div className={`nav-item ${currentView === 'budgets' ? 'active' : ''}`}
                     onClick={() => onViewChange('budgets')}>
                     <PiggyBank size={18} className="nav-icon" /> Budgets
-
                 </div>
 
 
