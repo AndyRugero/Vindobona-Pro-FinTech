@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { User, ArrowRight, Search, AlertCircle, CheckCircle2, X, Send } from 'lucide-react';
 import { API_BASE_URL } from '../config';
+import { useTransactionContext } from '../Context/TransactionContext';
 import '../Styles/MemberTransfers.css';
 
 interface Member {
@@ -10,6 +11,7 @@ interface Member {
 }
 
 const MemberTransfers: React.FC<{ token: string | null }> = ({ token }) => {
+    const { setLedgerData } = useTransactionContext();
     const [members, setMembers] = useState<Member[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedMember, setSelectedMember] = useState<Member | null>(null);
@@ -118,6 +120,19 @@ const MemberTransfers: React.FC<{ token: string | null }> = ({ token }) => {
                     setSuccess(data.message || 'Verification code sent to your email.');
                 } else {
                     setSuccess(`Successfully transferred €${parsedAmount.toFixed(2)} to ${selectedMember.username}!`);
+                    
+                    // Construct local transaction object and prepend it to the ledger list!
+                    const newTx = {
+                        id: `transfer-${Date.now()}`,
+                        date: new Date().toLocaleDateString('en-US', { weekday: 'short' }),
+                        receiver: selectedMember.username,
+                        amount: parsedAmount.toString(),
+                        category: 'Transfer',
+                        isNegative: true,
+                        status: 'Complete'
+                    };
+                    setLedgerData(prev => [newTx, ...prev]);
+
                     setAmount('');
                     setTwoFactorCode('');
                     setOtpCode('');
