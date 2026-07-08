@@ -445,7 +445,7 @@ export default function AdminPanel({ token }: AdminPanelProps) {
                                         <td>{tx.receiver}</td>
                                         <td>{tx.category}</td>
                                         <td className={`amount ${tx.is_negative === 1 ? 'negative' : 'positive'}`} style={{ color: tx.is_negative === 1 ? '#ef4444' : '#10b981', fontWeight: 600 }}>
-                                            {tx.is_negative === 1 ? '-' : ''}€{tx.amount.toFixed(2)}
+                                            {tx.is_negative === 1 ? '-' : ''}€{Math.abs(tx.amount).toFixed(2)}
                                         </td>
                                         <td>{tx.is_negative === 1 ? 'Expense' : 'Income'}</td>
                                         <td>
