@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import '../Styles/Topbar.css';
-import { Sun, Moon, LogOut, X, Mail } from 'lucide-react'; // 📥 Import standard icons
+import { Sun, Moon, LogOut, X } from 'lucide-react'; // 📥 Import standard icons
 
 // Base API URL
 const API_BASE_URL = 'https://vindobona-api-andy-ffapb3end8fwffdm.westeurope-01.azurewebsites.net';
