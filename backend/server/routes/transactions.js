@@ -377,7 +377,7 @@ module.exports = (db) => {
             } catch (rollbackError) {
                 console.error('Failed to rollback transaction:', rollbackError);
             }
-            return res.status(500).json({ error: 'Database verification failed' });
+            return res.status(500).json({ error: `Database verification failed: ${error.message}` });
         }
     });
     // =========================================================================

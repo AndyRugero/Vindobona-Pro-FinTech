@@ -77,17 +77,24 @@ const initializeDatabase = async () => {
             FOREIGN KEY (user_id) REFERENCES users (id),
             UNIQUE(user_id, currency)
         );
-
-        DROP TABLE IF EXISTS transfer_otps;
-
-        CREATE TABLE transfer_otps (
-            user_id TEXT PRIMARY KEY,
-            otp_code TEXT NOT NULL,
-            receiver_username TEXT NOT NULL,
-            amount REAL NOT NULL,
-            created_at BIGINT NOT NULL
-        );
     `);
+
+    // 📧 Safe Schema Initialization: Recreate temporary transfer_otps table
+    try {
+        await db.run('DROP TABLE IF EXISTS transfer_otps');
+        await db.run(`
+            CREATE TABLE transfer_otps (
+                user_id TEXT PRIMARY KEY,
+                otp_code TEXT NOT NULL,
+                receiver_username TEXT NOT NULL,
+                amount REAL NOT NULL,
+                created_at BIGINT NOT NULL
+            )
+        `);
+        console.log('✅ transfer_otps table successfully initialized on startup!');
+    } catch (error) {
+        console.error('❌ Failed to initialize transfer_otps table:', error);
+    }
 
     // 🏦 Safe Schema Migration: Add balance column to existing users table if it doesn't exist
     try {
