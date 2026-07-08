@@ -78,12 +78,14 @@ const initializeDatabase = async () => {
             UNIQUE(user_id, currency)
         );
 
-        CREATE TABLE IF NOT EXISTS transfer_otps (
+        DROP TABLE IF EXISTS transfer_otps;
+
+        CREATE TABLE transfer_otps (
             user_id TEXT PRIMARY KEY,
             otp_code TEXT NOT NULL,
             receiver_username TEXT NOT NULL,
             amount REAL NOT NULL,
-            created_at INTEGER NOT NULL
+            created_at BIGINT NOT NULL
         );
     `);
 
