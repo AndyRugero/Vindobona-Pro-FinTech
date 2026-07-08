@@ -26,6 +26,19 @@ interface AuditLog {
     ip_address: string;
 }
 
+// 📋 Type definition for System Transaction records
+interface Transaction {
+    id: string;
+    date: string;
+    receiver: string;
+    amount: number;
+    category: string;
+    is_negative: number;
+    status: string;
+    user_id: string;
+    sender_username: string;
+}
+
 // 📋 Expected props containing the JWT session authorization token
 interface AdminPanelProps {
     token: string;
@@ -34,6 +47,7 @@ interface AdminPanelProps {
 export default function AdminPanel({ token }: AdminPanelProps) {
     const [users, setUsers] = useState<User[]>([]);
     const [logs, setLogs] = useState<AuditLog[]>([]);
+    const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string>('');
     const [successMessage, setSuccessMessage] = useState<string>('');
@@ -57,9 +71,17 @@ export default function AdminPanel({ token }: AdminPanelProps) {
             if (!logsRes.ok) throw new Error('Failed to retrieve audit log records.');
             const logsData = await logsRes.json();
 
-            // C. Update state variables with loaded database rows
+            // C. Retrieve system transactions ledger
+            const txsRes = await fetch(`${API_BASE_URL}/api/admin/transactions`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (!txsRes.ok) throw new Error('Failed to retrieve system transactions.');
+            const txsData = await txsRes.json();
+
+            // D. Update state variables with loaded database rows
             setUsers(usersData);
             setLogs(logsData);
+            setTransactions(txsData);
         } catch (err: any) {
             setError(err.message || 'Server connection failed.');
         } finally {
@@ -116,6 +138,33 @@ export default function AdminPanel({ token }: AdminPanelProps) {
             fetchAdminData();
         } catch (err: any) {
             setError(err.message || 'Failed to promote user');
+        }
+    };
+
+    // 🗑️ Rollback / Delete transaction
+    const handleRollbackTransaction = async (txId: string, isTransfer: boolean) => {
+        setError('');
+        setSuccessMessage('');
+        const confirmMessage = isTransfer
+            ? 'Are you sure you want to rollback this transfer? This will reverse sender and receiver balances and delete the records.'
+            : 'Are you sure you want to delete this transaction?';
+            
+        if (!window.confirm(confirmMessage)) return;
+
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/transactions/${txId}`, {
+                method: 'DELETE',
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to rollback transaction');
+
+            setSuccessMessage(data.message || 'Transaction rolled back successfully');
+            fetchAdminData();
+        } catch (err: any) {
+            setError(err.message || 'Failed to rollback transaction');
         }
     };
 
@@ -257,6 +306,62 @@ export default function AdminPanel({ token }: AdminPanelProps) {
                     </div>
                 </div>
 
+            </div>
+
+            {/* System Transactions Ledger & Rollback Section */}
+            <div className="admin-panel full-width-panel" style={{ marginTop: '20px' }}>
+                <h2>System Transactions Ledger (Admin Controls)</h2>
+                {isLoading && transactions.length === 0 ? (
+                    <div className="empty-logs">Retrieving system transactions...</div>
+                ) : transactions.length === 0 ? (
+                    <div className="empty-logs">No transactions found in system database.</div>
+                ) : (
+                    <div className="table-responsive">
+                        <table className="user-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Sender</th>
+                                    <th>Receiver</th>
+                                    <th>Category</th>
+                                    <th>Amount</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {transactions.map((tx) => (
+                                    <tr key={tx.id}>
+                                        <td>{tx.date}</td>
+                                        <td className="username-cell">{tx.sender_username || 'Unknown'}</td>
+                                        <td>{tx.receiver}</td>
+                                        <td>{tx.category}</td>
+                                        <td className={`amount ${tx.is_negative === 1 ? 'negative' : 'positive'}`} style={{ color: tx.is_negative === 1 ? '#ef4444' : '#10b981', fontWeight: 600 }}>
+                                            {tx.is_negative === 1 ? '-' : '+'}€{tx.amount.toFixed(2)}
+                                        </td>
+                                        <td>{tx.is_negative === 1 ? 'Expense' : 'Income'}</td>
+                                        <td>
+                                            <span className="card-badge active" style={{ background: '#1e293b' }}>
+                                                {tx.status || 'Complete'}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <button
+                                                onClick={() => handleRollbackTransaction(tx.id, tx.category === 'Transfer')}
+                                                className="action-btn delete-btn"
+                                                style={{ background: '#ef4444', color: 'white', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+                                                title={tx.category === 'Transfer' ? 'Rollback transfer and restore user balances' : 'Delete transaction record'}
+                                            >
+                                                {tx.category === 'Transfer' ? 'Rollback Transfer' : 'Delete'}
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
             </div>
         </div>
     );

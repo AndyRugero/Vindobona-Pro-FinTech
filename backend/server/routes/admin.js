@@ -120,5 +120,22 @@ module.exports = (db) => {
         }
     });
 
+    // 📊 GET: Retrieve all transactions in the system (Admin only)
+    // Path: GET http://localhost:5001/api/admin/transactions
+    router.get('/transactions', authenticateToken, requireRole(['admin']), async (req, res) => {
+        try {
+            const transactions = await db.all(`
+                SELECT t.id, t.date, t.receiver, t.amount, t.category, t.is_negative, t.status, t.user_id, u.username as sender_username
+                FROM transactions t
+                LEFT JOIN users u ON t.user_id = u.id
+                ORDER BY t.id DESC
+            `);
+            res.status(200).json(transactions);
+        } catch (error) {
+            console.error('Admin Fetch Transactions Error:', error);
+            res.status(500).json({ error: 'Failed to retrieve system transactions.' });
+        }
+    });
+
     return router; 
 };
