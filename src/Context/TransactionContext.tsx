@@ -68,7 +68,8 @@ export const TransactionProvider = ({ children }: { children: ReactNode }) => {
     const totalBalance = useMemo(() => {
         return ledgerData.reduce((acc, tx) => {
             const amount = parseFloat(tx.amount.replace(/[^\d.-]/g, '')) || 0;
-            return acc + amount;
+            const cleanAmount = tx.isNegative ? -Math.abs(amount) : Math.abs(amount);
+            return acc + cleanAmount;
         }, 0);
     }, [ledgerData]);
 

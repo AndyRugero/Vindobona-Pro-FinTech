@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lasten- und Pflichtenheft: Vindobona Pro FinTech</title>
+    <style>
+        /* CSS Reset & Variable Definitions */
+        :root {
+            --primary: #0f172a;
+            --primary-light: #1e293b;
+            --accent: #2563eb;
+            --accent-glow: rgba(37, 99, 235, 0.15);
+            --text-dark: #0f172a;
+            --text-muted: #475569;
+            --bg-light: #f8fafc;
+            --border: #e2e8f0;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            color: var(--text-dark);
+            line-height: 1.6;
+            background: #ffffff;
+            font-size: 16px;
+        }
+
+        /* Container & Page Layout */
+        .document-container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 60px;
+            background: #ffffff;
+            box-shadow: 0 4px 30px rgba(0,0,0,0.05);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        /* Cover Page Styling */
+        .cover-page {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 800px;
+            page-break-after: always;
+            padding-bottom: 50px;
+            border-bottom: 2px solid var(--primary);
+            margin-bottom: 50px;
+        }
+
+        .cover-header {
+            margin-top: 60px;
+        }
+
+        .cover-logo {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--primary);
+            letter-spacing: -0.5px;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .cover-logo span {
+            background: var(--accent);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 6px;
+            font-size: 18px;
+        }
+
+        .cover-title {
+            font-size: 42px;
+            font-weight: 800;
+            line-height: 1.15;
+            color: var(--primary);
+            margin-bottom: 16px;
+        }
+
+        .cover-subtitle {
+            font-size: 20px;
+            font-weight: 400;
+            color: var(--text-muted);
+            margin-bottom: 40px;
+        }
+
+        .cover-meta {
+            margin-top: auto;
+            background: var(--bg-light);
+            padding: 30px;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .meta-label {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .meta-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        /* Typography & Headings */
+        h1, h2, h3, h4 {
+            color: var(--primary);
+            font-weight: 700;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            page-break-after: avoid;
+        }
+
+        h1 {
+            font-size: 28px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 8px;
+            margin-top: 40px;
+        }
+
+        h2 {
+            font-size: 20px;
+            color: var(--primary-light);
+        }
+
+        h3 {
+            font-size: 16px;
+        }
+
+        p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        /* Lists */
+        ul, ol {
+            margin-left: 24px;
+            margin-bottom: 20px;
+        }
+
+        li {
+            margin-bottom: 6px;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 25px 0;
+            font-size: 14px;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border: 1px solid var(--border);
+        }
+
+        th {
+            background-color: var(--primary-light);
+            color: white;
+            font-weight: 600;
+        }
+
+        tr:nth-child(even) td {
+            background-color: var(--bg-light);
+        }
+
+        /* SVG Architecture Diagram */
+        .diagram-container {
+            text-align: center;
+            margin: 30px 0;
+            background: var(--bg-light);
+            padding: 24px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        /* Sign-off / Signature section */
+        .signature-section {
+            margin-top: 50px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            page-break-inside: avoid;
+        }
+
+        .signature-box {
+            border-top: 1px solid var(--primary);
+            padding-top: 10px;
+            margin-top: 80px;
+        }
+
+        .signature-title {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 2px;
+        }
+
+        .signature-name {
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        /* Highlight box for warnings/tips */
+        .callout {
+            background: var(--accent-glow);
+            border-left: 4px solid var(--accent);
+            padding: 15px 20px;
+            border-radius: 0 8px 8px 0;
+            margin: 20px 0;
+        }
+
+        /* DDL / Code display */
+        pre {
+            background: var(--bg-light);
+            border: 1px solid var(--border);
+            padding: 15px;
+            border-radius: 6px;
+            font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+            font-size: 13px;
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+
+        /* Page Number and Print Adjustments */
+        @media print {
+            body {
+                background: #ffffff;
+                color: #000000;
+                font-size: 12pt;
+            }
+            .document-container {
+                box-shadow: none;
+                margin: 0;
+                padding: 0;
+                max-width: 100%;
+                border: none;
+            }
+            .cover-page {
+                min-height: 100vh;
+                border-bottom: none;
+                margin-bottom: 0;
+            }
+            h1 {
+                margin-top: 25pt;
+                border-bottom: 1pt solid #000;
+                padding-bottom: 4pt;
+            }
+            table {
+                page-break-inside: avoid;
+            }
+            .diagram-container {
+                page-break-inside: avoid;
+            }
+            .signature-section {
+                page-break-inside: avoid;
+            }
+            pre {
+                page-break-inside: avoid;
+                white-space: pre-wrap;
+            }
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="document-container">
+    <!-- COVER PAGE -->
+    <div class="cover-page">
+        <div class="cover-header">
+            <div class="cover-logo">🏦 <span>Vindobona Pro</span> FinTech</div>
+            <h1 class="cover-title">System- und Anforderungsdokumentation</h1>
+            <div class="cover-subtitle">Umfassendes Lasten- und Pflichtenheft für das Semesterprojekt</div>
+        </div>
+        
+        <div class="cover-meta">
+            <div class="meta-item">
+                <span class="meta-label">Projektname</span>
+                <span class="meta-value">Vindobona Pro FinTech</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">Verfasser / Student</span>
+                <span class="meta-value">Andy Rugero</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">Datum der Erstellung</span>
+                <span class="meta-value">03. Juli 2026</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">Projektpartner / Reviewer</span>
+                <span class="meta-value">Antigravity AI (Pair Programming Partner)</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">Dokumentenversion</span>
+                <span class="meta-value">Version 1.0.0</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">Dokumentenstatus</span>
+                <span class="meta-value">Freigegeben</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 1. EINLEITUNG -->
+    <h1>1. Einleitung</h1>
+    
+    <h2>1.1. Ausgangssituation</h2>
+    <p>Im heutigen Finanzsektor sind Schnelligkeit, Sicherheit und Barrierefreiheit im digitalen Banking essenzielle Standarderwartungen. Klassische Online-Banking-Plattformen wirken jedoch häufig überladen, bieten wenig Unterstützung bei Budget-Entscheidungen und verzichten meist auf integrierte KI-Beratungen oder kostenfreie, regionale Filialfinder. Das Semesterprojekt <strong>Vindobona Pro FinTech</strong> setzt genau an diesem Punkt an. Es schafft ein modernes, visuell ansprechendes Web-Banking-Dashboard, das speziell für den Großraum Wien konzipiert wurde.</p>
+
+    <h2>1.2. Zielsetzung</h2>
+    <p>Das Ziel dieses Projekts ist die Konzeption und Realisierung einer voll funktionsfähigen FinTech-Webanwendung. Diese verbindet typische Kernbanken-Features (Kontoführung, Ledger, Währungs-Wallets und P2P-Überweisungen) mit intelligenten Mehrwertdiensten wie einem KI-Finanzberater (Chatbot) und einer interaktiven Geldautomaten- und Filialsuche auf Basis freier Kartendaten (Leaflet). Das System wird nach modernsten DevOps-Prinzipien (Docker, Kubernetes) auf Cloud-Diensten (Azure, Vercel) ausfallsicher betrieben.</p>
+
+    <h2>1.3. Zielgruppe</h2>
+    <ul>
+        <li><strong>Privatkunden (Endbenutzer):</strong> Verwalten ihr Guthaben in verschiedenen Währungen, buchen Transaktionen, nutzen den KI-Assistenten zur Analyse ihrer Ausgaben und lokalisieren Wiener Geldautomaten.</li>
+        <li><strong>Administratoren (Bank-Mitarbeiter):</strong> Überwachen Kontostände, sperren/entsperren Kreditkarten bei Sicherheitsvorfällen und verwalten Benutzerrollen.</li>
+        <li><strong>Auditoren (Compliance-Beauftragte):</strong> Analysieren Systemereignisse über einen lückenlosen, scrollbaren Audit-Log-Feed mit IP-Adressen und Zeitstempeln.</li>
+    </ul>
+
+    <!-- 2. PROJEKTBESCHREIBUNG -->
+    <h1>2. Projektbeschreibung</h1>
+    
+    <h2>2.1. Vision</h2>
+    <p><em>Vindobona Pro FinTech</em> verbindet erstklassige Ästhetik (Dark Mode, Glassmorphismus, BEM-CSS-Richtlinien) mit professioneller Performance und Skalierbarkeit. Die Anwendung bietet dem Nutzer das Gefühl eines modernen Neo-Brokers, während im Hintergrund robuste Authentifizierung (JWT, Google OAuth, 2FA) und ausfallsichere Kubernetes-Architekturen mit Self-Healing-Fähigkeiten (Liveness/Readiness Probes) für maximale Zuverlässigkeit sorgen.</p>
+
+    <h2>2.2. Hauptmerkmale (Scope)</h2>
+    <p>Die Anwendung implementiert die folgenden funktionalen Kernkomponenten:</p>
+    <ul>
+        <li><strong>Benutzerkonto & Authentifizierung:</strong> Sichere Registrierung und Anmeldung via JSON Web Token (JWT), Multi-Faktor-Authentifizierung (2FA), Passwort-Reset per E-Mail und Google OAuth Integration.</li>
+        <li><strong>Multi-Währungs-Wallets:</strong> Parallele Kontoführung in verschiedenen Leitwährungen (EUR, USD, GBP) mit Echtzeit-Tausch und Saldenanzeige.</li>
+        <li><strong>Echtzeit-Ledger (Hauptbuch):</strong> Chronologische Auflistung aller Transaktionen inklusive automatisierter, regelbasierter Kategorisierung (z. B. "Apple" zu "Tech", "Netflix" zu "Entertainment").</li>
+        <li><strong>AI Chatbot Assistent:</strong> Dialog-Interface zur Auswertung persönlicher Finanzdaten und intelligenter Beratung ("Wie viel habe ich diesen Monat für Essen ausgegeben?").</li>
+        <li><strong>Wiener ATM- & Filialfinder:</strong> Kostenlose, interaktive OpenStreetMap-Karte mit benutzerdefinierten Markern für alle Bankstandorte in Wien.</li>
+        <li><strong>Budget-Manager:</strong> Erstellung monatlicher Ausgaben-Limits pro Kategorie und Echtzeit-Fortschrittsbalken mit Farbindikator (Rot bei Überschreitung).</li>
+        <li><strong>Mitglieder-Überweisungen:</strong> Direktüberweisungen an andere registrierte Systemmitglieder über ein sicheres Buchungspanel.</li>
+        <li><strong>Admin-Konsole & Live-Audit:</strong> Exklusiver Bereich für Admins zum Sperren von Karten und Verfolgen sicherheitsrelevanter Aktionen in Echtzeit.</li>
+        <li><strong>Kontoauszug-Export:</strong> Downloadmöglichkeit des Ledgers im CSV- und PDF-Format für persönliche Aufzeichnungen.</li>
+    </ul>
+
+    <!-- 3. ANFORDERUNGEN -->
+    <h1>3. Anforderungen</h1>
+    
+    <h2>3.1. Funktionale Anforderungen (Requirements)</h2>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 15%">Anforderung ID</th>
+                <th style="width: 25%">Name</th>
+                <th style="width: 45%">Beschreibung</th>
+                <th style="width: 15%">Priorität</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>FA-100</strong></td>
+                <td>Benutzerauthentifizierung</td>
+                <td>Registrierung, Login, JWT-Generierung, API-Schutz und Google OAuth.</td>
+                <td>Hoch</td>
+            </tr>
+            <tr>
+                <td><strong>FA-101</strong></td>
+                <td>Erweiterte Sicherheit</td>
+                <td>Zwei-Faktor-Authentifizierung (2FA) und E-Mail-Passwort-Reset.</td>
+                <td>Mittel</td>
+            </tr>
+            <tr>
+                <td><strong>FA-200</strong></td>
+                <td>Währungs-Wallets</td>
+                <td>Kontoführung in EUR, USD und GBP inklusive Saldenübersichten.</td>
+                <td>Hoch</td>
+            </tr>
+            <tr>
+                <td><strong>FA-201</strong></td>
+                <td>Wechselkurs-Rechner</td>
+                <td>Währungsumtausch auf Basis definierter Wechselkurse.</td>
+                <td>Mittel</td>
+            </tr>
+            <tr>
+                <td><strong>FA-300</strong></td>
+                <td>Transaktions-Ledger</td>
+                <td>Tabellarischer Buchungsverlauf mit Betrags-, Datums- und Empfängerangabe.</td>
+                <td>Hoch</td>
+            </tr>
+            <tr>
+                <td><strong>FA-301</strong></td>
+                <td>Automatische Kategorisierung</td>
+                <td>Zuweisung von Ausgabenkategorien basierend auf Händlernamen.</td>
+                <td>Mittel</td>
+            </tr>
+            <tr>
+                <td><strong>FA-400</strong></td>
+                <td>AI Chatbot Assistent</td>
+                <td>Interaktive Finanzberatung und Ledger-Auswertung via LLM-API.</td>
+                <td>Mittel</td>
+            </tr>
+            <tr>
+                <td><strong>FA-500</strong></td>
+                <td>Geldautomatensuche</td>
+                <td>Leaflet-Karte mit Wiener Geldautomaten und sidebar-basierter Navigation.</td>
+                <td>Mittel</td>
+            </tr>
+            <tr>
+                <td><strong>FA-600</strong></td>
+                <td>Budget-Manager</td>
+                <td>Erstellung von Ausgaben-Limits pro Kategorie und Fortschrittsanzeige.</td>
+                <td>Mittel</td>
+            </tr>
+            <tr>
+                <td><strong>FA-700</strong></td>
+                <td>Karten-Freezing / Admin</td>
+                <td>Sperrung von Karten und Verwalten von Benutzerrollen im Admin-Panel.</td>
+                <td>Hoch</td>
+            </tr>
+            <tr>
+                <td><strong>FA-701</strong></td>
+                <td>Sicherheits-Audit-Log</td>
+                <td>Lückenlose Erfassung aller administrativen und sicherheitsrelevanten Aktionen.</td>
+                <td>Hoch</td>
+            </tr>
+            <tr>
+                <td><strong>FA-800</strong></td>
+                <td>Kontoauszug-Export</td>
+                <td>Downloadmöglichkeit des persönlichen Ledger-Inhalts als CSV und PDF.</td>
+                <td>Mittel</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>3.2. Nicht-funktionale Anforderungen (NFA)</h2>
+    <ul>
+        <li><strong>NFA-100: Sicherheit & DSGVO-Konformität</strong>
+            <ul>
+                <li>Passwortspeicherung erfolgt ausschließlich gehasht mit dem bcrypt-Algorithmus.</li>
+                <li>Sitzungs-Tokens (JWT) enthalten keine sensitiven Daten und besitzen eine Gültigkeit von maximal 24 Stunden.</li>
+                <li>Lückenlose Isolierung der Produktionsdatenbank über Azure-Firewall-Richtlinien.</li>
+            </ul>
+        </li>
+        <li><strong>NFA-200: Usability & Frontend-Design</strong>
+            <ul>
+                <li>Die Applikation nutzt ein einheitliches Dark-Mode-Design mit CSS Glassmorphismus.</li>
+                <li>Die Navigation ist vollständig barrierefrei und responsiv (optimiert für Smartphones, Tablets und Desktops).</li>
+                <li>Einsatz von Micro-Animations bei UI-Aktionen (z. B. Hover-Effekt bei StatCards).</li>
+            </ul>
+        </li>
+        <li><strong>NFA-300: Performance & Robustheit</strong>
+            <ul>
+                <li>Die API-Antwortzeiten liegen unter Normalbedingungen unter 500 ms.</li>
+                <li>Implementierung eines Rate-Limiters auf der API-Ebene (max. 100 API-Anfragen pro IP in 15 Minuten).</li>
+            </ul>
+        </li>
+        <li><strong>NFA-400: Deployment & Infrastruktur</strong>
+            <ul>
+                <li>Das Backend läuft in Docker-Containern und wird in einem Kubernetes-Cluster mit mindestens 3 Replika-Pods gehostet (Ausfallsicherung).</li>
+                <li>Die Pipeline-Automatisierung (CI/CD) erfolgt über GitHub Actions.</li>
+            </ul>
+        </li>
+    </ul>
+
+    <!-- 4. ARCHITEKTUR UND TECHNOLOGIE -->
+    <h1>4. Architektur und Technologie</h1>
+    
+    <h2>4.1. Systemarchitektur</h2>
+    <p>Das Gesamtsystem gliedert sich in ein clientseitiges React-Frontend und eine serverseitige Node.js Express REST API mit angebundenen SQL-Datenbanken.</p>
+    
+    <div class="diagram-container">
+        <!-- SVG System Architecture Diagram -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400" width="100%" height="auto">
+            <!-- Background Grid -->
+            <rect width="800" height="400" fill="#f8fafc" rx="8" />
+            
+            <!-- SUBGRAPH: CLIENT -->
+            <rect x="20" y="40" width="200" height="320" fill="none" stroke="#94a3b8" stroke-width="2" stroke-dasharray="4 4" rx="6" />
+            <text x="30" y="30" font-size="12" font-weight="bold" fill="#64748b">Client-Ebene (React Frontend)</text>
+            
+            <rect x="40" y="80" width="160" height="80" fill="#1e293b" rx="6" />
+            <text x="50" y="110" font-size="14" font-weight="bold" fill="#ffffff">React App (Vite)</text>
+            <text x="50" y="130" font-size="11" fill="#94a3b8">Währungs-Dashboard & UI</text>
+            
+            <rect x="40" y="200" width="160" height="80" fill="#3b82f6" rx="6" />
+            <text x="50" y="230" font-size="14" font-weight="bold" fill="#ffffff">Leaflet Map API</text>
+            <text x="50" y="250" font-size="11" fill="#dbeafe">ATM- & Filialsuche</text>
+
+            <!-- CONNECTIONS -->
+            <!-- Client to Ingress -->
+            <path d="M 220 160 Q 270 120 310 120" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow)" />
+            <path d="M 220 240 Q 270 200 310 180" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow)" />
+
+            <!-- GATEWAY / INGRESS -->
+            <rect x="320" y="80" width="160" height="120" fill="#0f172a" rx="6" />
+            <text x="330" y="110" font-size="14" font-weight="bold" fill="#ffffff">Ingress / Nginx</text>
+            <text x="330" y="130" font-size="11" fill="#94a3b8">Reverse Proxy & TLS</text>
+            <text x="330" y="160" font-size="12" font-weight="bold" fill="#ef4444">Rate Limiter</text>
+            <text x="330" y="180" font-size="10" fill="#ef4444">100 req / 15 min</text>
+
+            <!-- Ingress to API -->
+            <path d="M 480 140 L 550 140" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow)" />
+
+            <!-- SUBGRAPH: BACKEND -->
+            <rect x="560" y="40" width="220" height="320" fill="none" stroke="#94a3b8" stroke-width="2" stroke-dasharray="4 4" rx="6" />
+            <text x="570" y="30" font-size="12" font-weight="bold" fill="#64748b">Server-Ebene (Node API)</text>
+
+            <rect x="580" y="80" width="180" height="100" fill="#1e293b" rx="6" />
+            <text x="590" y="110" font-size="13" font-weight="bold" fill="#ffffff">Express.js API Server</text>
+            <text x="590" y="130" font-size="10" fill="#94a3b8">JWT Auth & Transactions</text>
+            <text x="590" y="150" font-size="11" fill="#10b981">LLM Chatbot Integration</text>
+
+            <!-- API to DBs -->
+            <path d="M 670 180 L 670 230" fill="none" stroke="#2563eb" stroke-width="2" marker-end="url(#arrow)" />
+
+            <!-- DATABASES -->
+            <rect x="580" y="240" width="180" height="100" fill="#0f172a" rx="6" />
+            <text x="590" y="270" font-size="14" font-weight="bold" fill="#ffffff">SQL Storage</text>
+            <text x="590" y="295" font-size="11" fill="#10b981">PostgreSQL Flexible (Azure)</text>
+            <text x="590" y="315" font-size="11" fill="#94a3b8">SQLite (Local Dev)</text>
+
+            <!-- Marker Definition for arrows -->
+            <defs>
+                <marker id="arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="#2563eb" />
+                </marker>
+            </defs>
+        </svg>
+    </div>
+
+    <h2>4.2. Technologieschnitt (Tech Stack)</h2>
+    <ul>
+        <li><strong>Frontend:</strong> React 19.x, TypeScript (TSX), Vite, Vanilla CSS (BEM-Konvention), Lucide Icons, Leaflet Maps.</li>
+        <li><strong>Backend:</strong> Node.js, Express.js, JWT, `express-rate-limit`.</li>
+        <li><strong>Datenbanken:</strong> SQLite (für die lokale Entwicklung), PostgreSQL Flexible Server auf Microsoft Azure (für die Cloud-Produktion).</li>
+        <li><strong>Infrastruktur & DevOps:</strong> Docker, Kubernetes (YAML manifests), GitHub Actions (CI/CD), Vercel (Frontend-Hosting), Azure Web App for Containers (Backend-Hosting).</li>
+    </ul>
+
+    <!-- 5. ZEITPLAN -->
+    <h1>5. Zeitplan (Timeline)</h1>
+    <p>Das Projekt erstreckt sich über einen Zeitraum von 14 Semesterwochen:</p>
+    <ul>
+        <li><strong>Woche 01 - 02 (Spezifikation & Design):</strong> Ausarbeitung des Lasten- und Pflichtenhefts. Definition des Datenbankschemas. Erstellung erster statischer Frontend-Layouts (Sidebar, Topbar).</li>
+        <li><strong>Woche 03 - 05 (Kernentwicklung & Auth):</strong> Implementierung der Registrierung/Anmeldung (JWT-Tokens). Aufbau des Transaction-Ledgers und Wallet-Systems.</li>
+        <li><strong>Woche 06 - 08 (Erweiterte Features):</strong> Integration des OpenAI/LLM Chatbot-Services. Implementierung der Leaflet-Map für den ATM-Finder. Entwicklung des Budget-Managers.</li>
+        <li><strong>Woche 09 - 10 (DevOps & Containerisierung):</strong> Schreiben des Dockerfiles für den Backend-Server. Konfiguration von Docker Compose zur lokalen Orchestrierung.</li>
+        <li><strong>Woche 11 - 12 (Kubernetes & Azure Deploy):</strong> Erstellung der Kubernetes Deployment- und Service-Dateien (3 Replikas, Health Probes). Bereitstellung der Datenbank auf Azure PostgreSQL Flexible Server.</li>
+        <li><strong>Woche 13 - 14 (QA, Tests & Abgabe):</strong> Durchführung von Lasttests und Sicherheitstests. Erstellung der Projektdokumentation und Abgabe der PDF-Datei.</li>
+    </ul>
+
+    <!-- 6. RISIKOBEWERTUNG -->
+    <h1>6. Risikobewertung</h1>
+    <table>
+        <thead>
+            <tr>
+                <th style="width: 10%">ID</th>
+                <th style="width: 30%">Risiko</th>
+                <th style="width: 15%">Auswirkung</th>
+                <th style="width: 15%">Wahrscheinlichkeit</th>
+                <th style="width: 30%">Gegenmaßnahme (Mitigation)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>R-1</strong></td>
+                <td>Sicherheitslücke bei JWT / Token-Diebstahl</td>
+                <td>Hoch</td>
+                <td>Gering</td>
+                <td>Ausschließlich HTTPS-Verbindungen. Kurze Ablaufzeiten der Tokens. Speicherung im Secure Context des Browsers. Zwei-Faktor-Authentifizierung (2FA).</td>
+            </tr>
+            <tr>
+                <td><strong>R-2</strong></td>
+                <td>Ausfall der Backend-API bei Lastspitzen</td>
+                <td>Hoch</td>
+                <td>Mittel</td>
+                <td>Ausführung im Kubernetes-Cluster mit mindestens 3 replizierten Pods. Einrichtung von Liveness/Readiness-Probes für automatisches Self-Healing. API-Rate-Limiter.</td>
+            </tr>
+            <tr>
+                <td><strong>R-3</strong></td>
+                <td>Hohe Google-Maps Lizenzgebühren</td>
+                <td>Mittel</td>
+                <td>Hoch</td>
+                <td>Vollständiger Verzicht auf Google Maps; stattdessen Nutzung der kostenfreien Leaflet.js-Bibliothek in Kombination mit OpenStreetMap-Kacheln.</td>
+            </tr>
+            <tr>
+                <td><strong>R-4</strong></td>
+                <td>Fehlberatung durch KI-Chatbot</td>
+                <td>Mittel</td>
+                <td>Mittel</td>
+                <td>Konfiguration strikter System-Prompts. Anzeige eines Disclaimers in der UI ("Antworten sind rein informativ und keine Finanzberatung").</td>
+            </tr>
+            <tr>
+                <td><strong>R-5</strong></td>
+                <td>Datenverlust in der Cloud-Datenbank</td>
+                <td>Kritisch</td>
+                <td>Gering</td>
+                <td>Automatische, tägliche Backups über Microsoft Azure PostgreSQL Flexible Server. Lokale Versionierung von Init-Datenbankskripten.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 7. ZUSTÄNDIGKEITEN -->
+    <h1>7. Zuständigkeiten</h1>
+    <p>Die Aufgaben innerhalb des Projekts sind wie folgt verteilt:</p>
+    <ul>
+        <li><strong>Andy Rugero (Student & Lead Developer):</strong> Verantwortlich für die gesamte Systemarchitektur, Code-Entwicklung (Frontend React TSX, Backend Node.js, SQL-Tabellen), Containerisierung mittels Docker, Kubernetes-Cluster-Manifeste sowie Bereitstellung in der Cloud (Azure/Vercel).</li>
+        <li><strong>Antigravity AI (Pair Programming Partner & Technical Advisor):</strong> Unterstützung beim Code-Review, Performance-Optimierung, Generierung detaillierter Vorlagen und Bereitstellungs-Anleitungen.</li>
+        <li><strong>Fachbetreuung / Projekt-Prüfer:</strong> Regelmäßige Überprüfung der Meilensteine, Feedback-Runden und finale Benotung des Projekts sowie des Pflichtenhefts.</li>
+    </ul>
+
+    <!-- 8. GENEHMIGUNG -->
+    <h1>8. Genehmigung (Sign-off)</h1>
+    <p>Mit der Unterzeichnung dieses Dokuments wird das Lasten- und Pflichtenheft als bindende Grundlage für die Softwareproduktion genehmigt.</p>
+    
+    <div class="signature-section">
+        <div class="signature-box">
+            <div class="signature-title">Projektleiter / Student</div>
+            <div class="signature-name">Andy Rugero</div>
+        </div>
+        <div class="signature-box">
+            <div class="signature-title">Fachbetreuer / Prüfer</div>
+            <div class="signature-name">Name Fachbetreuer</div>
+        </div>
+    </div>
+
+    <!-- 9. MÖGLICHE ANHÄNGE -->
+    <h1>9. Mögliche Anhänge</h1>
+    
+    <h2>Anhang A: Datenbankschema (DDL)</h2>
+    <p>Nachfolgend ist das strukturierte Schema der relationalen SQL-Datenbank zur Speicherung der Kernentitäten dargestellt:</p>
+    <pre>
+CREATE TABLE IF NOT EXISTS users (
+    id TEXT PRIMARY KEY,
+    username TEXT UNIQUE NOT NULL,
+    email TEXT UNIQUE,
+    password_hash TEXT NOT NULL,
+    google_id TEXT UNIQUE,
+    is_verified INTEGER NOT NULL DEFAULT 0,
+    two_factor_secret TEXT,
+    two_factor_enabled INTEGER NOT NULL DEFAULT 0,
+    balance REAL NOT NULL DEFAULT 0.0,
+    role TEXT NOT NULL DEFAULT 'user',
+    is_card_frozen INTEGER NOT NULL DEFAULT 0,
+    avatar_url TEXT
+);
+
+CREATE TABLE IF NOT EXISTS transactions (
+    id TEXT PRIMARY KEY,
+    date TEXT NOT NULL,
+    receiver TEXT NOT NULL,
+    amount REAL NOT NULL,
+    category TEXT DEFAULT 'General',
+    is_negative INTEGER NOT NULL,
+    status TEXT DEFAULT 'Complete',
+    user_id TEXT,
+    FOREIGN KEY(user_id) REFERENCES users(id)
+);
+
+CREATE TABLE IF NOT EXISTS wallets (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    currency TEXT NOT NULL,
+    balance REAL NOT NULL DEFAULT 0.0,
+    FOREIGN KEY(user_id) REFERENCES users(id),
+    UNIQUE(user_id, currency)
+);
+
+CREATE TABLE IF NOT EXISTS budgets (
+    id TEXT PRIMARY KEY,
+    user_id TEXT,
+    category TEXT NOT NULL,
+    amount REAL NOT NULL,
+    FOREIGN KEY(user_id) REFERENCES users(id),
+    UNIQUE(user_id, category)
+);
+
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id TEXT PRIMARY KEY,
+    user_id TEXT,
+    action TEXT NOT NULL,
+    details TEXT,
+    ip_address TEXT,
+    timestamp TEXT NOT NULL,
+    FOREIGN KEY(user_id) REFERENCES users(id)
+);</pre>
+
+    <h2>Anhang B: API-Schnittstellendokumentation</h2>
+    <ul>
+        <li><code>POST /api/users/register</code> - Registriert einen neuen Account. Body: <code>{ username, email, password }</code>.</li>
+        <li><code>POST /api/auth/login</code> - Überprüft Anmeldedaten und gibt JWT-Token zurück. Body: <code>{ username, password }</code>.</li>
+        <li><code>GET /api/transactions</code> - Ruft alle Transaktionen des angemeldeten Benutzers ab (erfordert JWT-Header).</li>
+        <li><code>POST /api/transactions</code> - Bucht eine neue Transaktion. Body: <code>{ date, receiver, amount, category, isNegative }</code>.</li>
+        <li><code>POST /api/transactions/transfer</code> - Führt eine P2P-Überweisung an ein anderes Mitglied aus. Body: <code>{ receiverEmail, amount }</code>.</li>
+        <li><code>GET /api/budgets</code> - Ruft gesetzte Budgetlimits ab.</li>
+        <li><code>POST /api/budgets</code> - Speichert ein neues Budgetlimit. Body: <code>{ category, amount }</code>.</li>
+        <li><code>GET /api/locations</code> - Ruft die Koordinaten der Wiener Geldautomaten und Filialen ab (Leaflet-Anbindung).</li>
+        <li><code>POST /api/chat</code> - Sendet Fragen an den LLM-Finanzassistenten. Body: <code>{ message }</code>.</li>
+        <li><code>GET /api/admin/logs</code> - Ruft die Audit-Logs zur Live-Überwachung ab (erfordert Administrator-JWT-Token).</li>
+    </ul>
+</div>
+
+</body>
+</html>

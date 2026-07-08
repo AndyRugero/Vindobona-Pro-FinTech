@@ -1,0 +1,391 @@
+\documentclass[11pt,a4paper]{article}
+
+% --- 1. CORE PACKAGES ---
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[ngerman]{babel} % German language support
+\usepackage[margin=1in]{geometry}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, arrows, positionings, calc, shadows}
+\usepackage[many]{tcolorbox}
+\usepackage[colorlinks=true, linkcolor=NavyBlue, urlcolor=SlateBlue, citecolor=EmeraldGreen]{hyperref}
+
+% --- 2. COLOR PALETTE DEFINITIONS (Corporate Bank Theme) ---
+\definecolor{NavyBlue}{HTML}{0F172A}      % Slate 900 (Primary Dark)
+\definecolor{SlateBlue}{HTML}{1E293B}     % Slate 800 (Secondary Accent)
+\definecolor{GoldAccent}{HTML}{EAB308}    % Gold 500 (Vindobona Theme)
+\definecolor{EmeraldGreen}{HTML}{10B981}  % Emerald 500 (Income/Security)
+\definecolor{RubyRed}{HTML}{EF4444}       % Red 500 (Expense/Blocked)
+\definecolor{SkyBlue}{HTML}{0EA5E9}       % Sky 500 (Info/Vercel)
+\definecolor{LightBG}{HTML}{F8FAFC}       % Slate 50
+\definecolor{BorderGray}{HTML}{E2E8F0}    % Slate 200
+
+% --- 3. PAGE STYLING & HEADERS ---
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.5pt}
+\renewcommand{\footrulewidth}{0.5pt}
+\fancyhead[L]{\textcolor{NavyBlue}{\textbf{Vindobona Pro FinTech}}}
+\fancyhead[R]{\textcolor{SlateBlue}{Architektur-Handbuch}}
+\fancyfoot[L]{\textcolor{SlateBlue}{\small Wiener Edition}}
+\fancyfoot[C]{\textcolor{SlateBlue}{\small Seite \thepage}}
+\fancyfoot[R]{\textcolor{SlateBlue}{\small Vertrauliches Dokument}}
+
+% ---  titling adjustments ---
+\titleformat{\section}
+  {\color{NavyBlue}\normalfont\Large\bfseries}
+  {\thesection}{1em}{}[{\titlerule[0.8pt]}]
+\titleformat{\subsection}
+  {\color{SlateBlue}\normalfont\large\bfseries}
+  {\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+  {\color{NavyBlue}\normalfont\normalsize\bfseries}
+  {\thesubsubsection}{1em}{}
+
+% --- 4. LISTINGS STYLING (Syntax Highlighting) ---
+\lstdefinelanguage{JavaScript}{
+  keywords={break, case, catch, continue, debugger, default, delete, do, else, false, finally, for, function, if, in, instanceof, new, null, return, switch, this, throw, true, try, typeof, var, void, while, with, let, const, async, await, class, export, import, from, default},
+  morecomment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  morestring=[b]',
+  morestring=[b]"
+}
+
+\lstset{
+  language=JavaScript,
+  backgroundcolor=\color{LightBG},
+  basicstyle=\ttfamily\small\color{NavyBlue},
+  keywordstyle=\color{SkyBlue}\bfseries,
+  commentstyle=\color{gray}\itshape,
+  stringstyle=\color{EmeraldGreen},
+  identifierstyle=\color{NavyBlue},
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  stepnumber=1,
+  numbersep=8pt,
+  showstringspaces=false,
+  breaklines=true,
+  frame=single,
+  rulecolor=\color{BorderGray},
+  tabsize=2,
+  captionpos=b
+}
+
+% --- 5. CUSTOM CALLOUT BOXES ---
+\newtcolorbox{ImportanceBox}[1]{
+  colback=LightBG,
+  colframe=GoldAccent,
+  fonttitle=\bfseries\color{NavyBlue},
+  title={⭐ Wichtiger Hinweis: #1},
+  arc=6pt,
+  boxrule=1.5pt,
+  left=12pt,
+  right=12pt,
+  top=8pt,
+  bottom=8pt
+}
+
+\newtcolorbox{ReasonBox}[1]{
+  colback=LightBG,
+  colframe=EmeraldGreen,
+  fonttitle=\bfseries\color{white},
+  coltitle=white,
+  title={✔️ Begründung \& Nutzen: #1},
+  arc=6pt,
+  boxrule=1.5pt,
+  left=12pt,
+  right=12pt,
+  top=8pt,
+  bottom=8pt
+}
+
+\newtcolorbox{WarningBox}[1]{
+  colback=LightBG,
+  colframe=RubyRed,
+  fonttitle=\bfseries\color{white},
+  coltitle=white,
+  title={⚠️ Sicherheits-Warnung: #1},
+  arc=6pt,
+  boxrule=1.5pt,
+  left=12pt,
+  right=12pt,
+  top=8pt,
+  bottom=8pt
+}
+
+\newtcolorbox{FeatureCard}[2]{
+  colback=white,
+  colframe=SlateBlue,
+  fonttitle=\bfseries\color{white},
+  coltitle=white,
+  title={#1},
+  subtitle={#2},
+  arc=4pt,
+  boxrule=1pt,
+  left=8pt,
+  right=8pt,
+  top=6pt,
+  bottom=6pt
+}
+
+% --- 6. DOCUMENT BEGIN ---
+\begin{document}
+
+% --- FRONT TITLE PAGE ---
+\begin{titlepage}
+    \centering
+    \vspace*{2cm}
+    {\huge\bfseries \color{NavyBlue} 🏛️ Vindobona Pro FinTech}\\[0.6cm]
+    {\Large\bfseries \color{SlateBlue} Handbuch für die Full-Stack Finanzportal-Architektur}\\[0.3cm]
+    \textcolor{GoldAccent}{\rule{12cm}{2pt}}\\[1.5cm]
+    
+    \begin{tcolorbox}[colback=LightBG, colframe=NavyBlue, arc=8pt, width=14cm]
+        \centering
+        \small\color{NavyBlue}
+        Dieses technische Handbuch bietet eine detaillierte Analyse der gesamten Anwendungsarchitektur. Es dokumentiert jede Frontend-React-Komponente (\texttt{.tsx}), Stylesheet (\texttt{.css}), Backend-Route, Sicherheits-Middleware, Datenbankstruktur und Bereitstellungsschnittstelle.
+    \end{tcolorbox}
+    
+    \vspace*{3cm}
+    \begin{tabular}{r@{\hspace{0.5cm}}l}
+        \textbf{Autor:} & Andy Rugero \\
+        \textbf{Standort:} & Wien, Österreich \\
+        \textbf{Ziel-Stack:} & React, Express, Docker, Kubernetes, Nginx, Azure \\
+        \textbf{Sicherheitsstandard:} & PSD2-Bankenregulierung, OTP-2FA, TLS \\
+    \end{tabular}
+    
+    \vfill
+    {\small Dokument generiert für die Overleaf-Compiler-Integration \\ \today}
+\end{titlepage}
+
+\newpage
+\tableofcontents
+\newpage
+
+% --- SECTION 1: ARCHITECTURE OVERVIEW ---
+\section{🔌 1. Allgemeine Systemarchitektur}
+Die Anwendung Vindobona Pro basiert auf einem entkoppelten Client-Server-Architekturmodell. Diese Trennung gewährleistet Systemleistung, Skalierbarkeit und klare Sicherheitsgrenzen.
+
+\subsection{Client-Schicht (Frontend)}
+Das Webportal verwendet einen Single-Page-Client (SPA), der mit \textbf{React, TypeScript und Vite} erstellt wurde.
+\begin{itemize}
+    \item \textbf{Typsicherheit:} TypeScript stellt sicher, dass komplexe Transaktionsdatenstrukturen zur Laufzeit mit den Payloads übereinstimmen und verhindert Abstürze.
+    \item \textbf{Styling-Systeme:} Entwickelt mit \textbf{Vanilla CSS} und modularen CSS-Variablen. Vermeidet aufgeblähten Framework-Code, um eine maximale Render-Geschwindigkeit zu garantieren.
+    \item \textbf{Zustandsverwaltung:} Der Anwendungszustand wird dynamisch über benutzerdefinierte React-Kontexte (\texttt{TransactionContext}) verwaltet, wodurch Ledger-Änderungen global über alle Anzeigemodule hinweg koordiniert werden.
+\end{itemize}
+
+\subsection{API-Schicht (Backend)}
+Die Server-Engine basiert auf \textbf{Node.js und Express.js}.
+\begin{itemize}
+    \item \textbf{Authentifizierung:} Verwendet signierte, kurzlebige JSON Web Tokens (JWT), die sicher über Header oder HTTP-only Cookies übertragen werden.
+    \item \textbf{Verifizierung:} Schützt Endpunkte vor Angriffen durch IP-basierte Ratenbegrenzungen (Rate Limiting), Brute-Force-Filter und strenge Rollenprüfungen.
+\end{itemize}
+
+\subsection{Datenbankschicht (Storage)}
+Das System basiert auf einem \textbf{Dual-Dialekt-SQL-Treibermodell}:
+\begin{itemize}
+    \item \textbf{Entwicklung:} SQLite verarbeitet lokale Abfragen effizient in flachen Datenbankdateien.
+    \item \textbf{Produktion:} Microsoft Azure hostet PostgreSQL-Datenbanken für die skalierbare Enterprise-Nutzung.
+    \item \textbf{Abfrage-Übersetzung:} Eine dynamische Übersetzungs-Middleware fängt SQLite-Parameter (\texttt{?}) ab und tauscht sie zur Laufzeit in PostgreSQL-Äquivalente (\texttt{\$1, \$2}) aus.
+\end{itemize}
+
+\begin{ImportanceBox}{Entkoppelte Software-Architektur}
+Die Trennung statischer Client-Dateien von der API-Verarbeitungsschicht ermöglicht effizientes Edge-Caching und reduziert die Last auf den Hauptservern.
+\end{ImportanceBox}
+
+\begin{ReasonBox}{Dual-Dialekt-Übersetzung}
+Die Verwendung von lokalem SQLite beschleunigt Test-Setups und automatisierte Integrationsläufe. Die dynamische Syntax-Übersetzung in PostgreSQL ermöglicht ein nahtloses Deployment auf Produktionsdatenbanken in Azure, ohne dass Routen-Handler neu geschrieben werden müssen.
+\end{ReasonBox}
+
+\newpage
+
+% --- SECTION 2: FRONTEND COMPONENT DIRECTORY ---
+\section{🎨 2. Frontend-Komponenten \& Styling-Verzeichnis (\texttt{src/})}
+Jedes Frontend-Element besteht aus einer TypeScript-Komponente und einem zugehörigen Stylesheet:
+
+\subsection{Authentifizierung \& Sicherheits-Guards}
+\begin{FeatureCard}{AuthScreen.tsx}{gepaart mit AuthScreen.css}
+\textbf{Zweck:} Verwaltet Registrierung, sicheren Login, 2FA-Eingabe und Passwörter-Reset. \\
+\textbf{Logik:} Kommuniziert mit \texttt{POST /api/users/register}, \texttt{POST /api/auth/login} und \texttt{POST /api/auth/2fa/login}. Bietet Formulare für Google Authenticator 2FA.
+\end{FeatureCard}
+
+\subsection{Layout-Komponenten}
+\begin{FeatureCard}{Sidebar.tsx}{gepaart mit Sidebar.css}
+\textbf{Zweck:} Zeigt das Benutzerprofil, das Avatar-Bild und das Navigationsmenü an. Schränkt den Zugriff auf das Admin-Panel basierend auf der Benutzerrolle ein.
+\end{FeatureCard}
+
+\begin{FeatureCard}{Topbar.tsx}{gepaart mit Topbar.css}
+\textbf{Zweck:} Rendert Breadcrumbs, Theme-Wechsler (Hell/Dunkel), Logout-Button und das Mailbox-System für System-Updates.
+\end{FeatureCard}
+
+\subsection{Dashboard-Statistiken}
+\begin{FeatureCard}{StatsRow.tsx \& StatCard.tsx}{gepaart mit StatsRow.css \& StatCard.css}
+\textbf{Zweck:} Flex-Grid-Karten zur Visualisierung wichtiger Finanzkennzahlen (Kontostand, Einnahmen, Ausgaben) mit farblicher Statusanzeige.
+\end{FeatureCard}
+
+\subsection{Ledger \& Transaktionen}
+\begin{FeatureCard}{TransactionList.tsx}{gepaart mit TransactionList.css}
+\textbf{Zweck:} Tabelle zur Auflistung historischer Ledger-Einträge. Bietet CSV- und PDF-Exportfunktionen für Bankbelege.
+\end{FeatureCard}
+
+\begin{FeatureCard}{TransactionForm.tsx}{gepaart mit TransactionForm.css}
+\textbf{Zweck:} Formular zur direkten Eingabe neuer Transaktionen mit Kategorie-Zuordnung.
+\end{FeatureCard}
+
+\subsection{Spezialisierte UI-Module}
+\begin{FeatureCard}{CardWidget.tsx}{gepaart mit CardWidget.css}
+\textbf{Zweck:} Ein interaktives 3D-Debitkarten-Widget, das Mausbewegungen folgt. Ermöglicht das sofortige Einfrieren der Karte.
+\end{FeatureCard}
+
+\begin{FeatureCard}{FXConverter.tsx}{gepaart mit FXConverter.css}
+\textbf{Zweck:} Währungsumrechner für Transaktionen zwischen verschiedenen Währungskonten (EUR/USD/GBP) mit Live-Wechselkursen.
+\end{FeatureCard}
+
+\begin{FeatureCard}{Chatbot.tsx}{gepaart mit Chatbot.css}
+\textbf{Zweck:} Schwebender AI-Finanzassistent zur Beantwortung von Fragen bezüglich Kontobewegungen per natürlicher Sprache.
+\end{FeatureCard}
+
+\newpage
+
+% --- SECTION 3: BACKEND ARCHITECTURE ---
+\section{⚙️ 3. Backend-Server- \& Service-Architektur (\texttt{backend/})}
+Die Backend-Schicht ist nach dem Controller-Service-Muster strukturiert, um Transaktionssicherheit zu garantieren:
+
+\subsection{Datenbank-Tabellen (Schema-DDL)}
+Das Datenbankschema besteht aus fünf relationalen Haupttabellen:
+\begin{lstlisting}[caption={Datenbank-Tabellendefinition}]
+CREATE TABLE IF NOT EXISTS users (
+    id TEXT PRIMARY KEY,
+    username TEXT UNIQUE NOT NULL,
+    email TEXT UNIQUE,
+    password_hash TEXT NOT NULL,
+    is_verified INTEGER DEFAULT 0,
+    two_factor_secret TEXT,
+    two_factor_enabled INTEGER DEFAULT 0,
+    balance REAL DEFAULT 0.0,
+    role TEXT DEFAULT 'user',
+    is_card_frozen INTEGER DEFAULT 0,
+    avatar_url TEXT
+);
+\end{lstlisting}
+
+\subsection{Routen-Handler (Endpoints)}
+\begin{itemize}
+    \item \textbf{\texttt{auth.js}:} Steuert die Registrierung, Verifizierungscodes, Passwort-Resets und 2FA-Authentifizierung.
+    \item \textbf{\texttt{transactions.js}:} Verarbeitet Ledger-Einträge, PDF-Downloads, Währungskonvertierungen und P2P-Transfers.
+    \item \textbf{\texttt{admin.js}:} Administrator-Controller für Benutzer-Listen, Rollen-Upgrades und das Einsehen der Audit-Logs.
+\end{itemize}
+
+\subsection{Sicherheits-Middleware}
+\begin{ImportanceBox}{authGuard.js}
+Überprüft eingehende JWT-Tokens im Authorization-Header und injiziert die entschlüsselten Benutzerdaten in das Request-Objekt (\texttt{req.user}).
+\end{ImportanceBox}
+
+\begin{WarningBox}{PSD2-Transaktionssignierung}
+Jeder ausgehende Geldtransfer erfordert zwingend die Eingabe eines gültigen 2FA-OTP-Codes vor der Ausführung der SQL-Transaktion (Strong Customer Authentication).
+\end{WarningBox}
+
+\newpage
+
+% --- SECTION 4: CLOUD CONNECTIONS ---
+\section{🚢 4. Produktions-Cloud-Topologie \& Netzwerkintegration}
+Zur Gewährleistung von Hochverfügbarkeit und Ausfallsicherheit ist das System über eine verteilte Cloud-Architektur bereitgestellt:
+
+\subsection{System-Komponenten-Mapping}
+\begin{table}[h]
+\centering
+\caption{Deployment Systemtopologie}
+\begin{tabular}{llll}
+\toprule
+\textbf{Schicht} & \textbf{Plattform} & \textbf{Rolle} & \textbf{Verbindungsweg} \\
+\midrule
+\color{SkyBlue}Frontend Client & Vercel CDN & Bereitstellung der UI & Browser $\rightarrow$ HTTPS (CDN) \\
+\color{GoldAccent}API Server & Azure App Service & Ausführung des API-Codes & Client-JS $\rightarrow$ REST-API \\
+\color{EmeraldGreen}Datenbank & Azure Database (Postgres) & Datenhaltung & API-Container $\rightarrow$ Port 5432 \\
+\color{RubyRed}Reverse Proxy & Nginx / Kubernetes & Gateway \& Routing & Browser $\rightarrow$ Nginx $\rightarrow$ Docker \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Netzwerk- und Integrationsflüsse}
+
+\subsubsection{1. Source Code CI/CD-Pipelines (GitHub $\rightarrow$ Vercel \& Azure)}
+\begin{itemize}
+    \item \textbf{Vercel Frontend:} Commits auf dem \texttt{main}-Branch lösen Webhooks aus, die das React-Projekt bauen und weltweit auf Edge-Servern spiegeln.
+    \item \textbf{Azure Backend:} GitHub Actions kompilieren das Backend, bauen ein \textbf{Docker-Image}, laden es auf Docker Hub hoch und stoßen das Azure App Service Update an.
+\end{itemize}
+
+\subsubsection{2. Laufzeitumgebungen (Die Rolle von Docker)}
+\begin{ReasonBox}{Docker-Containerisierung}
+Die Kapselung von Node.js-Laufzeitumgebungen, Bibliotheken und Code in einem Docker-Image stellt sicher, dass die API lokal, in CI/CD-Tests und in der Azure-Cloud identisch ausgeführt wird.
+\end{ReasonBox}
+
+\subsubsection{3. Ablauf eines Netzwerk-Requests}
+\begin{enumerate}
+    \item Der Browser lädt die statische React-Oberfläche verschlüsselt von \textbf{Vercel} (Port 443).
+    \item Benutzeraktionen senden API-Anfragen an \texttt{api.vindobonafintech.com}.
+    \item Die Anfrage trifft auf das **Nginx-Gateway**, welches das SSL-Zertifikat validiert und den Request intern an den **Docker-Container** auf **Azure** weiterleitet.
+    \item Die Node-API im Docker-Container führt Abfragen auf der abgeschirmten **Azure PostgreSQL-Datenbank** aus und liefert JSON-Daten zurück.
+\end{enumerate}
+
+\newpage
+
+% --- SECTION 5: DIAGRAMS ---
+\section{🎨 5. Systemdiagramme \& Ablaufpläne}
+Diese Sektion visualisiert die Anwendungsstrukturen mittels nativer LaTeX-TikZ-Diagramme:
+
+\subsection{Allgemeine System-Architektur}
+\begin{center}
+\begin{tikzpicture}[node distance=1.8cm, auto, >=latex']
+    % Styles
+    \tikzstyle{client} = [rectangle, draw, fill=SkyBlue!20, text width=6cm, minimum height=1cm, rounded corners, align=center, draw=SkyBlue]
+    \tikzstyle{server} = [rectangle, draw, fill=SlateBlue!20, text width=6cm, minimum height=1cm, rounded corners, align=center, draw=white, text=white]
+    \tikzstyle{db} = [cylinder, draw, fill=EmeraldGreen!20, shape border rotate=90, text width=2cm, minimum height=1.5cm, align=center, draw=EmeraldGreen]
+    \tikzstyle{ext} = [rectangle, draw, fill=GoldAccent!20, text width=3.5cm, minimum height=1cm, rounded corners, align=center, draw=GoldAccent]
+    
+    % Nodes
+    \node (cl) [client] {\textbf{Client-Browser (Vercel CDNs)} \\ React, TSX, CSS};
+    \node (ng) [server, below of=cl, yshift=-0.5cm] {\textbf{Nginx-Proxy / Kubernetes} \\ SSL-Terminierung \& Routing};
+    \node (srv) [server, below of=ng, yshift=-0.5cm] {\textbf{Express-API (Azure/Docker)} \\ authGuard \& roleGuard Middleware};
+    \node (db) [db, below of=srv, yshift=-0.8cm] {\textbf{Azure DB} \\ PostgreSQL};
+    \node (email) [ext, right of=srv, xshift=4.5cm] {\textbf{SMTP Email} \\ Nodemailer};
+    
+    % Paths
+    \draw[->, double, thick] (cl) -- (ng);
+    \draw[->, thick] (ng) -- (srv);
+    \draw[->, thick] (srv) -- (db);
+    \draw[->, dashed, thick] (srv) -- (email);
+\end{tikzpicture}
+\end{center}
+
+\subsection{Datenbank-Transaktionszyklus (Geldtransfer)}
+\begin{center}
+\begin{tikzpicture}[node distance=2.5cm, auto, >=latex']
+    \tikzstyle{state} = [rectangle, draw, fill=LightBG, text width=7.5cm, minimum height=0.9cm, rounded corners, align=center, draw=NavyBlue]
+    
+    \node (s1) [state] {1. Client sendet Transfer-Request mit JWT \& 2FA-OTP};
+    \node (s2) [state, below of=s1] {2. API validiert die Sitzung und prüft Kartenstatus};
+    \node (s3) [state, below of=s2] {3. Server prüft Kontostand des Senders};
+    \node (s4) [state, below of=s3] {4. BEGIN TRANSACTION startet atomaren DB-Lauf};
+    \node (s5) [state, below of=s4] {5. Bucht Betrag um und schreibt Ledger-Einträge};
+    \node (s6) [state, below of=s5] {6. COMMIT schreibt permanent $\rightarrow$ Bestätigung};
+    
+    \draw[->, thick] (s1) -- (s2);
+    \draw[->, thick] (s2) -- (s3);
+    \draw[->, thick] (s3) -- (s4);
+    \draw[->, thick] (s4) -- (s5);
+    \draw[->, thick] (s5) -- (s6);
+\end{tikzpicture}
+\end{center}
+
+\end{document}

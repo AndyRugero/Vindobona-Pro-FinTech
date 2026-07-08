@@ -485,7 +485,7 @@ module.exports = (db) => {
         try {
             // A. Recalculate real balance from transactions and sync the EUR wallet balance
             const txSum = await db.get(
-                'SELECT SUM(amount) as total FROM transactions WHERE user_id = ?',
+                'SELECT SUM(CASE WHEN is_negative = 1 THEN -ABS(amount) ELSE ABS(amount) END) as total FROM transactions WHERE user_id = ?',
                 [userId]
             );
             const realBalance = txSum ? (txSum.total || 0.0) : 0.0;
@@ -599,7 +599,7 @@ module.exports = (db) => {
 
             // 1. Calculate the user's real balance from the transactions table
             const txSum = await db.get(
-                'SELECT SUM(amount) as total FROM transactions WHERE user_id = ?',
+                'SELECT SUM(CASE WHEN is_negative = 1 THEN -ABS(amount) ELSE ABS(amount) END) as total FROM transactions WHERE user_id = ?',
                 [userId]
             );
             const realBalance = txSum ? (txSum.total || 0.0) : 0.0;

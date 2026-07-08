@@ -1,0 +1,539 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[german]{babel}
+\usepackage[margin=1in]{geometry}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, positioning, arrows.meta, shadows, calc}
+\usepackage[most]{tcolorbox}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{titlesec}
+
+% 🎨 Benutzerdefiniertes Farbschema definieren (FinTech-Stil)
+\definecolor{primaryblue}{HTML}{0F172A}   % Deep Navy für Titel & Haupttexte
+\definecolor{accentblue}{HTML}{2563EB}    % Royal Blue Accent für Untertitel
+\definecolor{accentgreen}{HTML}{10B981}   % Emerald Green für Erfolgsmeldungen / DB
+\definecolor{accentred}{HTML}{EF4444}     % Ruby Red für Alerts & Risiken
+\definecolor{bglight}{HTML}{F8FAFC}       % Sehr heller Hintergrund
+\definecolor{bordergray}{HTML}{E2E8F0}    % Hellgraue Linien
+\definecolor{accentorange}{HTML}{F97316}  % Orange für Ingress & Gateway
+\definecolor{accentpurple}{HTML}{A855F7}  % Violett für AI Services
+
+% 📑 Titel- & Untertitel-Farbformatierung (Ohne Emojis für fehlerfreie Kompilierung)
+\titleformat{\section}
+  {\color{primaryblue}\normalfont\Large\bfseries}
+  {\thesection}{1em}{}[{\color{accentblue}\titlerule[1.5pt]}]
+\titleformat{\subsection}
+  {\color{accentblue}\normalfont\large\bfseries}
+  {\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+  {\color{primaryblue}\normalfont\normalsize\bfseries}
+  {\thesubsubsection}{1em}{}
+
+% 🎨 Farbige Aufzählungspunkte konfigurieren
+\setlist[itemize]{label=\color{accentblue}$\bullet$}
+\setlist[enumerate]{label=\color{accentblue}\arabic*.}
+
+% 🛠️ Listings für SQL-Code konfigurieren
+\lstset{
+  language=SQL,
+  backgroundcolor=\color{bglight},
+  basicstyle=\small\ttfamily\color{primaryblue},
+  breaklines=true,
+  captionpos=b,
+  frame=single,
+  framesep=8pt,
+  xleftmargin=10pt,
+  framexleftmargin=10pt,
+  rulecolor=\color{accentblue},
+  showstringspaces=false,
+  keepspaces=true,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  numbersep=5pt,
+  tabsize=2
+}
+
+% 📄 Seiteneinstellungen & Hyperlink-Farben
+\hypersetup{
+    colorlinks=true,
+    linkcolor=accentblue,
+    urlcolor=accentblue
+}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{8pt}
+
+\begin{document}
+
+% ==========================================
+% 👑 TITELBLATT (Academic Cover)
+% ==========================================
+\begin{tcolorbox}[
+    colback=primaryblue,
+    colframe=primaryblue,
+    arc=6pt,
+    left=20pt,
+    right=20pt,
+    top=30pt,
+    bottom=30pt,
+    coltext=white
+]
+    \centering
+    {\huge\bfseries Lasten- und Pflichtenheft \par}
+    \vspace{10pt}
+    {\Large\bfseries Vindobona Pro FinTech \par}
+    \vspace{15pt}
+    {\large\itshape Konzeption und Anforderungsspezifikation für das Semesterprojekt \par}
+\end{tcolorbox}
+
+\vspace{40pt}
+
+\begin{tcolorbox}[
+    colback=bglight,
+    colframe=bordergray,
+    arc=4pt,
+    left=15pt,
+    right=15pt,
+    top=15pt,
+    bottom=15pt
+]
+    \textbf{\color{accentblue}Metadaten zum Projekt:}
+    \vspace{8pt}
+    \begin{description}[leftmargin=2.2cm, labelwidth=2.0cm]
+        \item[\textbf{Projektname:}] Vindobona Pro FinTech
+        \item[\textbf{Verfasser:}] Andy Rugero Ndayambaje
+        \item[\textbf{Datum:}] 05. Juli 2026
+        \item[\textbf{Rolle:}] Software-Entwickler (Student)
+        \item[\textbf{Fachbetreuer:}] Constantin Köpplinger
+        \item[\textbf{Status:}] Zur Bewertung vorgelegt
+        \item[\textbf{Version:}] 1.0.0
+    \end{description}
+\end{tcolorbox}
+
+\newpage
+
+% ==========================================
+% 📖 INHALTSVERZEICHNIS
+% ==========================================
+\tableofcontents
+\newpage
+
+% ==========================================
+% 1. EINLEITUNG
+% ==========================================
+\section{Einleitung}
+
+\subsection{Ausgangssituation}
+Heute möchten viele Menschen ihre Finanzen einfach und schnell online verwalten. Viele normale Online-Banking-Apps sind aber oft starr und kompliziert. Ihnen fehlen moderne Hilfen wie ein automatischer Budget-Manager oder eine künstliche Intelligenz für Fragen. Auch die Suche nach Geldautomaten in der Nähe ist oft nicht direkt in der App eingebaut. Das Projekt \textbf{Vindobona Pro FinTech} löst diese Probleme mit einer modernen und übersichtlichen Web-App für den Raum Wien.
+
+\subsection{Warum dieses Projekt entwickelt wurde (Motivation)}
+Dieses Projekt wurde entwickelt, um eine moderne, sichere und intelligente Alternative zu alten Banken-Plattformen zu zeigen. Die Hauptgründe für die Entwicklung sind:
+\begin{itemize}
+    \item \textbf{Steigender Bedarf an Finanzübersicht:} Nutzer möchten heute genau wissen, wofür sie ihr Geld ausgeben. Ein Budget-Manager mit automatischer Kategorisierung hilft ihnen dabei.
+    \item \textbf{Künstliche Intelligenz im Alltag:} Durch die Integration eines KI-Chatbots wird die Finanzberatung rund um die Uhr kostenlos direkt in der App angeboten.
+    \item \textbf{Lokale Services (ATM-Suche):} Die Karte hilft Benutzern, sich in Wien zurechtzufinden und sofort den nächsten Geldautomaten oder eine Partnerfiliale der Bank zu finden.
+\end{itemize}
+
+\subsection{Nutzen für Unternehmen und Kunden}
+Für Unternehmen (wie moderne FinTech-Startups oder Banken wie die \textit{Erste Group} oder \textit{Raiffeisen Bank}) und deren Kunden bietet dieses Projekt großen Wert:
+\begin{itemize}
+    \item \textbf{Kundenbindung:} Kunden nutzen Apps öfter, wenn sie interaktive Features (Geldautomaten-Karte, Budgets, KI-Hilfe) haben.
+    \item \textbf{Sicherheit auf Bankenniveau:} Durch den Einsatz von modernen Sicherheitsstrukturen (wie Nginx, Firewalls und JWT) sind die Kundendaten optimal geschützt.
+    \item \textbf{Skalierbarkeit:} Das Projekt zeigt, wie eine Banken-App mit Docker und Kubernetes wachsen kann, ohne abzustürzen.
+\end{itemize}
+
+\subsection{Zielgruppe}
+\begin{itemize}
+    \item \textbf{Privatkunden:} Sie verwalten ihre Konten, senden Geld an Freunde und nutzen den KI-Chatbot.
+    \item \textbf{Administratoren:} Sie verwalten die Benutzerkonten und können Karten bei Verlust sperren.
+    \item \textbf{Auditoren:} Sie prüfen die Sicherheits-Protokolle (Logs), um Betrug zu verhindern.
+\end{itemize}
+
+\newpage
+
+% ==========================================
+% 2. PROJEKTBESCHREIBUNG
+% ==========================================
+\section{Projektbeschreibung}
+
+\subsection{Vision}
+\textbf{Vindobona Pro FinTech} soll modern aussehen (mit einem Dark Mode) und sehr einfach zu bedienen sein. Im Hintergrund läuft die App in Containern (Docker) und wird von Kubernetes gesteuert. Das sorgt dafür, dass die App auch bei vielen Benutzern immer schnell reagiert und ausfallsicher ist.
+
+\subsection{Hauptmerkmale (Umfang)}
+Die App bietet folgende wichtige Funktionen:
+\begin{enumerate}
+    \item \textbf{Sicherheit \& Login:} Einfaches Anmelden mit JWT-Token, Google-Login und Zwei-Faktor-Authentifizierung (2FA).
+    \item \textbf{Multi-Währungs-Wallets:} Geldtaschen für verschiedene Währungen (wie EUR, USD, GBP) mit einem Wechselkurs-Rechner.
+    \item \textbf{Transaktions-Ledger:} Eine Liste aller Ausgaben und Einnahmen mit automatischer Zuordnung in Kategorien (z. B. Essen, Freizeit).
+    \item \textbf{KI-Chatbot:} Ein Chat-Eingabefeld. Der Chatbot kann Fragen zum Kontostand oder den Ausgaben beantworten.
+    \item \textbf{Wiener Geldautomaten-Finder:} Eine Karte von Wien (Leaflet-Map), die zeigt, wo die nächsten Geldautomaten sind.
+    \item \textbf{Budget-Manager:} Der Benutzer kann Limits setzen (z. B. max. 200 Euro für Essen im Monat) und sieht seinen Fortschritt.
+    \item \textbf{Überweisung an Freunde:} Direktes Senden von Geld an andere registrierte Benutzer in der App.
+    \item \textbf{Admin-Bereich:} Eine Übersicht für Administratoren, um Benutzer zu sperren oder Sicherheits-Protokolle zu lesen.
+    \item \textbf{Dokumenten-Export:} Download der Transaktionen als CSV- oder PDF-Datei.
+\end{enumerate}
+
+\subsection{Details zum Diebstahlschutz und zur Sicherheitslogik}
+Um das Geld und die Daten der Benutzer zu schützen, nutzt die App moderne Sicherheitsmechanismen:
+\begin{itemize}
+    \item \textbf{Schutz vor Gelddiebstahl bei Überweisungen:} Wenn Geld gesendet wird, nutzt das Backend sogenannte \textbf{Datenbank-Transaktionen}. Entweder wird der Betrag beim Sender abgezogen UND beim Empfänger gutgeschrieben, oder es passiert gar nichts (Rollback bei Fehlern). Es ist unmöglich, dass Geld im System verloren geht oder doppelt abgebucht wird. Zudem prüft die API vor jeder Aktion, ob der Kontostand ausreicht und ob der Betrag positiv ist.
+    \item \textbf{Karten-Einfrierung (Card Freezing):} Geht eine Karte verloren, kann der Benutzer oder ein Admin die Karte sperren (`is_card_frozen = 1`). Die API blockiert danach sofort jede Zahlung für diese Karte, bis sie wieder entsperrt wird.
+    \item \textbf{Zwei-Faktor-Schutz (2FA):} Wichtige Aktionen (wie Logins auf neuen Geräten oder Überweisungen) erfordern einen Einmalcode aus einer Authenticator-App (wie Google Authenticator). Selbst wenn jemand Ihr Passwort stiehlt, kann er ohne Ihr Smartphone nicht auf Ihr Geld zugreifen.
+    \item \textbf{Admin-Kontrolle \& Audit-Logs:} Administratoren können Benutzerkonten sperren und Karten einfrieren. Alle sicherheitsrelevanten Aktionen (Logins, falsche Passwörter, IP-Adressen, Überweisungen) werden in einer manipulationssicheren Tabelle (\textbf{Audit Logs}) für Prüfungen gespeichert.
+\end{itemize}
+
+\subsection{Finanzanalyse mit Diagrammen und FX-Währungsrechner}
+Für moderne Kunden und Finanzunternehmen sind visuelle Übersichten und globale Zahlungen sehr wichtig:
+\begin{itemize}
+    \item \textbf{Visuelle Ausgaben-Diagramme (Charts \& Graphs):} Die App zeigt alle Ausgaben des Ledgers in interaktiven Kreis- und Balkendiagrammen an. Der Benutzer sieht sofort, wie viel Prozent seines Geldes für Miete, Essen oder Freizeit ausgegeben wurden. Diese visuelle Analyse hilft Kunden, ihre Finanzen besser zu planen. Für Unternehmen steigert dies nachweislich die Kundenzufriedenheit und App-Nutzung.
+    \item \textbf{FX-Währungsrechner (Currency Converter):} In einer globalisierten Wirtschaft reisen Kunden viel oder kaufen online in Fremdwährungen ein (z. B. in USD oder GBP). Die App bietet einen integrierten Wechselkurs-Rechner. Kunden können Geld direkt im Dashboard wechseln. Unternehmen sparen ihren Kunden dadurch teure Wechselgebühren bei Drittanbietern und generieren gleichzeitig eigene Einnahmen durch faire Wechselkurse.
+\end{itemize}
+
+\newpage
+
+% ==========================================
+% 3. ANFORDERUNGEN
+% ==========================================
+\section{Anforderungen}
+
+\subsection{Funktionale Anforderungen (FA)}
+
+\begin{tcolorbox}[colback=bglight, colframe=accentblue, arc=4pt, title=\textbf{\color{white}Wichtiger Hinweis}]
+Die mit „Hoch“ markierten Anforderungen müssen zuerst fertiggestellt werden, da sie für die Basisfunktion der App notwendig sind.
+\end{tcolorbox}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{llp{7.5cm}l}
+\toprule
+\textbf{\color{accentblue}ID} & \textbf{\color{accentblue}Name} & \textbf{\color{accentblue}Beschreibung} & \textbf{\color{accentblue}Priorität} \\
+\midrule
+\textbf{FA-100} & Login & Registrierung und Login mit sicheren Passwörtern. & Hoch \\
+\textbf{FA-101} & Security & Anmeldung über Google und Zwei-Faktor-Schutz (2FA). & Mittel \\
+\textbf{FA-200} & Wallets & Konten für EUR, USD und GBP anlegen. & Hoch \\
+\textbf{FA-201} & Währungswechsel & Geld zwischen den eigenen Wallets wechseln. & Mittel \\
+\textbf{FA-300} & Ledger & Anzeige aller Ausgaben und Einnahmen als Liste. & Hoch \\
+\textbf{FA-301} & Auto-Kategorien & Automatische Erkennung der Kategorie einer Ausgabe. & Mittel \\
+\textbf{FA-400} & KI-Chatbot & Fragen stellen zum eigenen Kontostand per Chat. & Mittel \\
+\textbf{FA-500} & ATM-Suche & Karte von Wien mit Suchfunktion für Geldautomaten. & Mittel \\
+\textbf{FA-600} & Budget-Limit & Einstellen von monatlichen Limits pro Kategorie. & Mittel \\
+\textbf{FA-700} & Admin-Panel & Sperren von Karten und Einsehen von Benutzerdaten. & Hoch \\
+\textbf{FA-701} & Audit-Logs & Protokollieren aller wichtigen Sicherheits-Aktionen. & Hoch \\
+\textbf{FA-800} & Export & Herunterladen der Transaktionsliste als PDF oder CSV. & Mittel \\
+\bottomrule
+\end{tabular}
+\caption{Funktionale Anforderungen}
+\end{table}
+
+\subsection{Nicht-funktionale Anforderungen (NFA)}
+
+\begin{tcolorbox}[colback=bglight, colframe=accentgreen, arc=4pt, title=\textbf{\color{white}Sicherheit \& DSGVO}]
+Der Schutz der Benutzerdaten hat höchste Priorität. Passwörter dürfen niemals im Klartext in der Datenbank gespeichert werden.
+\end{tcolorbox}
+
+\begin{itemize}
+    \item \textbf{\color{accentblue}Sicherheit:}
+    \begin{itemize}
+        \item Passwörter werden mit dem sicheren bcrypt-Algorithmus verschlüsselt.
+        \item Login-Sitzungen (JWT) laufen nach 24 Stunden automatisch ab.
+        \item Die Datenbank wird durch eine Firewall in der Cloud geschützt.
+    \end{itemize}
+    \item \textbf{\color{accentblue}Benutzerfreundlichkeit:}
+    \begin{itemize}
+        \item Die App läuft gut auf Smartphones, Tablets und Laptops.
+        \item Modernes Design (Dark Mode) mit kurzen Lade-Animationen.
+    \end{itemize}
+    \item \textbf{\color{accentblue}Leistung \& Stabilität:}
+    \begin{itemize}
+        \item Schnelle Ladezeiten unter 0.5 Sekunden für alle Seiten.
+        \item Schutz vor zu vielen Anfragen (Rate-Limiter blockiert Spam).
+    \end{itemize}
+    \item \textbf{\color{accentblue}Entwicklung \& Cloud:}
+    \begin{itemize}
+        \item Nutzung von Docker-Containern für einfaches Starten.
+        \item Kubernetes sorgt dafür, dass die App bei Serverfehlern automatisch neu startet.
+    \end{itemize}
+    \item \textbf{\color{accentblue}Qualitätssicherung (Testing):}
+    \begin{itemize}
+        \item Alle mathematischen und logischen Berechnungen (z. B. Kontensalden, Währungswechsel und Überweisungen) werden durch automatisierte \textbf{Unit-Tests} abgesichert.
+        \item Sicherheitskritische Abläufe wie Passworteingabe und JWT-Validierung werden durch Unit-Tests geprüft, um Fehler vor dem Cloud-Start auszuschließen.
+    \end{itemize}
+\end{itemize}
+
+\newpage
+
+% ==========================================
+% 4. ARCHITEKTUR UND TECHNOLOGIE
+% ==========================================
+\section{Architektur und Technologie}
+
+\subsection{Systemstruktur}
+Die Web-App ist in drei einfache Bereiche geteilt:
+\begin{itemize}
+    \item \textbf{Frontend (Benutzeroberfläche):} Gebaut mit React und TypeScript. Zeigt die Daten an und läuft direkt im Browser des Benutzers.
+    \item \textbf{Backend (Server):} Gebaut mit Node.js und Express. Verarbeitet die Logik, prüft Passwörter und spricht mit der Datenbank.
+    \item \textbf{Datenbank (SQL):} Speichert Benutzer und Transaktionen. Im Testbetrieb nutzen wir SQLite, für den echten Betrieb nutzen wir PostgreSQL in der Cloud.
+\end{itemize}
+
+\subsection{Nginx Reverse Proxy \& Sicherheitsintegration (Lesson 56b)}
+In echten Enterprise-Finanzarchitekturen (wie bei der \textit{Erste Group} oder der \textit{Raiffeisen Bank}) werden Backend-Applikationsserver niemals direkt dem öffentlichen Internet ausgesetzt. Auch in diesem Projekt nutzen wir einen \textbf{Nginx Reverse Proxy} an der äußeren Grenze des Systems:
+\begin{itemize}
+    \item \textbf{Sicherheit durch Kapselung:} Nginx nimmt alle Anfragen auf den Standardports 80 (HTTP) und 443 (HTTPS) an. Die internen Serverports (wie Port 5001 für das Node.js Backend) bleiben für das Internet unsichtbar.
+    \item \textbf{Angriffs-Schutzwall (Rate Limiting):} Nginx blockiert bösartige Anfragen und Spam automatisch, bevor sie die eigentliche Programmlogik erreichen.
+    \item \textbf{Zentrale SSL-Verwaltung:} Verschlüsselte Verbindungen (HTTPS) werden direkt von Nginx entschlüsselt, was den API-Server entlastet.
+\end{itemize}
+
+\subsection{Technologie-Stack}
+\begin{itemize}
+    \item \textbf{\color{accentblue}Frontend-Technologien:} React, TypeScript, Vite, Vanilla CSS, Leaflet-Karte.
+    \item \textbf{\color{accentblue}Backend-Technologien:} Node.js, Express, JSON Web Tokens (JWT) für Logins.
+    \item \textbf{\color{accentblue}Datenbanken:} SQLite (lokal zum Testen), PostgreSQL (in der Microsoft Azure Cloud).
+    \item \textbf{\color{accentblue}Infrastruktur \& DevOps:} Docker-Container, Kubernetes (K8s) für Ausfallsicherheit, GitHub Actions für automatische Updates.
+\end{itemize}
+
+\newpage
+
+% ==========================================
+% 5. ZEITPLAN
+% ==========================================
+\section{Zeitplan (Timeline)}
+Das Projekt wird in sechs einfachen Phasen entwickelt:
+\begin{itemize}
+    \item \textbf{\color{accentblue}Phase 1: Planung \& Design} \\
+      Schreiben des Lastenhefts. Planen der Datenbanktabellen und Erstellen der ersten Skizzen für das UI-Design.
+    \item \textbf{\color{accentblue}Phase 2: Login \& Wallets} \\
+      Programmieren der Registrierung, des sicheren Logins und der Geldbörsen (Wallets) für die Währungen.
+    \item \textbf{\color{accentblue}Phase 3: Geldautomaten-Karte \& Chatbot} \\
+      Einbauen der Leaflet-Karte für Wien und Verbinden des KI-Chatbots für Finanzfragen.
+    \item \textbf{\color{accentblue}Phase 4: Docker \& DevOps-Vorbereitung} \\
+      Verpacken der App in Docker-Container, damit sie auf jedem Computer gleich läuft.
+    \item \textbf{\color{accentblue}Phase 5: Kubernetes \& Cloud-Start} \\
+      Schreiben der Kubernetes-Konfigurationen und Starten der App in der Microsoft Azure Cloud.
+    \item \textbf{\color{accentblue}Phase 6: Testen \& Abgabe} \\
+      Ausführen der automatischen Unit-Tests und Durchführung manueller End-to-End-Tests aller Funktionen. Behebung verbleibender Fehler und finale Projektübergabe.
+\end{itemize}
+
+\newpage
+
+% ==========================================
+% 6. RISIKOBEWERTUNG
+% ==========================================
+\section{Risikobewertung}
+
+\begin{tcolorbox}[colback=bglight, colframe=accentred, arc=4pt, title=\textbf{\color{white}Sicherheitswarnung}]
+Sicherheitsrisiken wie Datenverlust oder Hackerangriffe müssen sofort durch passende Abwehrmeßnahmen verhindert werden.
+\end{tcolorbox}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lp{4cm}lllp{4cm}}
+\toprule
+\textbf{\color{accentred}ID} & \textbf{\color{accentred}Risiko} & \textbf{\color{accentred}Auswirkung} & \textbf{\color{accentred}Wahrsch.} & \textbf{\color{accentred}Gegenmaßnahme (Mitigation)} \\
+\midrule
+\textbf{R-1} & Diebstahl von Login-Daten & Hoch & Gering & Nutzung von 2FA und kurze Gültigkeit von JWT-Tokens. \\
+\textbf{R-2} & Server-Ausfall bei vielen Nutzern & Hoch & Mittel & Kubernetes startet automatisch neue Container bei Überlastung. \\
+\textbf{R-3} & Hohe Kosten für Karten-Dienste & Mittel & Hoch & Nutzung von kostenlosen OpenStreetMap-Daten für die Karte. \\
+\textbf{R-4} & Falsche Antworten des Chatbots & Mittel & Mittel & Der Chatbot hat klare Regeln und gibt keine echten Finanzgarantien. \\
+\textbf{R-5} & Verlust von Benutzerdaten & Kritisch & Gering & Täglich automatische Backups der Cloud-Datenbank. \\
+\bottomrule
+\end{tabular}
+\caption{Risikotabelle des Projekts}
+\end{table}
+
+% ==========================================
+% 7. ZUSTÄNDIGKEITEN
+% ==========================================
+\section{Zuständigkeiten}
+\begin{itemize}
+    \item \textbf{\color{accentblue}Andy Rugero Ndayambaje (Student / Entwickler):} Planung, Programmierung (React und Node.js), Datenbank-Setup, Docker, Kubernetes und Deployment in der Cloud.
+    \item \textbf{\color{accentblue}Constantin Köpplinger (Fachbetreuer / Leiter):} Projektbegleitung, Feedback und finale Bewertung des Projekts.
+\end{itemize}
+
+% ==========================================
+% 8. PROJEKTLEITUNG UND GENEHMIGUNG
+% ==========================================
+\section{Projektleitung \& Genehmigung}
+Dieses Dokument dient als bindende Grundlage für die Softwareentwicklung des Projekts \textit{Vindobona Pro FinTech} und wird hiermit zur Freigabe vorgelegt.
+
+\vspace{0.5cm}
+
+\begin{tcolorbox}[colback=bglight, colframe=accentblue, arc=4pt]
+\begin{description}[leftmargin=3.8cm, labelwidth=3.5cm]
+    \item[\textbf{Software-Entwickler:}] Andy Rugero Ndayambaje (Student)
+    \item[\textbf{Projektleiter / Fachbetreuer:}] Constantin Köpplinger
+\end{description}
+\end{tcolorbox}
+
+\newpage
+
+% ==========================================
+% 9. MÖGLICHE ANHÄNGE
+% ==========================================
+\section{Mögliche Anhänge}
+
+\subsection{Anhang A: Datenbankschema (DDL)}
+Das folgende SQL-Listing definiert die relationale Struktur der Tabellen:
+\begin{lstlisting}[language=SQL]
+CREATE TABLE IF NOT EXISTS users (
+    id TEXT PRIMARY KEY,
+    username TEXT UNIQUE NOT NULL,
+    email TEXT UNIQUE,
+    password_hash TEXT NOT NULL,
+    google_id TEXT UNIQUE,
+    is_verified INTEGER NOT NULL DEFAULT 0,
+    two_factor_secret TEXT,
+    two_factor_enabled INTEGER NOT NULL DEFAULT 0,
+    balance REAL NOT NULL DEFAULT 0.0,
+    role TEXT NOT NULL DEFAULT 'user',
+    is_card_frozen INTEGER NOT NULL DEFAULT 0,
+    avatar_url TEXT
+);
+
+CREATE TABLE IF NOT EXISTS transactions (
+    id TEXT PRIMARY KEY,
+    date TEXT NOT NULL,
+    receiver TEXT NOT NULL,
+    amount REAL NOT NULL,
+    category TEXT DEFAULT 'General',
+    is_negative INTEGER NOT NULL,
+    status TEXT DEFAULT 'Complete',
+    user_id TEXT,
+    FOREIGN KEY(user_id) REFERENCES users(id)
+);
+\end{lstlisting}
+
+\subsection{Anhang B: API Schnittstellen}
+\begin{itemize}
+    \item \texttt{POST /api/users/register} - Registrierung
+    \item \texttt{POST /api/auth/login} - Login (gibt JWT-Token zurück)
+    \item \texttt{GET /api/transactions} - Kontoumsätze abrufen
+    \item \texttt{POST /api/transactions} - Neue Buchung eintragen
+    \item \texttt{POST /api/transactions/transfer} - Geld an Freund senden
+    \item \texttt{GET /api/budgets} - Budget-Limits abfragen
+    \item \texttt{POST /api/budgets} - Neues Budget-Limit setzen
+    \item \texttt{GET /api/locations} - Koordinaten der Geldautomaten laden
+    \item \texttt{POST /api/chat} - Nachricht an KI-Chatbot senden
+    \item \texttt{GET /api/admin/logs} - Audit-Logs laden (nur für Admins)
+\end{itemize}
+
+\newpage
+
+% ==========================================
+% ANHANG C: RECHTECKIGES STRUKTUR- & INGRESS-DIAGRAMM
+% ==========================================
+\subsection{Anhang C: Struktur der Benutzeroberfläche \& Ingress-Verbindung}
+Dieses Diagramm zeigt die rechteckige Anordnung der React-Benutzeroberfläche (UI-Komponenten) und wie sie über den sicheren Nginx Reverse Proxy an das Backend und die Datenbank gekoppelt ist:
+
+\vspace{1cm}
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+    % 🎨 Stildefinitionen für die rechteckige Anordnung
+    node distance=1.5cm and 1.5cm,
+    uiBox/.style={rectangle, draw=accentblue!80, fill=accentblue!10, thick, minimum width=3.8cm, minimum height=1.1cm, align=center, rounded corners=4pt, drop shadow={opacity=0.15, shadow xshift=2pt, shadow yshift=-2pt}},
+    proxyBox/.style={rectangle, draw=accentorange!80, fill=accentorange!15, thick, minimum width=3.8cm, minimum height=1.1cm, align=center, rounded corners=4pt, drop shadow={opacity=0.15, shadow xshift=2pt, shadow yshift=-2pt}},
+    backBox/.style={rectangle, draw=primaryblue!80, fill=primaryblue!10, thick, minimum width=3.8cm, minimum height=1.1cm, align=center, rounded corners=4pt, drop shadow={opacity=0.15, shadow xshift=2pt, shadow yshift=-2pt}},
+    dbBox/.style={cylinder, draw=accentgreen!80, fill=accentgreen!10, shape border rotate=90, minimum width=3.2cm, minimum height=1.4cm, align=center, aspect=0.25, drop shadow={opacity=0.15, shadow xshift=2pt, shadow yshift=-2pt}},
+    arrow/.style={-Stealth, thick, draw=primaryblue!70},
+    dataflow/.style={-Stealth, dashed, thick, draw=accentblue}
+]
+
+    % --- FRONTEND UI KOMPONENTEN (Rechtecke links) ---
+    \node (topbar) [uiBox] {\textbf{Topbar.tsx} \\ \small (Header \& Status)};
+    \node (map) [uiBox, below=of topbar] {\textbf{ATM-Finder} \\ \small (Leaflet-Map)};
+    \node (chatbot) [uiBox, below=of map] {\textbf{Chatbot UI} \\ \small (KI-Finanzberater)};
+    \node (dashboard) [uiBox, below=of chatbot] {\textbf{Dashboard.tsx} \\ \small (Wallets \& Ledger)};
+
+    % --- GATEWAY & BACKEND (Rechtecke mitte) ---
+    \node (nginx) [proxyBox, right=3cm of map, yshift=-0.8cm] {\textbf{Nginx Reverse Proxy} \\ \small (Eingangstor Port 80/443)};
+    \node (backend) [backBox, right=2.5cm of nginx] {\textbf{Express API Server} \\ \small (Node.js Port 5001)};
+
+    % --- DATENBANK (Cylinder rechts) ---
+    \node (db) [dbBox, below=1.8cm of backend] {\textbf{Datenbank} \\ \small (PostgreSQL)};
+
+    % --- GRENZEN ZEICHNEN ---
+    \draw[dashed, gray!50, thick] (-2.2, 0.8) rectangle (2.2, -5.2) node[pos=0.95, left, font=\tiny\bfseries] {React UI (Frontend)};
+    \draw[dashed, gray!50, thick] (3.8, 0.8) rectangle (12.2, -5.2) node[pos=0.95, right, font=\tiny\bfseries] {Sichere Server-Zone};
+
+    % --- ARROWS / VERBINDUNGEN ---
+    % UI-Komponenten senden Daten an Nginx Ingress
+    \draw[arrow] (topbar.east) -- ++(1.5, 0) |- (nginx.west);
+    \draw[arrow] (map.east) -- ++(1.5, 0) |- (nginx.west);
+    \draw[arrow] (chatbot.east) -- ++(1.5, 0) |- (nginx.west);
+    \draw[arrow] (dashboard.east) -- ++(1.5, 0) |- (nginx.west);
+
+    % Nginx leitet an geschütztes Backend weiter
+    \draw[arrow, draw=accentorange] (nginx.east) -- node[above, font=\tiny, text=primaryblue] {Routen-Proxy} (backend.west);
+
+    % Backend kommuniziert mit DB
+    \draw[arrow, draw=accentgreen] (backend.south) -- (db.north);
+
+\end{tikzpicture}
+\caption{Rechteckige Struktur des UI-Frontend-Baums und die sichere Anbindung über Nginx}
+\end{figure}
+
+\newpage
+
+% ==========================================
+% ANHANG D: COLORFUL PROJEKT-KREISLAUF
+% ==========================================
+\subsection{Anhang D: Visualisiertes Projektablauf- \& Kreislaufdiagramm}
+Das folgende Kreislaufdiagramm zeigt nochmals zusammenfassend den wiederkehrenden Daten-Lebenszyklus bei einer typischen Benutzeraktion:
+
+\vspace{1.5cm}
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+    % Stildefinitionen für den einfachen, bunten Kreislauf
+    node distance=2cm,
+    stepnode/.style={circle, draw=#1!80, fill=#1!10, thick, minimum size=3.2cm, align=center, font=\small\bfseries, drop shadow={opacity=0.15, shadow xshift=2pt, shadow yshift=-2pt}},
+    cyclearrow/.style={-{Stealth[scale=1.2]}, line width=2.5pt, draw=#1}
+]
+
+    % --- KNOTEN IM KREIS ANORDNEN ---
+    
+    % Top: User Action (Orange)
+    \node (user) [stepnode=accentorange] {1. Benutzer \\ \small Interagiert mit UI \\ \small (z. B. Überweisung)};
+
+    % Right: React Frontend (Blue)
+    \node (front) [stepnode=accentblue, right=3.5cm of user] {2. React-Client \\ \small Validiert Eingabe \\ \small \& sendet JWT-Request};
+
+    % Bottom: Node Backend (Purple)
+    \node (back) [stepnode=accentpurple, below=3.5cm of front] {3. Express API \\ \small Prüft JWT Token \\ \small \& verarbeitet Logik};
+
+    % Left: SQL Database (Green)
+    \node (sql) [stepnode=accentgreen, left=3.5cm of back] {4. SQL-Datenbank \\ \small Schreibt Transaktion \\ \small \& aktualisiert Saldo};
+
+    % --- KREISLAUF-PFEILE ZEICHNEN (Clockwise) ---
+    
+    % User -> Frontend
+    \draw[cyclearrow=accentorange] (user) -- (front);
+    
+    % Frontend -> Backend
+    \draw[cyclearrow=accentblue] (front) -- (back);
+    
+    % Backend -> Database
+    \draw[cyclearrow=accentpurple] (back) -- (sql);
+    
+    % Database -> User (Rückmeldung/Abschluss)
+    \draw[cyclearrow=accentgreen] (sql) -- (user);
+
+    % --- HINWEIS-NOTIZEN NEBEN DEN KNOTEN ---
+    \node[right=0.2cm of front, font=\tiny\itshape, text=accentblue, align=left] {Sicherer HTTPS-\\Datenstrom};
+    \node[below=0.2cm of back, font=\tiny\itshape, text=accentpurple, align=center] {Rollen-Verifizierung\\(Admin / User)};
+    \node[left=0.2cm of sql, font=\tiny\itshape, text=accentgreen, align=right] {PostgreSQL (Cloud) /\\SQLite (Lokal)};
+    \node[above=0.2cm of user, font=\tiny\itshape, text=accentorange, align=center] {Startpunkt der\\Interaktion};
+
+\end{tikzpicture}
+\caption{Vereinfachter Projekt-Datenkreislauf (Vindobona Pro FinTech)}
+\end{figure}
+
+\end{document}

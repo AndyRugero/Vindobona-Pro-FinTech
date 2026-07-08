@@ -68,8 +68,8 @@ const MemberTransfers: React.FC<{ token: string | null }> = ({ token }) => {
 
     // Client-Side Search Filtering
     const filteredMembers = members.filter((member) =>
-        member.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        member.email.toLowerCase().includes(searchTerm.toLowerCase())
+        (member.username && member.username.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (member.email && member.email.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
     // Transfer Execution Handler

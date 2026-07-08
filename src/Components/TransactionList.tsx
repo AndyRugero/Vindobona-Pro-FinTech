@@ -119,7 +119,7 @@ const TransactionList = () => {
                 <td>{tx.receiver}</td>
                 <td>{tx.category}</td>
                 <td className={`amount ${tx.isNegative ? 'negative' : 'positive'}`}>
-                  {tx.amount}
+                  {tx.amount.includes('€') ? tx.amount : `${tx.isNegative ? '-' : '+'}€${parseFloat(tx.amount).toFixed(2)}`}
                 </td>
                 <td>
                   <span className="status-Pill complete">

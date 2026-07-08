@@ -1,0 +1,221 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[german]{babel}
+\usepackage[margin=1in]{geometry}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, positioning, arrows.meta}
+\usepackage[most]{tcolorbox}
+\usepackage{enumitem}
+\usepackage{hyperref}
+
+% 🎨 Benutzerdefiniertes Farbschema definieren
+\definecolor{primaryblue}{HTML}{1A365D}   % Dunkelblau für Titel
+\definecolor{accentblue}{HTML}{2B6CB0}    % Akzentblau für Untertitel
+\definecolor{codegreen}{HTML}{2F855A}     % Grün für Kommentare/Strings
+\definecolor{codeorange}{HTML}{DD6B20}    % Orange für Strings
+\definecolor{codeblue}{HTML}{3182CE}      % Blau für Schlüsselwörter
+\definecolor{codeyellow}{HTML}{D69E2E}    % Gelb für Parameter/Attribute
+\definecolor{codegray}{HTML}{718096}      % Grau für Metadaten
+\definecolor{bglight}{HTML}{F7FAFC}       % Heller Hintergrund
+\definecolor{headerred}{HTML}{C53030}     % Rot für JWT Header
+\definecolor{payloadblue}{HTML}{2B6CB0}    % Blau für JWT Payload
+\definecolor{signgreen}{HTML}{22543D}     % Grün für JWT Signatur
+
+% 🛠️ Listings für farbigen Code konfigurieren
+\lstdefinelanguage{JavaScript}{
+  keywords={const, let, var, function, return, import, from, export, default, async, await, try, catch, if, else, new},
+  keywordstyle=\color{codeblue}\bfseries,
+  ndkeywords={class, export, boolean, throw, implements, import, this, true, false, null},
+  ndkeywordstyle=\color{codeyellow}\bfseries,
+  identifierstyle=\color{black},
+  sensitive=true,
+  comment=[l]{//},
+  morecomment=[s]{/*}{*/},
+  commentstyle=\color{codegray}\itshape,
+  stringstyle=\color{codeorange},
+  morestring=[b]',
+  morestring=[b]"
+}
+
+\lstset{
+  language=JavaScript,
+  backgroundcolor=\color{bglight},
+  basicstyle=\small\ttfamily,
+  breaklines=true,
+  captionpos=b,
+  frame=single,
+  framesep=8pt,
+  xleftmargin=10pt,
+  framexleftmargin=10pt,
+  rulecolor=\color{accentblue},
+  showstringspaces=false,
+  keepspaces=true,
+  numbers=left,
+  numberstyle=\tiny\color{codegray},
+  numbersep=5pt,
+  tabsize=2
+}
+
+% 📄 Seiteneinstellungen
+\hypersetup{
+    colorlinks=true,
+    linkcolor=accentblue,
+    urlcolor=accentblue
+}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{8pt}
+
+\begin{document}
+
+% 👑 Dokumenten-Titel-Banner
+\begin{tcolorbox}[
+    colback=primaryblue,
+    colframe=primaryblue,
+    arc=6pt,
+    left=15pt,
+    right=15pt,
+    top=20pt,
+    bottom=20pt,
+    coltext=white
+]
+    \centering
+    {\huge\bfseries Authentifizierungs-Tokens \& OAuth 2.0 verstehen \par}
+    \vspace{8pt}
+    {\large\itshape Ein anschaulicher Leitfaden in einfachem Deutsch über digitale Schlüssel \& Websicherheit \par}
+\end{tcolorbox}
+
+\vspace{15pt}
+
+% 📖 Abschnitt 1: Was ist ein Token?
+\section{🔑 Was ist ein Authentifizierungs-Token?}
+In der Webentwicklung ist ein \textbf{Authentifizierungs-Token} (oft einfach \textit{Token} genannt) ein kompaktes, digitales Datenpaket, das wie eine temporäre elektronische Schlüsselkarte funktioniert. Es beweist dem Server, dass sich ein Benutzer bereits erfolgreich angemeldet hat und berechtigt ist, auf bestimmte Daten zuzugreifen oder Aktionen auszuführen.
+
+Anstatt bei jeder einzelnen Anfrage den geheimen Benutzernamen und das Passwort über das Netzwerk zu senden (was extrem unsicher wäre), überprüft der Server einfach dieses temporäre Token, um die Identität zu validieren.
+
+\subsection{🚗 Alltagsanalogie 1: Das Armband im Freizeitpark}
+Stellen Sie sich vor, Sie besuchen einen Freizeitpark (wie den \textit{Prater} in Wien):
+\begin{enumerate}
+    \item \textbf{Verifizierung}: Sie stehen an der Kasse am Eingang an, zeigen Ihren Lichtbildausweis vor und bezahlen den Eintritt.
+    \item \textbf{Token-Ausgabe}: Nach der Überprüfung befestigt der Mitarbeiter ein \textbf{wasserfestes, manipulationssicheres Armband} an Ihrem Handgelenk.
+    \item \textbf{Nahtloser Zugang}: Für den Rest des Tages gehen Sie zu den Achterbahnen, Attraktionen und Shows. Sie müssen nicht jedes Mal Ihren Ausweis oder Ihre Geldbörse herzeigen. Sie halten einfach Ihr Armband hoch. Die Mitarbeiter prüfen das Band kurz auf Echtheit und lassen Sie einsteigen.
+\end{enumerate}
+In diesem Szenario ist das \textbf{Armband das Token}. Es ist zeitlich begrenzt, vom Park signiert (durch das offizielle Design) und gilt nur für diesen spezifischen Park.
+
+\subsection{🏨 Alltagsanalogie 2: Die Hotel-Schlüsselkarte}
+Wenn Sie in einem Hotel einchecken:
+\begin{enumerate}
+    \item Sie legen Ihren Reisepass und Ihre Kreditkarte an der Rezeption vor.
+    \item Der Rezeptionist programmiert eine Plastik-\textbf{Schlüsselkarte} (das Token) und händigt sie Ihnen aus.
+    \item Die Karte enthält weder Ihren Namen noch Ihre Zahlungsdaten. Sie enthält lediglich einen kryptografischen Code, der so programmiert ist, dass er nur Ihre Zimmertür öffnet (Berechtigung/Scope) und am Abreisetag um 11:00 Uhr automatisch abläuft (Gültigkeit/Expiration).
+\end{enumerate}
+
+---
+
+% 📖 Abschnitt 2: JSON Web Tokens (JWT)
+\section{📦 Aufbau eines JSON Web Tokens (JWT)}
+Ein sehr verbreitetes Token-Format in modernen Webanwendungen (das auch in unserer \textbf{Vindobona Pro}-Plattform verwendet wird) ist das \textbf{JSON Web Token (JWT)}. Ein JWT besteht aus drei Teilen, die durch Punkte (\texttt{.}) getrennt sind:
+
+\begin{center}
+    \textbf{\textcolor{headerred}{Header}} \textbf{.} \textbf{\textcolor{payloadblue}{Payload}} \textbf{.} \textbf{\textcolor{signgreen}{Signature}}
+\end{center}
+
+\begin{tcolorbox}[colback=bglight, colframe=accentblue, title=Aufbau des JWT im Detail]
+\begin{itemize}[leftmargin=*]
+    \item \textbf{\textcolor{headerred}{1. Header (Rot)}}: Enthält Metadaten über das Token, z. B. den verwendeten Verschlüsselungsalgorithmus (z. B. HMAC SHA256) und den Typ des Tokens (JWT).
+    \item \textbf{\textcolor{payloadblue}{2. Payload (Blau)}}: Enthält die eigentlichen Benutzerdaten (sogenannte \textit{Claims}). In unserer App sind das die Benutzer-ID, der Benutzername und die Benutzerrolle (z. B. \texttt{userId}, \texttt{username}, \texttt{role}) sowie das Ablaufdatum (\texttt{exp}).
+    \item \textbf{\textcolor{signgreen}{3. Signatur (Grün)}}: Der kryptografische Sicherheitsstempel. Der Server nimmt den Header und die Payload und verschlüsselt sie zusammen mit einem geheimen Schlüssel (\texttt{JWT\_SECRET}), den nur unser Backend kennt. Wenn ein Angreifer versucht, die Payload zu ändern (z. B. die Rolle auf \texttt{admin} zu setzen), wird die Signatur sofort ungültig und der Server weist das Token ab.
+\end{itemize}
+\end{tcolorbox}
+
+---
+
+% 📖 Abschnitt 3: Code-Implementierung
+\section{💻 Implementierung in unserem Quellcode}
+
+So interagiert unsere Anwendung mit diesen Tokens:
+
+\subsection{Generieren und Signieren des Tokens (Backend)}
+Im Express-Authentifizierungs-Router signieren wir nach der erfolgreichen Google-Verifizierung ein JWT mit einer Gültigkeit von 2 Stunden und leiten den Benutzer zur React-App weiter:
+\begin{lstlisting}
+// Datei: backend/server/routes/auth.js
+const token = jwt.sign(
+    { 
+        userId: req.user.id, 
+        username: req.user.username, 
+        role: req.user.role 
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: '2h' } // Token laeuft nach 2 Stunden automatisch ab
+);
+
+// Benutzer mit dem Token in den URL-Parametern zu React weiterleiten
+const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+res.redirect(`${frontendUrl}?token=${token}&username=${req.user.username}`);
+\end{lstlisting}
+
+\subsection{Auslesen und Speichern des Tokens (Frontend)}
+Beim Start der React-Frontend-App sucht ein Hook nach Token-Parametern in der Adressleiste, speichert diese im persistenten Speicher des Browsers (\texttt{localStorage}) und setzt den Anmeldezustand in React:
+\begin{lstlisting}
+// Datei: src/App.tsx
+useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  const urlToken = params.get('token');
+  const urlUsername = params.get('username');
+
+  if (urlToken && urlUsername) {
+    // 💾 Token im Browser-Speicher sichern
+    localStorage.setItem('token', urlToken);
+    localStorage.setItem('username', urlUsername);
+    
+    // ⚡ React-Zustand aktualisieren, um das Dashboard freizuschalten
+    setToken(urlToken);
+    setUsername(urlUsername);
+
+    // 🧹 Adressleiste aus Sicherheitsgruenden bereinigen
+    window.history.replaceState({}, document.title, window.location.pathname);
+  }
+}, []);
+\end{lstlisting}
+
+---
+
+% 📖 Abschnitt 4: Architektur-Diagramm
+\section{📊 Diagramm des Token-Austausches}
+Die folgende Darstellung zeigt den Lebenszyklus des Tokens beim Login und bei nachfolgenden API-Anfragen:
+
+\vspace{15pt}
+\begin{center}
+\begin{tikzpicture}[node distance=2.2cm, auto]
+    % Stile definieren
+    \tikzstyle{block} = [rectangle, draw, fill=bglight, text width=6em, text centered, rounded corners, minimum height=3.5em, thick, draw=primaryblue]
+    \tikzstyle{cloud} = [ellipse, draw, fill=bglight, text width=5.5em, text centered, rounded corners, minimum height=3.5em, thick, draw=accentblue]
+    \tikzstyle{line} = [draw, -{Latex[scale=1.0]}, thick, primaryblue]
+    
+    % Knoten
+    \node [block] (user) {1. Browser des Nutzers};
+    \node [cloud, right=2.2cm of user] (google) {2. Google OAuth};
+    \node [block, right=2.2cm of google] (backend) {3. Express Backend};
+    \node [block, below=1.5cm of backend] (db) {4. SQLite Datenbank};
+    \node [block, below=1.5cm of user] (storage) {5. Lokaler Speicher (Browser)};
+
+    % Pfade / Verbindungen
+    \path [line] (user) -- node [above, scale=0.7] {Auth-Anfrage} (google);
+    \path [line] (google) -- node [above, scale=0.7] {Profil senden} (backend);
+    \path [line] (backend) -- node [left, scale=0.7] {Nutzer sichern} (db);
+    \path [line] (backend) |- node [above, near end, scale=0.7] {JWT senden} (storage);
+    \path [line] (storage) -- node [left, scale=0.7] {API-Header mitsenden} (user);
+\end{tikzpicture}
+\end{center}
+\vspace{10pt}
+
+\begin{tcolorbox}[colback=primaryblue!5, colframe=primaryblue, title=Wichtige Sicherheitsaspekte]
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Token-Speicherung}: Durch das Speichern des Tokens im \texttt{localStorage} bleibt der Benutzer auch beim Neuladen der Seite angemeldet.
+    \item \textbf{Adresszeilen-Bereinigung}: Das Entfernen des Tokens aus der URL mittels \texttt{window.history.replaceState} verhindert, dass sensible Schlüssel im Browserverlauf protokolliert werden.
+    \item \textbf{Zustandslose Verifizierung}: Das Backend muss nicht bei jeder Datenbankabfrage ein Passwort prüfen. Die mathematische Signatur des JWT wird in Millisekunden auf Gültigkeit geprüft.
+\end{itemize}
+\end{tcolorbox}
+
+\end{document}

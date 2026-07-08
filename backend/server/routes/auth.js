@@ -621,10 +621,10 @@ module.exports = (db) => {
     )
     router.get('/users/members', authenticateToken, async (req, res) => {
         try {
-            const currentUserId = req.user.id;
+            const currentUserId = req.user.userId || req.user.id;
 
             const members = await db.all(
-                'SELECT id, username, email FROM users WHERE id !=?',
+                'SELECT id, username, email FROM users WHERE id != ?',
                 [currentUserId]
             );
             return res.status(200).json(members);

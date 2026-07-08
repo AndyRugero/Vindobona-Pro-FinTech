@@ -1,0 +1,234 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[german]{babel}
+\usepackage[margin=1in]{geometry}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, positioning, arrows.meta, shadows, calc}
+\usepackage[most]{tcolorbox}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{titlesec}
+
+% 🎨 Sehr buntes Farbschema für visuelle Klarheit (Präsentations-Style)
+\definecolor{primarynavy}{HTML}{0F172A}   % Dunkles Slate für Text
+\definecolor{slideblue}{HTML}{2563EB}      % Blau für Folie 1 & Titel
+\definecolor{slideorange}{HTML}{F97316}    % Orange für Motivation (Folie 2)
+\definecolor{slidegreen}{HTML}{10B981}     % Grün für Entwicklung (Folie 3)
+\definecolor{slidered}{HTML}{EF4444}       % Rot für Sicherheit (Folie 4)
+\definecolor{slidepurple}{HTML}{A855F7}    % Violett für Architektur (Folie 5)
+\definecolor{slidecyan}{HTML}{06B6D4}      % Cyan für DevOps (Folie 6)
+\definecolor{bglight}{HTML}{F8FAFC}        % Hintergrundfarbe für Boxen
+
+\titleformat{\section}
+  {\color{primarynavy}\normalfont\Large\bfseries}
+  {\thesection}{1em}{}[{\color{slideblue}\titlerule[1.5pt]}]
+\titleformat{\subsection}
+  {\color{slideblue}\normalfont\large\bfseries}
+  {\thesubsection}{1em}{}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{8pt}
+
+\begin{document}
+
+% ==========================================
+% 👑 TITELBLATT
+% ==========================================
+\begin{tcolorbox}[
+    colback=primarynavy,
+    colframe=slideblue,
+    arc=8pt,
+    boxrule=3pt,
+    left=20pt,
+    right=20pt,
+    top=40pt,
+    bottom=40pt,
+    coltext=white
+]
+    \centering
+    {\huge\bfseries MEIN PRÄSENTATIONS-SCRIPT \par}
+    \vspace{10pt}
+    {\Large\bfseries Vindobona Pro FinTech \par}
+    \vspace{15pt}
+    {\large\itshape Meine persönliche 5-Minuten-Präsentation für das Specialized Project \par}
+    \vspace{10pt}
+    {\small Entwickelt und präsentiert von: \textbf{Andy Rugero Ndayambaje} \par}
+    {\small Betreuer: \textbf{Constantin Köpplinger} \par}
+\end{tcolorbox}
+
+\newpage
+
+% ==========================================
+% FOLIE 1: BEGRÜSSUNG
+% ==========================================
+\section{🎬 Folie 1: Begrüßung \& Projektstart}
+
+\begin{tcolorbox}[colback=bglight, colframe=slideblue, title=\textbf{\color{white}Visualisierung auf Folie 1}, arc=4pt]
+\textbf{Titel der Präsentation:} Vindobona Pro FinTech \\
+\textbf{Name:} Andy Rugero Ndayambaje \\
+\textbf{Betreuer:} Constantin Köpplinger
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=white, colframe=primarynavy, title=\textbf{Mein Sprechtext (Ich-Form)}]
+„Guten Tag, Herr Köpplinger. Ich begrüße Sie herzlich zu meiner Präsentation.
+
+Ich habe für mein Specialized Project die Web-Applikation \textbf{Vindobona Pro FinTech} entwickelt. Ich wollte ein System bauen, das echtes Online-Banking simuliert, aber gleichzeitig moderne und intelligente Hilfsmittel direkt für den Benutzer anbietet.“
+\end{tcolorbox}
+
+\vspace{1cm}
+
+% ==========================================
+% FOLIE 2: MEINE MOTIVATION
+% ==========================================
+\section{💡 Folie 2: Warum ich dieses Projekt erstellt habe}
+
+\begin{tcolorbox}[colback=bglight, colframe=slideorange, title=\textbf{\color{white}Visualisierung auf Folie 2}, arc=4pt]
+\textbf{Das Problem:} Viele Banking-Apps sind langweilig, starr und bieten keine echten Hilfen im Alltag. \\
+\textbf{Meine Lösung:} Eine All-in-One App für Wien mit integrierter KI und Geldautomaten-Suche.
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=white, colframe=primarynavy, title=\textbf{Mein Sprechtext (Ich-Form)}]
+„Ich habe mich \textbf{generell} gefragt: Warum sind herkömmliche Banking-Apps eigentlich so unflexibel? 
+
+Deshalb habe ich mich entschieden, eine App zu entwickeln, die Kunden im Alltag wirklich hilft. Ich habe \textbf{hauptsächlich} das \textit{User Experience (UX)} verbessert. Ich habe einen automatischen Budget-Planer gebaut, damit Nutzer ihre Finanzen im Blick behalten. Ich habe eine interaktive Karte für alle Geldautomaten in Wien integriert. Und ich habe einen KI-Finanzassistenten eingebaut, damit Kunden jederzeit Fragen zu ihren Ausgaben stellen können.“
+\end{tcolorbox}
+
+\newpage
+
+% ==========================================
+% FOLIE 3: MEIN ENTWICKLUNGSPROZESS
+% ==========================================
+\section{🛠️ Folie 3: Mein Entwicklungsprozess (Schritt für Schritt)}
+
+\begin{tcolorbox}[colback=bglight, colframe=slidegreen, title=\textbf{\color{white}Visualisierung auf Folie 3}, arc=4pt]
+\begin{enumerate}
+    \item \textbf{Schritt 1:} Datenbankdesign \& React UI-Skelett entworfen.
+    \item \textbf{Schritt 2:} Login-API (JWT) und Währungs-Wallets programmiert.
+    \item \textbf{Schritt 3:} Geldautomaten-Suche (Leaflet-Map) und KI-Chatbot eingebaut.
+    \item \textbf{Schritt 4:} App mit Docker verpackt und auf Azure gestartet.
+\end{enumerate}
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=white, colframe=primarynavy, title=\textbf{Mein Sprechtext (Ich-Form)}]
+„Hier zeige ich Ihnen, wie ich bei der Entwicklung Schritt für Schritt vorgegangen bin:
+
+\textbf{Zuerst habe ich} das relationale Datenbankschema entworfen und das \textit{User Interface (UI)} mit React gebaut.
+\textbf{Dann habe ich} die Express-API programmiert, die Benutzerverwaltung mit JWT-Logins erstellt und die Währungs-Wallets hinzugefügt.
+\textbf{Danach habe ich} die interaktive Leaflet-Karte für die Wiener Geldautomaten programmiert und die OpenAI-Schnittstelle für meinen Chatbot verbunden.
+\textbf{Schließlich habe ich} das gesamte System in Docker-Container verpackt, um es in der Cloud zu betreiben.“
+\end{tcolorbox}
+
+\newpage
+
+% ==========================================
+% FOLIE 3B: SYSTEM-LEBENSZYKLUS (NEW DIAGRAM)
+% ==========================================
+\section{🔄 Folie 3b: System-Lebenszyklus \& Verbindung}
+
+\begin{tcolorbox}[colback=bglight, colframe=slidegreen, title=\textbf{\color{white}Visualisierung des System-Lebenszyklus}, arc=4pt]
+\centering
+\begin{tikzpicture}[
+    node distance=0.8cm,
+    block/.style={rectangle, draw=#1!80, fill=bglight, thick, minimum width=2.4cm, minimum height=0.9cm, align=center, font=\tiny\bfseries, rounded corners=3pt, drop shadow={opacity=0.1, shadow xshift=1.5pt, shadow yshift=-1.5pt}},
+    arrow/.style={-Stealth, thick, draw=primarynavy!80}
+]
+    \node (fe) [block=slideblue] {React SPA\\(Client UI)};
+    \node (proxy) [block=slideorange, right=of fe] {Nginx\\(Reverse Proxy)};
+    \node (be) [block=slidepurple, right=of proxy] {Express API\\(Backend server)};
+    \node (db) [block=slidegreen, right=of be] {PostgreSQL\\(Database)};
+    
+    \draw[arrow] (fe) -- node[above, font=\tiny] {HTTPS} (proxy);
+    \draw[arrow] (proxy) -- node[above, font=\tiny] {Route} (be);
+    \draw[arrow] (be) -- node[above, font=\tiny] {SQL} (db);
+\end{tikzpicture}
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=white, colframe=primarynavy, title=\textbf{Mein Sprechtext (Ich-Form)}]
+„\textbf{Bezüglich} der Verbindung zwischen Frontend und Backend läuft der Lebenszyklus \textbf{quasi} so ab:
+
+Das Frontend ist eine \textit{Single Page Application (SPA)} auf dem Client. Führt der Benutzer eine Aktion aus (wie eine Überweisung), sendet der Browser einen verschlüsselten HTTPS-Request an unser Gateway. Der Nginx-Proxy nimmt diese Anfrage entgegen und leitet sie an den Node.js-Backend-Server weiter. Dieser validiert die Anfrage, verarbeitet die Logik und führt \textbf{dementsprechend} SQL-Abfragen auf der Datenbank aus. Die Antwort fließt dann den gleichen Weg zurück zum Benutzer.“
+\end{tcolorbox}
+
+\newpage
+
+% ==========================================
+% FOLIE 4: MEIN DIEBSTAHLSCHUTZ
+% ==========================================
+\section{🔒 Folie 4: Wie ich mein Projekt abgesichert habe}
+
+\begin{tcolorbox}[colback=bglight, colframe=slidered, title=\textbf{\color{white}Visualisierung auf Folie 4}, arc=4pt]
+\begin{itemize}
+    \item \textbf{SQL-Transaktionen:} Verhindern Geldverlust bei Fehlern.
+    \item \textbf{Card Freezing:} Karte mit einem Klick sperren.
+    \item \textbf{2FA \& Audit Logs:} Schutz vor Passwortdiebstahl und lückenlose Protokollierung.
+\end{itemize}
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=white, colframe=primarynavy, title=\textbf{Mein Sprechtext (Ich-Form)}]
+„Beim Thema Geld steht Sicherheit für mich an erster Stelle. \textbf{Bezüglich} des Diebstahlschutzes habe ich vier wichtige Systeme integriert:
+
+\textbf{Ich habe} SQL-Datenbanktransaktionen genutzt. Wenn jemand Geld überweist, wird die Aktion bei Fehlern sofort abgebrochen (Rollback), damit kein Geld verloren geht.
+\textbf{Ich habe} ein Karten-Einfrier-Feature programmiert. Verliert ein Nutzer seine Karte, kann er sie sofort sperren, und alle Zahlungen werden blockiert.
+\textbf{Ich habe} eine Zwei-Faktor-Authentifizierung mit Google Authenticator und ein manipulationssicheres Audit-Log für den Administrator hinzugefügt. Dementsprechend ist das Geld der Kunden optimal geschützt.“
+\end{tcolorbox}
+
+\newpage
+
+% ==========================================
+% FOLIE 5: MEIN NG INGRESS PROXY
+% ==========================================
+\section{🛡️ Folie 5: Mein Nginx Reverse Proxy}
+
+\begin{tcolorbox}[colback=bglight, colframe=slidepurple, title=\textbf{\color{white}Visualisierung auf Folie 5}, arc=4pt]
+\textbf{Nginx als Schutzwall:} \\
+Hält das Express-Backend (Port 5001) versteckt. Nimmt Anfragen nur auf Port 80/443 an. \\
+\textbf{Rate-Limiting:} Blockiert Angreifer automatisch.
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=white, colframe=primarynavy, title=\textbf{Mein Sprechtext (Ich-Form)}]
+„Um mein System vor Angriffen aus dem Internet zu schützen, habe ich einen \textbf{Nginx Reverse Proxy} vorgeschaltet. 
+
+Genau wie bei echten Großbanken wie der *Erste Group* oder der *Raiffeisen Bank* habe ich mein Backend (auf Port 5001) komplett vor dem öffentlichen Internet versteckt. Jede Anfrage läuft über Nginx auf Port 80. Ich habe Nginx so konfiguriert, dass er Anfragen filtert, SSL verschlüsselt und Spam-Angriffe durch automatisches Rate-Limiting blockiert, bevor sie meinen Server überlasten können. Nginx dient \textbf{quasi} als unser Ingress-Gatekeeper.“
+\end{tcolorbox}
+
+\vspace{1.2cm}
+
+% ==========================================
+% FOLIE 6: CLOUD START & UNIT TESTS
+% ==========================================
+\section{🚀 Folie 6: Cloud-Start \& Qualitätssicherung}
+
+\begin{tcolorbox}[colback=bglight, colframe=slidecyan, title=\textbf{\color{white}Visualisierung auf Folie 6}, arc=4pt]
+\textbf{Orchestrierung:} Kubernetes (K8s) mit 3 Replikaten auf Microsoft Azure. \\
+\textbf{Qualitätssicherung:} Automatische Unit-Tests für Login, Passwörter und Währungen.
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=white, colframe=primarynavy, title=\textbf{Mein Sprechtext (Ich-Form)}]
+„Zum Abschluss habe ich das Projekt in die Cloud gebracht. 
+
+\textbf{Ich habe} Kubernetes genutzt, um meine Docker-Container mit 3 Replikaten auf Microsoft Azure hochverfügbar zu betreiben. Stürzt ein Container ab, startet Kubernetes ihn automatisch neu.
+\textbf{Bezüglich} der Qualitätssicherung \textbf{habe ich} automatisierte **Unit-Tests** geschrieben. Diese prüfen meine Passwörter, die Login-Verifizierung und alle Berechnungen des FX-Währungsrechners vor jedem Start, um Programmierfehler komplett auszuschließen.“
+\end{tcolorbox}
+
+\newpage
+
+% ==========================================
+% FOLIE 7: FAZIT
+% ==========================================
+\section{🏁 Folie 7: Mein Fazit}
+
+\begin{tcolorbox}[colback=bglight, colframe=primarynavy, title=\textbf{\color{white}Visualisierung auf Folie 7}, arc=4pt, coltext=white]
+\centering
+\textbf{Vielen Dank für Ihre Aufmerksamkeit!} \\
+Ich freue mich auf Ihre Fragen.
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=white, colframe=primarynavy, title=\textbf{Mein Sprechtext (Ich-Form)}]
+„Zusammenfassend bin ich stolz, dass ich diese komplexe FinTech-Plattform stabil zum Laufen gebracht habe. Ich habe gelernt, wie man Client- und Server-Technologien verbindet und die Anwendung professionell absichert.
+
+Vielen Dank für Ihre Aufmerksamkeit, Herr Köpplinger. Ich freue mich nun auf Ihre Fragen zu meinem Projekt.“
+\end{tcolorbox}
+
+\end{document}
