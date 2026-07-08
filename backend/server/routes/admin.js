@@ -137,5 +137,30 @@ module.exports = (db) => {
         }
     });
 
+    // 📢 POST: Add a new announcement (Admin only)
+    // Path: POST http://localhost:5001/api/admin/announcements
+    router.post('/announcements', authenticateToken, requireRole(['admin']), async (req, res) => {
+        try {
+            const { title, content } = req.body;
+            if (!title || !content) {
+                return res.status(400).json({ error: 'Title and content are required.' });
+            }
+            const id = Date.now().toString() + Math.random().toString(36).substring(2, 5);
+            await db.run('INSERT INTO announcements (id, title, content, created_at) VALUES (?, ?, ?, ?)', [id, title, content, Date.now()]);
+            
+            // Also insert an audit log event
+            const auditId = Date.now().toString() + 'ann';
+            await db.run(
+                'INSERT INTO audit_logs (id, user_id, action, details, ip_address, timestamp) VALUES (?, ?, ?, ?, ?, ?)',
+                [auditId, req.user.userId, 'ADMIN_CREATE_ANNOUNCEMENT', `Admin ${req.user.username} posted a new update: "${title}"`, req.ip, new Date().toISOString()]
+            );
+
+            res.status(201).json({ message: 'Announcement posted successfully!', id });
+        } catch (error) {
+            console.error('Admin Add Announcement Error:', error);
+            res.status(500).json({ error: error.message });
+        }
+    });
+
     return router; 
 };

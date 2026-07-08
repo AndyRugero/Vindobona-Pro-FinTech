@@ -48,6 +48,8 @@ export default function AdminPanel({ token }: AdminPanelProps) {
     const [users, setUsers] = useState<User[]>([]);
     const [logs, setLogs] = useState<AuditLog[]>([]);
     const [transactions, setTransactions] = useState<Transaction[]>([]);
+    const [newAnnTitle, setNewAnnTitle] = useState('');
+    const [newAnnContent, setNewAnnContent] = useState('');
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [error, setError] = useState<string>('');
     const [successMessage, setSuccessMessage] = useState<string>('');
@@ -165,6 +167,36 @@ export default function AdminPanel({ token }: AdminPanelProps) {
             fetchAdminData();
         } catch (err: any) {
             setError(err.message || 'Failed to rollback transaction');
+        }
+    };
+
+    // 📢 Publish What's New Announcement
+    const handlePublishAnnouncement = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newAnnTitle || !newAnnContent) {
+            setError('Title and Content are required to publish an update.');
+            return;
+        }
+        setError('');
+        setSuccessMessage('');
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/admin/announcements`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({ title: newAnnTitle, content: newAnnContent })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to publish announcement');
+
+            setSuccessMessage('Announcement published successfully! All users will receive this in their notification center.');
+            setNewAnnTitle('');
+            setNewAnnContent('');
+            fetchAdminData();
+        } catch (err: any) {
+            setError(err.message || 'Failed to publish announcement');
         }
     };
 
@@ -306,6 +338,40 @@ export default function AdminPanel({ token }: AdminPanelProps) {
                     </div>
                 </div>
 
+            </div>
+
+            {/* Announcement / What's New Publisher */}
+            <div className="admin-panel full-width-panel" style={{ marginTop: '20px', padding: '20px' }}>
+                <h2>Broadcast "What's New" Announcement</h2>
+                <form onSubmit={handlePublishAnnouncement} style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '10px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <label style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 600 }}>Announcement Title</label>
+                        <input 
+                            type="text" 
+                            placeholder="e.g. Card Freeze Protection Added!" 
+                            value={newAnnTitle}
+                            onChange={e => setNewAnnTitle(e.target.value)}
+                            style={{ background: '#0c1222', border: '1px solid #1e293b', borderRadius: '6px', padding: '10px', color: 'white', fontSize: '13px' }}
+                        />
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <label style={{ fontSize: '12px', color: '#94a3b8', fontWeight: 600 }}>Message Content</label>
+                        <textarea 
+                            placeholder="Describe your update details here..." 
+                            rows={3}
+                            value={newAnnContent}
+                            onChange={e => setNewAnnContent(e.target.value)}
+                            style={{ background: '#0c1222', border: '1px solid #1e293b', borderRadius: '6px', padding: '10px', color: 'white', fontSize: '13px', resize: 'vertical' }}
+                        />
+                    </div>
+                    <button 
+                        type="submit" 
+                        className="action-btn promote-btn"
+                        style={{ alignSelf: 'flex-start', padding: '10px 20px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}
+                    >
+                        Publish Update
+                    </button>
+                </form>
             </div>
 
             {/* System Transactions Ledger & Rollback Section */}

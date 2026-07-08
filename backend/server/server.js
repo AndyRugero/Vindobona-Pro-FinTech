@@ -152,6 +152,32 @@ const initializeDatabase = async () => {
         console.error("❌ Failed to migrate user wallets:", error);
     }
 
+    // 📢 Safe Schema Initialization: announcements table
+    try {
+        await db.run(`
+            CREATE TABLE IF NOT EXISTS announcements (
+                id TEXT PRIMARY KEY,
+                title TEXT NOT NULL,
+                content TEXT NOT NULL,
+                created_at BIGINT NOT NULL
+            )
+        `);
+        
+        // Seed sample announcements if empty (to match 3 unread count)
+        const count = await db.get('SELECT COUNT(*) as count FROM announcements');
+        if (count && count.count === 0) {
+            await db.run(`
+                INSERT INTO announcements (id, title, content, created_at) VALUES 
+                ('1', 'Vindobona Pro V2.0 Released!', 'We are thrilled to launch Vindobona Pro FinTech! Explore our premium design, multi-currency wallets, card controls, and interactive transaction logs.', ?),
+                ('2', 'New Card Freeze Protection', 'For your security, you can now freeze your credit/debit card instantly. While frozen, all outgoing transfers will be blocked to prevent fraud.', ?),
+                ('3', 'Admin Rollback Support Added', 'Administrators can now roll back transaction ledger entries and reverse balances directly from the new System Transactions monitor.', ?)
+            `, [Date.now() - 3600000 * 24, Date.now() - 3600000 * 12, Date.now() - 3600000]);
+            console.log('✅ Announcements table seeded with 3 default alerts!');
+        }
+        console.log('✅ announcements table successfully initialized on startup!');
+    } catch (error) {
+        console.error('❌ Failed to initialize announcements table:', error);
+    }
 
     console.log('Database connected and tables initialized successfully!');
 };
@@ -179,6 +205,16 @@ initializeDatabase()
         // If this returns HTTP 200, Kubernetes knows our server is healthy.
         app.get('/api/health', (req, res) => { 
             res.status(200).json({ status: 'UP', timestamp: new Date() }); 
+        });
+
+        // 📢 Public Announcements Endpoint
+        app.get('/api/announcements', async (req, res) => {
+            try {
+                const rows = await db.all('SELECT * FROM announcements ORDER BY created_at DESC');
+                res.status(200).json(rows);
+            } catch (error) {
+                res.status(500).json({ error: error.message });
+            }
         });
         // Mount Auth Router under /api (handles /api/users/register and /api/auth/login)
         const authRouter = require('./routes/auth')(db);

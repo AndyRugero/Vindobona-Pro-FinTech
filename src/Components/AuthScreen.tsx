@@ -26,7 +26,23 @@ interface AuthScreenProps {
 
 const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
     // 🗂️ Top nav tab: 'portal' = login/signup, 'about' = About Us, 'faq' = FAQ
-    const [activeTab, setActiveTab] = useState<'portal' | 'about' | 'faq'>('portal');
+    const [activeTab, setActiveTab] = useState<'portal' | 'about' | 'faq' | 'whatsnew'>('portal');
+    const [announcements, setAnnouncements] = useState<any[]>([]);
+
+    useEffect(() => {
+        const fetchAnnouncements = async () => {
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/announcements`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setAnnouncements(data);
+                }
+            } catch (err) {
+                console.error('Failed to fetch announcements:', err);
+            }
+        };
+        fetchAnnouncements();
+    }, []);
 
     // React States: These store what the user typed or which mode we are in
     const [isLogin, setIsLogin] = useState(true);
@@ -330,6 +346,10 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
                         className={`auth-nav-btn ${activeTab === 'faq' ? 'active' : ''}`}
                         onClick={() => setActiveTab('faq')}
                     ><HelpCircle size={18}></HelpCircle> FAQ</button>
+                    <button
+                        className={`auth-nav-btn ${activeTab === 'whatsnew' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('whatsnew')}
+                    ><Mail size={18} className="auth-btn-icon" /> What's New</button>
                 </nav>
             </header>
 
@@ -503,6 +523,39 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
                                 <span onClick={() => { setIsLogin(!isLogin); setError(''); setSuccessMessage(''); }}>{isLogin ? 'Sign Up' : 'Log In'}</span>
                             </p>
                         )}
+                    </div>
+                </div>
+            )}
+
+            {/* ══ WHAT'S NEW / ANNOUNCEMENTS PAGE ══ */}
+            {activeTab === 'whatsnew' && (
+                <div className="auth-info-page">
+                    <div className="info-hero">
+                        <h1 className="info-hero-title">What's New at Vindobona Pro</h1>
+                        <p className="info-hero-sub">Read our latest feature releases and security updates</p>
+                    </div>
+                    <div style={{ maxWidth: '800px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '20px', padding: '20px 0' }}>
+                        {announcements.length === 0 ? (
+                            <div className="empty-logs" style={{ textAlign: 'center', padding: '40px', background: '#0c1222', borderRadius: '12px', border: '1px solid #1e293b' }}>
+                                No new updates published yet. Check back soon!
+                            </div>
+                        ) : (
+                            announcements.map((ann) => (
+                                <div key={ann.id} style={{ background: '#0c1222', border: '1px solid #1e293b', borderRadius: '12px', padding: '24px', position: 'relative' }}>
+                                    <h2 style={{ color: 'white', fontSize: '18px', fontWeight: 700, margin: '0 0 8px 0' }}>{ann.title}</h2>
+                                    <span style={{ fontSize: '11px', color: '#64748b', display: 'block', marginBottom: '14px' }}>
+                                        Published on {new Date(ann.created_at).toLocaleString()}
+                                    </span>
+                                    <p style={{ fontSize: '14px', color: '#cbd5e1', lineHeight: '1.6', margin: 0, whiteSpace: 'pre-wrap' }}>
+                                        {ann.content}
+                                    </p>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                    <div className="info-contact-strip">
+                        <p>Want to check your balance or make a transfer?</p>
+                        <button className="auth-nav-btn active" onClick={() => setActiveTab('portal')}>→ Login / Sign Up</button>
                     </div>
                 </div>
             )}
