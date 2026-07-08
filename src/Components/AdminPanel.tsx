@@ -143,6 +143,35 @@ export default function AdminPanel({ token }: AdminPanelProps) {
         }
     };
 
+    // 🗑️ Delete user permanently (Admin only)
+    const handleDeleteUser = async (userId: string, usernameStr: string) => {
+        if (usernameStr === localStorage.getItem('username')) {
+            alert("You cannot delete your own admin account.");
+            return;
+        }
+        if (!window.confirm(`Are you sure you want to permanently delete user "${usernameStr}"? All their wallets, transactions, budgets, and logs will be permanently deleted.`)) {
+            return;
+        }
+
+        setError('');
+        setSuccessMessage('');
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/admin/users/${userId}`, {
+                method: 'DELETE',
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to delete user');
+
+            setSuccessMessage(data.message || 'User deleted successfully');
+            fetchAdminData();
+        } catch (err: any) {
+            setError(err.message || 'Failed to delete user');
+        }
+    };
+
     // 🗑️ Rollback / Delete transaction
     const handleRollbackTransaction = async (txId: string, isTransfer: boolean) => {
         setError('');
@@ -304,6 +333,18 @@ export default function AdminPanel({ token }: AdminPanelProps) {
                                                             Promote
                                                         </button>
                                                     )}
+
+                                                    {/* Permanent Delete Button */}
+                                                    {user.username !== localStorage.getItem('username') && (
+                                                        <button
+                                                            onClick={() => handleDeleteUser(user.id, user.username)}
+                                                            className="action-btn delete-btn"
+                                                            style={{ background: '#ef4444', color: 'white', padding: '6px 12px', borderRadius: '4px', border: 'none', cursor: 'pointer', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                                                            title="Permanently delete user and all their data"
+                                                        >
+                                                            Delete User
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </td>
                                         </tr>
@@ -404,7 +445,7 @@ export default function AdminPanel({ token }: AdminPanelProps) {
                                         <td>{tx.receiver}</td>
                                         <td>{tx.category}</td>
                                         <td className={`amount ${tx.is_negative === 1 ? 'negative' : 'positive'}`} style={{ color: tx.is_negative === 1 ? '#ef4444' : '#10b981', fontWeight: 600 }}>
-                                            {tx.is_negative === 1 ? '-' : '+'}€{tx.amount.toFixed(2)}
+                                            {tx.is_negative === 1 ? '-' : ''}€{tx.amount.toFixed(2)}
                                         </td>
                                         <td>{tx.is_negative === 1 ? 'Expense' : 'Income'}</td>
                                         <td>

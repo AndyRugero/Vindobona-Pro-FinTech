@@ -128,6 +128,33 @@ const BudgetManager: React.FC<{ token: string | null }> = ({ token }) => {
         }
     };
 
+    // 🗑️ Remove an existing budget cap limit (any user can do this)
+    const handleRemoveBudget = async (budgetId: string) => {
+        if (!token) return;
+        if (!window.confirm("Are you sure you want to remove this budget?")) return;
+
+        setError(null);
+        setSuccess(null);
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/budgets/${budgetId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            const data = await response.json();
+            if (response.ok) {
+                setSuccess('Budget removed successfully.');
+                fetchBudgets();
+            } else {
+                setError(data.error || 'Failed to remove budget.');
+            }
+        } catch (err) {
+            console.error('Remove budget error:', err);
+            setError('Connection error.');
+        }
+    };
+
     // 🎨 5. Main Component Layout render
     return (
         <div className="budget-manager-container">
@@ -180,8 +207,17 @@ const BudgetManager: React.FC<{ token: string | null }> = ({ token }) => {
                             <div key={b.id} className="budget-card">
                                 {/* Header: Category name and status badge */}
                                 <div className="budget-card-header">
-                                    <span className="budget-card-category">{b.category}</span>
-                                    <span className={`budget-status-badge ${badgeClass}`}>{badgeText}</span>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <span className="budget-card-category">{b.category}</span>
+                                        <span className={`budget-status-badge ${badgeClass}`}>{badgeText}</span>
+                                    </div>
+                                    <button 
+                                        onClick={() => handleRemoveBudget(b.id)}
+                                        style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '11px', cursor: 'pointer', fontWeight: 600, padding: 0 }}
+                                        title={`Remove budget for ${b.category}`}
+                                    >
+                                        Remove
+                                    </button>
                                 </div>
 
                                 {/* Details: Spent amount of total limit */}

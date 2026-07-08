@@ -96,6 +96,24 @@ module.exports = (db) => {
         }
     });
 
+    // 🗑️ DELETE: Remove a budget limit by ID
+    // Path: DELETE http://localhost:5001/api/budgets/:id
+    router.delete('/:id', authenticateToken, async (req, res) => {
+        try {
+            const { id } = req.params;
+            const result = await db.run('DELETE FROM budgets WHERE id = ? AND user_id = ?', [id, req.user.userId]);
+
+            if (result.changes > 0) {
+                res.status(200).json({ message: 'Budget removed successfully' });
+            } else {
+                res.status(404).json({ error: 'Budget not found or unauthorized' });
+            }
+        } catch (error) {
+            console.error('Error deleting budget:', error);
+            res.status(500).json({ error: 'Failed to delete budget' });
+        }
+    });
+
     // 📤 Return router back to main server.js file
     return router;
 };

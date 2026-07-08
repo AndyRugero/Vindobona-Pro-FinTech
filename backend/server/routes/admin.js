@@ -162,5 +162,56 @@ module.exports = (db) => {
         }
     });
 
+    // 🗑️ DELETE: Delete a user permanently (Admin only)
+    // Path: DELETE http://localhost:5001/api/admin/users/:id
+    router.delete('/users/:id', authenticateToken, requireRole(['admin']), async (req, res) => {
+        try {
+            const targetUserId = req.params.id;
+
+            // 1. Verify target user exists
+            const user = await db.get('SELECT username FROM users WHERE id = ?', targetUserId);
+            if (!user) {
+                return res.status(404).json({ error: 'User not found.' });
+            }
+
+            // 2. Prevent self-deletion
+            if (targetUserId === req.user.userId) {
+                return res.status(400).json({ error: 'You cannot delete your own admin account.' });
+            }
+
+            // 3. Delete all linked data in a transaction
+            await db.run('BEGIN TRANSACTION');
+            await db.run('DELETE FROM wallets WHERE user_id = ?', targetUserId);
+            await db.run('DELETE FROM budgets WHERE user_id = ?', targetUserId);
+            await db.run('DELETE FROM transactions WHERE user_id = ?', targetUserId);
+            await db.run('DELETE FROM transfer_otps WHERE user_id = ?', targetUserId);
+            await db.run('DELETE FROM audit_logs WHERE user_id = ?', targetUserId);
+            await db.run('DELETE FROM users WHERE id = ?', targetUserId);
+
+            // Log administrative action
+            const auditId = Date.now().toString() + Math.random().toString(36).substring(2, 5);
+            await db.run(
+                'INSERT INTO audit_logs (id, user_id, action, details, ip_address, timestamp) VALUES (?, ?, ?, ?, ?, ?)',
+                [
+                    auditId,
+                    req.user.userId,
+                    'ADMIN_DELETE_USER',
+                    `Admin ${req.user.username} permanently deleted user ${user.username}`,
+                    req.ip,
+                    new Date().toISOString()
+                ]
+            );
+            await db.run('COMMIT');
+
+            res.status(200).json({
+                message: `User ${user.username} and all associated data have been permanently deleted.`
+            });
+        } catch (error) {
+            await db.run('ROLLBACK');
+            console.error('Admin Delete User Error:', error);
+            res.status(500).json({ error: 'Failed to permanently delete user.' });
+        }
+    });
+
     return router; 
 };

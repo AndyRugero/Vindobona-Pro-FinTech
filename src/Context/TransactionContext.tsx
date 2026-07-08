@@ -134,7 +134,25 @@ export const TransactionProvider = ({ children }: { children: ReactNode }) => {
     };
 
     const importTransactions = (data: Transaction[]) => {
-        setLedgerData(prev => [...data, ...prev]);
+        const token = localStorage.getItem('token');
+        fetch(`${API_URL}/bulk`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ transactions: data })
+        })
+            .then(response => {
+                if (response.ok) {
+                    setLedgerData(prev => [...data, ...prev]);
+                } else {
+                    console.error("Failed to import transactions to database");
+                }
+            })
+            .catch(error => {
+                console.error("Error importing transactions:", error);
+            });
     };
 
     return (

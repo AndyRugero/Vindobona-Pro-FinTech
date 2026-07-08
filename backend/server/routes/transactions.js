@@ -800,5 +800,57 @@ module.exports = (db) => {
         }
     });
 
+    // 📥 POST: Bulk import transactions
+    // Path: POST http://localhost:5001/api/transactions/bulk
+    router.post('/bulk', authenticateToken, async (req, res) => {
+        try {
+            const { transactions } = req.body;
+            if (!Array.isArray(transactions)) {
+                return res.status(400).json({ error: 'Transactions array is required' });
+            }
+
+            await db.run('BEGIN TRANSACTION');
+
+            const presets = ['Groceries', 'Utilities', 'Leisure & Entertainment', 'Travel', 'Healthcare', 'Shopping', 'Rent', 'Other'];
+
+            for (const tx of transactions) {
+                const amountVal = parseFloat(tx.amount.replace(/[^\d.-]/g, ''));
+                const isNegative = tx.amount.includes('-') || amountVal < 0;
+                
+                let matchedCategory = tx.category || 'General';
+                const found = presets.find(p => p.toLowerCase() === matchedCategory.trim().toLowerCase());
+                if (found) {
+                    matchedCategory = found;
+                } else {
+                    matchedCategory = matchedCategory.trim();
+                }
+
+                const dbTx = {
+                    id: tx.id || Date.now().toString() + Math.random().toString(36).substring(2, 5),
+                    date: tx.date || new Date().toLocaleDateString('en-US', { weekday: 'short' }),
+                    receiver: tx.receiver || 'Unknown',
+                    amount: isNegative ? -Math.abs(amountVal) : Math.abs(amountVal),
+                    category: matchedCategory,
+                    is_negative: isNegative ? 1 : 0,
+                    status: 'Complete',
+                    user_id: req.user.userId
+                };
+
+                await db.run(
+                    `INSERT INTO transactions (id, date, receiver, amount, category, is_negative, status, user_id) 
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+                    [dbTx.id, dbTx.date, dbTx.receiver, dbTx.amount, dbTx.category, dbTx.is_negative, dbTx.status, dbTx.user_id]
+                );
+            }
+
+            await db.run('COMMIT');
+            return res.status(201).json({ message: `${transactions.length} transactions imported successfully!` });
+        } catch (error) {
+            await db.run('ROLLBACK');
+            console.error('Error importing bulk transactions:', error);
+            return res.status(500).json({ error: 'Failed to import transactions' });
+        }
+    });
+
     return router;
 };
