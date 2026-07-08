@@ -144,23 +144,113 @@ module.exports = (db) => {
         }
     });
 
-    // 🗑️ DELETE: Remove a transaction by ID (only if it belongs to the logged-in user)
+    // 🗑️ DELETE: Remove a transaction by ID (or rollback if it is a transfer)
     // Path: DELETE http://localhost:5001/api/transactions/:id
     router.delete('/:id', authenticateToken, async (req, res) => {
         try {
             const { id } = req.params;
+            const currentUserId = req.user.userId || req.user.id;
+            const currentUserRole = req.user.role;
 
-            // Execute SQL query to delete the row matching the ID AND user_id
-            const result = await db.run('DELETE FROM transactions WHERE id = ? AND user_id = ?', id, req.user.userId);
-
-            if (result.changes > 0) {
-                res.status(200).json({ message: `Transaction ${id} deleted successfully` });
-            } else {
-                res.status(404).json({ error: `Transaction ${id} not found or unauthorized` });
+            // 1. Fetch the transaction details first to check if it's a transfer
+            const tx = await db.get('SELECT * FROM transactions WHERE id = ?', [id]);
+            if (!tx) {
+                return res.status(404).json({ error: 'Transaction not found' });
             }
+
+            // 2. If it is a transfer, verify if the user is an admin
+            if (tx.category === 'Transfer') {
+                if (currentUserRole !== 'admin') {
+                    return res.status(403).json({ error: 'Transaction declined. Transfers can only be rolled back by an administrator.' });
+                }
+
+                // Admins are allowed to rollback transfers!
+                // To rollback a transfer:
+                // A. We find the matching transaction record on the other side.
+                // Since outgoing transfers are stored as negative (is_negative = 1) for the sender,
+                // and incoming transfers are positive (is_negative = 0) for the receiver.
+                // Let's find both transactions!
+                let senderId = null;
+                let receiverId = null;
+                let amountVal = tx.amount;
+                let senderTx = null;
+                let receiverTx = null;
+
+                if (tx.is_negative === 1) {
+                    senderId = tx.user_id;
+                    senderTx = tx;
+                    // The receiver is the user with the username stored in tx.receiver
+                    const recUser = await db.get('SELECT id FROM users WHERE username = ?', [tx.receiver]);
+                    if (recUser) {
+                        receiverId = recUser.id;
+                        // Find the matching receiver transaction
+                        receiverTx = await db.get(
+                            "SELECT * FROM transactions WHERE user_id = ? AND category = 'Transfer' AND amount = ? AND is_negative = 0",
+                            [receiverId, tx.amount]
+                        );
+                    }
+                } else {
+                    receiverId = tx.user_id;
+                    receiverTx = tx;
+                    // The sender is the user with the username stored in tx.receiver
+                    const sndUser = await db.get('SELECT id FROM users WHERE username = ?', [tx.receiver]);
+                    if (sndUser) {
+                        senderId = sndUser.id;
+                        // Find the matching sender transaction
+                        senderTx = await db.get(
+                            "SELECT * FROM transactions WHERE user_id = ? AND category = 'Transfer' AND amount = ? AND is_negative = 1",
+                            [senderId, tx.amount]
+                        );
+                    }
+                }
+
+                // B. Open transaction envelope
+                await db.run('BEGIN TRANSACTION');
+
+                // C. Revert balances
+                if (senderId) {
+                    await db.run('UPDATE users SET balance = balance + ? WHERE id = ?', [amountVal, senderId]);
+                }
+                if (receiverId) {
+                    await db.run('UPDATE users SET balance = balance - ? WHERE id = ?', [amountVal, receiverId]);
+                }
+
+                // D. Delete both transaction records
+                if (senderTx) {
+                    await db.run('DELETE FROM transactions WHERE id = ?', [senderTx.id]);
+                }
+                if (receiverTx) {
+                    await db.run('DELETE FROM transactions WHERE id = ?', [receiverTx.id]);
+                }
+
+                // E. Log to audit log
+                const auditDetails = `Admin ${req.user.username} rolled back transfer of €${amountVal} between sender (ID: ${senderId}) and receiver (ID: ${receiverId})`;
+                const auditId = Date.now().toString() + Math.random().toString(36).substring(2, 5);
+                await db.run(
+                    'INSERT INTO audit_logs (id, user_id, action, details, ip_address, timestamp) VALUES (?, ?, ?, ?, ?, ?)',
+                    [auditId, currentUserId, 'ADMIN_TRANSFER_ROLLBACK', auditDetails, req.ip, new Date().toISOString()]
+                );
+
+                await db.run('COMMIT');
+                return res.status(200).json({ message: 'Transfer successfully rolled back by administrator and balances restored!' });
+
+            } else {
+                // If it is a normal transaction, verify that it belongs to the logged-in user (unless admin)
+                if (tx.user_id !== currentUserId && currentUserRole !== 'admin') {
+                    return res.status(403).json({ error: 'Unauthorized to delete this transaction' });
+                }
+
+                // Execute normal deletion
+                await db.run('DELETE FROM transactions WHERE id = ?', [id]);
+                return res.status(200).json({ message: `Transaction ${id} deleted successfully` });
+            }
+
         } catch (error) {
+            try {
+                await db.run('ROLLBACK');
+            } catch (rbErr) {}
             console.error('Error deleting transaction:', error);
-            res.status(500).json({ error: 'Failed to delete transaction' });
+            res.status(500).json({ error: `Failed to delete transaction: ${error.message}` });
         }
     });
 
