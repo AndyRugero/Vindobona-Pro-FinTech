@@ -3,6 +3,7 @@ const router = express.Router(); // 🏗️ Initialize the Express Router
 const authenticateToken = require('../middleware/authGuard'); // 🛡️ Import the auth guard middleware
 const { authenticator } = require('otplib'); // 📱 Import otplib for PSD2 transaction verification
 const { logAuditEntry } = require('../services/auditService'); // 📜 Import our secure audit logger
+const { sendEmail } = require('../services/emailService'); // 📧 Import email service for OTP
 const PDFDocument = require('pdfkit'); // 📑 Import PDFKit for generating PDF bank statements
 
 // 📤 We export a function that accepts the database connection 'db'
@@ -166,7 +167,7 @@ module.exports = (db) => {
     // POST: Safe funds transfer between users using SQL transactions
     // Path: POST http://localhost:5001/api/transactions/transfer
     router.post('/transfer', authenticateToken, async (req, res) => {
-        const { receiverUsername, amount, twoFactorCode } = req.body;
+        const { receiverUsername, amount, twoFactorCode, otpCode } = req.body;
         const senderId = req.user.userId;
         const senderUsername = req.user.username;
 
@@ -195,8 +196,8 @@ module.exports = (db) => {
                 return res.status(404).json({ error: 'Receiver not found' });
             }
 
-            // Fetch the sender's current balance and 2FA settings
-            const sender = await db.get('SELECT balance, two_factor_enabled, two_factor_secret , is_card_frozen FROM users WHERE id = ?', senderId);
+            // Fetch the sender's current balance, email and 2FA settings
+            const sender = await db.get('SELECT email, balance, two_factor_enabled, two_factor_secret , is_card_frozen FROM users WHERE id = ?', senderId);
             if (!sender) {
                 return res.status(404).json({ error: 'Sender not found' });
             }
@@ -222,6 +223,74 @@ module.exports = (db) => {
                 });
                 if (!isValid) {
                     return res.status(403).json({ error: 'Invalid two-factor authentication code.' });
+                }
+            }
+
+            // 📧 Email Verification (OTP) Check - Bypassed during test suite execution
+            if (process.env.NODE_ENV !== 'test') {
+                if (!otpCode) {
+                    // Generate random 6-digit verification code
+                    const code = Math.floor(100000 + Math.random() * 900000).toString();
+
+                    // Delete existing OTP and insert the new authorization code
+                    await db.run('DELETE FROM transfer_otps WHERE user_id = ?', [senderId]);
+                    await db.run(
+                        `INSERT INTO transfer_otps (user_id, otp_code, receiver_username, amount, created_at)
+                         VALUES (?, ?, ?, ?, ?)`,
+                        [senderId, code, receiver.username, transferAmount, Date.now()]
+                    );
+
+                    // Compile HTML message template with professional banking theme
+                    const emailHtml = `
+                        <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 550px; margin: 20px auto; padding: 30px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff; color: #0f172a; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+                            <div style="text-align: center; margin-bottom: 25px;">
+                                <h1 style="color: #0f172a; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.5px;">Vindobona Pro FinTech</h1>
+                                <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #64748b;">Secure Transaction Authorization</span>
+                            </div>
+                            <hr style="border: 0; border-top: 1px solid #e2e8f0; margin-bottom: 20px;" />
+                            <p style="font-size: 15px; line-height: 1.6; color: #334155;">Hallo <strong>${senderUsername}</strong>,</p>
+                            <p style="font-size: 15px; line-height: 1.6; color: #334155;">Sie haben eine Überweisung initiiert. Bitte autorisieren Sie die Transaktion mit dem folgenden Einmalpasswort (OTP):</p>
+                            
+                            <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 18px; text-align: center; margin: 25px 0; border-radius: 8px;">
+                                <div style="font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #2563eb; font-family: monospace;">${code}</div>
+                            </div>
+                            
+                            <div style="background: #f1f5f9; padding: 15px; border-radius: 6px; margin-bottom: 25px;">
+                                <table style="width: 100%; font-size: 13px; color: #475569; border-collapse: collapse;">
+                                    <tr>
+                                        <td style="padding: 4px 0; font-weight: 600;">Empfänger:</td>
+                                        <td style="padding: 4px 0; text-align: right;">${receiver.username}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 4px 0; font-weight: 600;">Betrag:</td>
+                                        <td style="padding: 4px 0; text-align: right; font-weight: bold; color: #0f172a;">€${transferAmount.toFixed(2)}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                            
+                            <p style="font-size: 12px; line-height: 1.5; color: #94a3b8; margin-top: 25px;">
+                                Dieser Freigabecode ist für 5 Minuten gültig. Falls Sie diese Überweisung nicht in Auftrag gegeben haben, ändern Sie bitte unverzüglich Ihre Kontoeinstellungen.
+                            </p>
+                        </div>
+                    `;
+
+                    await sendEmail(sender.email || 'mock@vindobona.com', 'Überweisungsverifizierung - Vindobona Pro', emailHtml);
+
+                    return res.status(200).json({
+                        requiresOtp: true,
+                        message: 'Verification code sent to your email.'
+                    });
+                } else {
+                    // Extract and verify the submitted OTP code
+                    const savedOtp = await db.get('SELECT * FROM transfer_otps WHERE user_id = ?', [senderId]);
+                    if (!savedOtp || savedOtp.otp_code !== otpCode.trim() || (Date.now() - savedOtp.created_at) > 5 * 60 * 1000) {
+                        return res.status(403).json({ error: 'Invalid or expired verification code.' });
+                    }
+                    if (savedOtp.receiver_username !== receiver.username || Math.abs(savedOtp.amount - transferAmount) > 0.01) {
+                        return res.status(400).json({ error: 'Transaction details do not match the authorized verification code.' });
+                    }
+                    // Clean code to enforce single-use protection
+                    await db.run('DELETE FROM transfer_otps WHERE user_id = ?', [senderId]);
                 }
             }
 

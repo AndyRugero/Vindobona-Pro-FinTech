@@ -77,6 +77,14 @@ const initializeDatabase = async () => {
             FOREIGN KEY (user_id) REFERENCES users (id),
             UNIQUE(user_id, currency)
         );
+
+        CREATE TABLE IF NOT EXISTS transfer_otps (
+            user_id TEXT PRIMARY KEY,
+            otp_code TEXT NOT NULL,
+            receiver_username TEXT NOT NULL,
+            amount REAL NOT NULL,
+            created_at INTEGER NOT NULL
+        );
     `);
 
     // 🏦 Safe Schema Migration: Add balance column to existing users table if it doesn't exist

@@ -20,6 +20,8 @@ const MemberTransfers: React.FC<{ token: string | null }> = ({ token }) => {
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
+    const [requiresOtp, setRequiresOtp] = useState(false);
+    const [otpCode, setOtpCode] = useState('');
 
     const fetchData = async () => {
         if (!token) return;
@@ -101,20 +103,28 @@ const MemberTransfers: React.FC<{ token: string | null }> = ({ token }) => {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    recipientUsername: selectedMember.username,
+                    receiverUsername: selectedMember.username,
                     amount: parsedAmount,
-                    twoFactorCode: is2FAEnabled ? twoFactorCode : undefined
+                    twoFactorCode: is2FAEnabled ? twoFactorCode : undefined,
+                    otpCode: requiresOtp ? otpCode : undefined
                 })
             });
 
             const data = await response.json();
 
             if (response.ok) {
-                setSuccess(`Successfully transferred €${parsedAmount.toFixed(2)} to ${selectedMember.username}!`);
-                setAmount('');
-                setTwoFactorCode('');
-                setSelectedMember(null); // Close the slide-out modal
-                fetchData(); // Refresh directory balance/status
+                if (data.requiresOtp) {
+                    setRequiresOtp(true);
+                    setSuccess(data.message || 'Verification code sent to your email.');
+                } else {
+                    setSuccess(`Successfully transferred €${parsedAmount.toFixed(2)} to ${selectedMember.username}!`);
+                    setAmount('');
+                    setTwoFactorCode('');
+                    setOtpCode('');
+                    setRequiresOtp(false);
+                    setSelectedMember(null); // Close the slide-out modal
+                    fetchData(); // Refresh directory balance/status
+                }
             } else {
                 setError(data.error || 'Transfer failed. Check details and try again.');
             }
@@ -207,7 +217,10 @@ const MemberTransfers: React.FC<{ token: string | null }> = ({ token }) => {
                                     setSelectedMember(null);
                                     setAmount('');
                                     setTwoFactorCode('');
+                                    setOtpCode('');
+                                    setRequiresOtp(false);
                                     setError(null);
+                                    setSuccess(null);
                                 }}
                             >
                                 <X />
@@ -215,41 +228,64 @@ const MemberTransfers: React.FC<{ token: string | null }> = ({ token }) => {
                         </div>
 
                         <form onSubmit={handleTransfer} className="transfer-form">
-                            <div className="form-group">
-                                <label htmlFor="amount">Amount (€)</label>
-                                <input
-                                    id="amount"
-                                    type="number"
-                                    step="0.01"
-                                    min="0.01"
-                                    placeholder="0.00"
-                                    value={amount}
-                                    onChange={(e) => setAmount(e.target.value)}
-                                    required
-                                    className="form-input"
-                                />
-                            </div>
-
-                            {/* PSD2 2FA Signature Input (Only renders if user enabled 2FA) */}
-                            {is2FAEnabled && (
-                                <div className="form-group 2fa-group">
-                                    <label htmlFor="twoFactorCode">
-                                        2FA Verification Code (Google Authenticator)
+                            {requiresOtp ? (
+                                <div className="form-group otp-group">
+                                    <label htmlFor="otpCode">
+                                        E-Mail Bestätigungscode (OTP)
                                     </label>
                                     <input
-                                        id="twoFactorCode"
+                                        id="otpCode"
                                         type="text"
                                         maxLength={6}
                                         placeholder="123456"
-                                        value={twoFactorCode}
-                                        onChange={(e) => setTwoFactorCode(e.target.value)}
+                                        value={otpCode}
+                                        onChange={(e) => setOtpCode(e.target.value)}
                                         required
-                                        className="form-input 2fa-input"
+                                        className="form-input otp-input"
                                     />
-                                    <small className="help-text">
-                                        Enter the 6-digit verification code from your Google Authenticator app.
+                                    <small className="help-text" style={{ color: '#10b981', fontWeight: 500 }}>
+                                        Ein 6-stelliger Bestätigungscode wurde an Ihre E-Mail-Adresse gesendet.
                                     </small>
                                 </div>
+                            ) : (
+                                <>
+                                    <div className="form-group">
+                                        <label htmlFor="amount">Amount (€)</label>
+                                        <input
+                                            id="amount"
+                                            type="number"
+                                            step="0.01"
+                                            min="0.01"
+                                            placeholder="0.00"
+                                            value={amount}
+                                            onChange={(e) => setAmount(e.target.value)}
+                                            required
+                                            className="form-input"
+                                        />
+                                    </div>
+
+                                    {/* PSD2 2FA Signature Input (Only renders if user enabled 2FA) */}
+                                    {is2FAEnabled && (
+                                        <div className="form-group 2fa-group">
+                                            <label htmlFor="twoFactorCode">
+                                                2FA Verification Code (Google Authenticator)
+                                            </label>
+                                            <input
+                                                id="twoFactorCode"
+                                                type="text"
+                                                maxLength={6}
+                                                placeholder="123456"
+                                                value={twoFactorCode}
+                                                onChange={(e) => setTwoFactorCode(e.target.value)}
+                                                required
+                                                className="form-input 2fa-input"
+                                            />
+                                            <small className="help-text">
+                                                Enter the 6-digit verification code from your Google Authenticator app.
+                                            </small>
+                                        </div>
+                                    )}
+                                </>
                             )}
 
                             <div className="modal-actions">
@@ -260,7 +296,10 @@ const MemberTransfers: React.FC<{ token: string | null }> = ({ token }) => {
                                         setSelectedMember(null);
                                         setAmount('');
                                         setTwoFactorCode('');
+                                        setOtpCode('');
+                                        setRequiresOtp(false);
                                         setError(null);
+                                        setSuccess(null);
                                     }}
                                 >
                                     Cancel
@@ -270,7 +309,7 @@ const MemberTransfers: React.FC<{ token: string | null }> = ({ token }) => {
                                     disabled={submitting}
                                     className="btn btn-primary"
                                 >
-                                    {submitting ? 'Processing...' : 'Confirm & Send'}
+                                    {submitting ? 'Processing...' : (requiresOtp ? 'Verify & Send' : 'Confirm & Send')}
                                     <Send className="btn-icon" />
                                 </button>
                             </div>
