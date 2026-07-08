@@ -141,7 +141,7 @@ const initializeDatabase = async () => {
 
 // ⚙️ 4. GLOBAL MIDDLEWARES
 app.use(cors()); // Allow frontend to talk to backend
-app.use(express.json()); // Allow reading JSON body data in POST requests
+app.use(express.json({ limit: '10mb' })); // Allow reading JSON body data in POST requests, up to 10MB (important for base64 avatars)
 
 // Global Rate Limiter
 const globalLimiter = rateLimit({
