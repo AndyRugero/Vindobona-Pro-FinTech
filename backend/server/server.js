@@ -8,7 +8,9 @@ const { rateLimit } = require('express-rate-limit');
 
 // 2. SERVER CONFIGURATION
 const app = express(); // Create an instance of the Express application
+app.set('trust proxy,', 1)
 const PORT = 5001; // The door number (port) our server will listen on
+
 // let db; // A global variable to store our active database connection once opened
 
 // 🏗️ 3. DATABASE INITIALIZATION
@@ -162,7 +164,7 @@ const initializeDatabase = async () => {
                 created_at BIGINT NOT NULL
             )
         `);
-        
+
         // Seed sample announcements if empty (to match 3 unread count)
         const count = await db.get('SELECT COUNT(*) as count FROM announcements');
         if (count && count.count === 0) {
@@ -203,8 +205,8 @@ initializeDatabase()
         // 🚀 HEALTH CHECK ENDPOINT (Added for Kubernetes Lesson 57)
         // Kubernetes will periodically call this endpoint to check if our backend is up and running.
         // If this returns HTTP 200, Kubernetes knows our server is healthy.
-        app.get('/api/health', (req, res) => { 
-            res.status(200).json({ status: 'UP', timestamp: new Date() }); 
+        app.get('/api/health', (req, res) => {
+            res.status(200).json({ status: 'UP', timestamp: new Date() });
         });
 
         // 📢 Public Announcements Endpoint
