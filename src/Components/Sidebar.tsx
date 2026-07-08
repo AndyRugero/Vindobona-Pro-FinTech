@@ -14,7 +14,8 @@ import {
     PiggyBank,
     Shield,
     Phone,
-    Mail
+    Mail,
+    Circle
 } from 'lucide-react';
 
 // 📐 Define the TypeScript types for the props our Sidebar expects:
@@ -64,7 +65,9 @@ const Sidebar: React.FC<{
                 <div className="profile-info">
                     <h4>{username || 'Andy R.'}</h4>
                     <p>{role === 'admin' ? 'Administrator' : 'Premium Account'}</p>
-                    <span className="status-dot">Active</span>
+                    <span className="sidebar-status-container">
+                        <Circle size={10} className="sidebar-status-icon" fill="#10b981" /> Active
+                    </span>
                 </div>
             </div>
 

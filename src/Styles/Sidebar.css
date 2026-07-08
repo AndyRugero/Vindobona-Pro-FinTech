@@ -146,8 +146,15 @@
 }
 
 @keyframes slideDown {
-    from { opacity: 0; transform: translateY(-6px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .help-contact-title {
@@ -189,4 +196,19 @@
     display: inline-block;
     margin-right: 6px;
     vertical-align: middle;
-}
+}
+
+
+.sidebar-status-container {
+    font-size: 13px;
+    color: #10b981;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+
+.sidebar-status-icon {
+    color: #10b981;
+}
