@@ -22,9 +22,9 @@ module.exports = (db) => {
                 return res.status(400).json({ error: 'Limit amount must be a positive number' });
             }
 
-            // D. Query: Check if the user already has a budget cap set for this specific category
+            // D. Query: Check if the user already has a budget cap set for this specific category (case-insensitive)
             const existing = await db.get(
-                'SELECT id FROM budgets WHERE user_id = ? AND category = ?',
+                'SELECT id FROM budgets WHERE user_id = ? AND LOWER(TRIM(category)) = LOWER(TRIM(?))',
                 [req.user.userId, category]
             );
 
@@ -61,23 +61,30 @@ module.exports = (db) => {
             );
 
             // B. Aggregate expenditures by summing absolute values of negative (expense) transactions
+            // We use LOWER(TRIM(category)) and amount < 0 to be database agnostic and case insensitive.
             const spentData = await db.all(
-                `SELECT category, SUM(ABS(amount)) as totalSpent 
+                `SELECT LOWER(TRIM(category)) as cleanCategory, SUM(ABS(amount)) as totalSpent 
                  FROM transactions 
-                 WHERE user_id = ? AND is_negative = 1 
-                 GROUP BY category`,
+                 WHERE user_id = ? AND (is_negative = 1 OR amount < 0) 
+                 GROUP BY LOWER(TRIM(category))`,
                 [req.user.userId]
             );
 
-            // C. Create a lookup map (e.g. { Food: 120, Entertainment: 45 }) for simple mapping
+            // C. Create a lookup map (e.g. { food: 120, entertainment: 45 }) for case-insensitive mapping
             const spentMap = {};
             spentData.forEach(row => {
-                spentMap[row.category] = row.totalSpent;
+                // Node-postgres returns column names in lowercase (e.g., cleancategory, totalspent)
+                const categoryKey = (row.cleancategory || row.cleanCategory || row.category || '').toLowerCase().trim();
+                const totalSpentVal = parseFloat(row.totalspent || row.totalSpent || 0);
+                if (categoryKey) {
+                    spentMap[categoryKey] = totalSpentVal;
+                }
             });
 
             // D. Map each budget config to its calculated progress metrics
             const results = budgets.map(b => {
-                const spent = spentMap[b.category] || 0;
+                const categoryKey = b.category ? b.category.toLowerCase().trim() : '';
+                const spent = spentMap[categoryKey] || 0;
                 return {
                     id: b.id,
                     category: b.category,
