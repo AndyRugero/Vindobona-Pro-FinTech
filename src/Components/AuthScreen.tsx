@@ -544,7 +544,7 @@ const AuthScreen: React.FC<AuthScreenProps> = ({ onLoginSuccess }) => {
                                 <div key={ann.id} style={{ background: '#0c1222', border: '1px solid #1e293b', borderRadius: '12px', padding: '24px', position: 'relative' }}>
                                     <h2 style={{ color: 'white', fontSize: '18px', fontWeight: 700, margin: '0 0 8px 0' }}>{ann.title}</h2>
                                     <span style={{ fontSize: '11px', color: '#64748b', display: 'block', marginBottom: '14px' }}>
-                                        Published on {new Date(ann.created_at).toLocaleString()}
+                                        Published on {new Date(Number(ann.created_at)).toLocaleString()}
                                     </span>
                                     <p style={{ fontSize: '14px', color: '#cbd5e1', lineHeight: '1.6', margin: 0, whiteSpace: 'pre-wrap' }}>
                                         {ann.content}

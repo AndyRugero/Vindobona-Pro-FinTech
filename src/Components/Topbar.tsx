@@ -135,7 +135,7 @@ const Topbar: React.FC<TopbarProps> = ({ onLogout, theme = 'dark', onToggleTheme
                                                 {isUnread && <span className="notification-item-dot"></span>}
                                             </div>
                                             <span className="notification-item-date">
-                                                {new Date(ann.created_at).toLocaleDateString()}
+                                                {new Date(Number(ann.created_at)).toLocaleDateString()}
                                             </span>
                                             <p className="notification-item-snippet">{ann.content}</p>
                                         </div>
@@ -170,7 +170,7 @@ const Topbar: React.FC<TopbarProps> = ({ onLogout, theme = 'dark', onToggleTheme
                         <div className="modal-header-block">
                             <h2>{selectedAnnouncement.title}</h2>
                             <span className="modal-header-date">
-                                {new Date(selectedAnnouncement.created_at).toLocaleString()}
+                                {new Date(Number(selectedAnnouncement.created_at)).toLocaleString()}
                             </span>
                         </div>
                         <p className="modal-body-text">{selectedAnnouncement.content}</p>
