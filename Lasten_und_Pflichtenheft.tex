@@ -302,21 +302,45 @@ In echten Enterprise-Finanzarchitekturen (wie bei der \textit{Erste Group} oder 
 % 5. ZEITPLAN
 % ==========================================
 \section{Zeitplan (Timeline)}
-Das Projekt wird in sechs einfachen Phasen entwickelt:
-\begin{itemize}
-    \item \textbf{\color{accentblue}Phase 1: Planung \& Design} \\
-      Schreiben des Lastenhefts. Planen der Datenbanktabellen und Erstellen der ersten Skizzen für das UI-Design.
-    \item \textbf{\color{accentblue}Phase 2: Login \& Wallets} \\
-      Programmieren der Registrierung, des sicheren Logins und der Geldbörsen (Wallets) für die Währungen.
-    \item \textbf{\color{accentblue}Phase 3: Geldautomaten-Karte \& Chatbot} \\
-      Einbauen der Leaflet-Karte für Wien und Verbinden des KI-Chatbots für Finanzfragen.
-    \item \textbf{\color{accentblue}Phase 4: Docker \& DevOps-Vorbereitung} \\
-      Verpacken der App in Docker-Container, damit sie auf jedem Computer gleich läuft.
-    \item \textbf{\color{accentblue}Phase 5: Kubernetes \& Cloud-Start} \\
-      Schreiben der Kubernetes-Konfigurationen und Starten der App in der Microsoft Azure Cloud.
-    \item \textbf{\color{accentblue}Phase 6: Testen \& Abgabe} \\
-      Ausführen der automatischen Unit-Tests und Durchführung manueller End-to-End-Tests aller Funktionen. Behebung verbleibender Fehler und finale Projektübergabe.
-\end{itemize}
+Das Projekt erstreckt sich über einen Zeitraum von drei Monaten (1. Mai bis 31. Juli) und ist in drei Hauptentwicklungsphasen gegliedert:
+
+\begin{description}
+    \item[\textbf{Monat 1 (M1) -- Mai: Konzeption \& Kernarchitektur (Backend-Fokus)}]
+    \begin{itemize}
+        \item \textbf{Phasen:} Phase 1 (Planung \& Design) und Phase 2A (Authentifizierung).
+        \item \textbf{Meilensteine:}
+        \begin{itemize}
+            \item Fertigstellung des Lasten- und Pflichtenhefts.
+            \item Entwurf des relationalen Datenbankschemas (SQL-DDL).
+            \item Implementierung der Benutzerregistrierung und des JWT-Login-Systems im Express-Backend.
+        \end{itemize}
+    \end{itemize}
+    
+    \item[\textbf{Monat 2 (M2) -- Juni: Frontend-Entwicklung \& Service-Integration (Frontend-Fokus)}]
+    \begin{itemize}
+        \item \textbf{Phasen:} Phase 2B (FX-Wallets), Phase 3 (Geldautomaten-Karte \& Chatbot).
+        \item \textbf{Meilensteine:}
+        \begin{itemize}
+            \item Entwicklung des React-UI-Dashboards (Wallets-Anzeige und Transaktions-Ledger).
+            \item Implementierung des Währungsumrechners und der Budget-Limits.
+            \item Integration der interaktiven OpenStreetMap-Karte (Leaflet) für den ATM-Finder.
+            \item Anbindung der OpenAI/Chatbot-Schnittstelle für die KI-Finanzberatung.
+        \end{itemize}
+    \end{itemize}
+    
+    \item[\textbf{Monat 3 (M3) -- Juli: DevOps, Cloud-Deployment \& Qualitätssicherung}]
+    \begin{itemize}
+        \item \textbf{Phasen:} Phase 4 (Docker), Phase 5 (Kubernetes) und Phase 6 (Testen \& Abgabe).
+        \item \textbf{Meilensteine:}
+        \begin{itemize}
+            \item Containerisierung der App mit Docker (Erstellung von Dockerfiles für Frontend und Backend).
+            \item Konzeption der Kubernetes-Manifeste und Cloud-Deployment auf Microsoft Azure.
+            \item Schreiben und Ausführen von automatisierten Unit-Tests (Login, Währungen).
+            \item Finale Qualitätssicherung (Debugging des Budget-Planers und CSS-Polishing).
+            \item Projektübergabe und Vorbereitung der Präsentation.
+        \end{itemize}
+    \end{itemize}
+\end{description}
 
 \newpage
 
