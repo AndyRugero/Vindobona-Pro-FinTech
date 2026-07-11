@@ -1,0 +1,218 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[german,english]{babel}
+\usepackage[margin=0.8in]{geometry}
+\usepackage{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, shapes.symbols, positioning, arrows.meta, shadows, calc}
+\usepackage[most]{tcolorbox}
+\usepackage{enumitem}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{titlesec}
+
+% 🎨 Custom Colors (FinTech Premium Palette)
+\definecolor{primarynavy}{HTML}{0B0F19}     % Deep dark blue
+\definecolor{accentblue}{HTML}{2563EB}      % Royal Blue
+\definecolor{accentgreen}{HTML}{10B981}     % Emerald Green
+\definecolor{accentorange}{HTML}{F97316}    % Coral Orange
+\definecolor{accentpurple}{HTML}{A855F7}    % Amethyst Purple
+\definecolor{accentcyan}{HTML}{06B6D4}      % Cyber Cyan
+\definecolor{accentred}{HTML}{EF4444}       % Crimson Red
+\definecolor{bglight}{HTML}{F8FAFC}        % Off-white background
+\definecolor{bordergray}{HTML}{E2E8F0}     % Slate border
+
+\titleformat{\section}
+  {\color{primarynavy}\normalfont\Large\bfseries}
+  {\thesection}{1em}{}[{\color{accentblue}\titlerule[2pt]}]
+\titleformat{\subsection}
+  {\color{accentblue}\normalfont\large\bfseries}
+  {\thesubsection}{1em}{}
+
+\setlist[itemize]{label=\color{accentblue}$\bullet$}
+\setlist[enumerate]{label=\color{accentblue}\arabic*.}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{8pt}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=accentblue,
+    urlcolor=accentblue
+}
+
+\begin{document}
+\selectlanguage{english}
+
+% ==========================================
+% 👑 HEADER BANNER
+% ==========================================
+\begin{tcolorbox}[
+    colback=primarynavy,
+    colframe=accentblue,
+    arc=8pt,
+    boxrule=2.5pt,
+    left=20pt,
+    right=20pt,
+    top=25pt,
+    bottom=25pt,
+    coltext=white
+]
+    \centering
+    {\huge\bfseries Kubernetes (K8s) \& Microsoft Azure \par}
+    \vspace{8pt}
+    {\Large\bfseries Cloud Orchestration \& Backend Safeguards Guide \par}
+    \vspace{10pt}
+    \color{accentcyan}\hrule height 1.5pt
+    \vspace{8pt}
+    {\small Student Project Reference -- \textbf{Andy Rugero Ndayambaje} \par}
+\end{tcolorbox}
+
+% ==========================================
+% 🌐 CORE SYNERGY
+% ==========================================
+\section{The Core Cloud Synergy: Azure \& Kubernetes}
+
+In a modern production application like \textbf{Vindobona Pro FinTech}, the physical servers (cloud) and the deployment manager (orchestrator) work hand in hand.
+
+\begin{tcolorbox}[
+    colback=bglight,
+    colframe=accentorange,
+    arc=6pt,
+    boxrule=1.5pt,
+    title=\textbf{\color{white}💡 The Real-World Analogy}
+]
+    Imagine building a modular residential complex:
+    \begin{itemize}
+        \item \textbf{Azure is the Landlord \& Real Estate Developer:} They supply the plot of land, water pipes, electrical grid, and building foundations (Virtual Machines, physical network, raw databases).
+        \item \textbf{Kubernetes is the Construction Foreman:} They do not own the land, but they coordinate everything on it. They decide how many modular apartments to place, arrange them for optimal sunlight, and immediately replace a module if it gets damaged.
+        \item \textbf{Docker Containers are the Prefabricated Apartments:} Independent, identical, self-contained units (Express API, React Frontend) ready to drop onto the foundation.
+    \end{itemize}
+\end{tcolorbox}
+
+\subsection{Distinction of Responsibilities}
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lp{6.5cm}p{6.5cm}}
+\toprule
+\textbf{Feature} & \textbf{Microsoft Azure (Hardware Layer)} & \textbf{Kubernetes (Orchestration Layer)} \\
+\midrule
+\textbf{Role} & Provides hardware \& cloud services. & Manages, monitors, and scales containers. \\
+\textbf{Primary Asset} & Virtual Machines (VMs), storage, physical network nodes. & Software controller running inside virtual clusters. \\
+\textbf{Scaling} & Provisions new physical virtual computers. & Launches new app replicas on existing computers. \\
+\textbf{Health Action} & Alerts if a physical hard drive/node dies. & Restarts app containers inside VMs when they crash. \\
+\bottomrule
+\end{tabular}
+\caption{Azure vs. Kubernetes Division of Work}
+\end{table}
+
+\newpage
+
+% ==========================================
+% 📊 ARCHITECTURE DIAGRAM
+% ==========================================
+\section{Deployment Architecture Diagram}
+
+Below is the visual schematic showing the request lifecycle from the browser to the backend server replicas managed by Kubernetes on Microsoft Azure:
+
+\vspace{0.8cm}
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[
+    node distance=1.8cm and 1.8cm,
+    clientNode/.style={circle, draw=accentblue!80, fill=accentblue!10, thick, minimum size=2.2cm, align=center, font=\scriptsize\bfseries, drop shadow},
+    lbNode/.style={rectangle, draw=accentorange!80, fill=accentorange!15, thick, minimum width=2.8cm, minimum height=1.2cm, align=center, rounded corners=4pt, drop shadow},
+    podNode/.style={rectangle, draw=accentpurple!80, fill=accentpurple!10, thick, minimum width=2.4cm, minimum height=1.3cm, align=center, rounded corners=4pt, drop shadow},
+    dbNode/.style={cylinder, draw=accentgreen!80, fill=accentgreen!10, shape border rotate=90, minimum width=2.2cm, minimum height=1.4cm, align=center, aspect=0.25, drop shadow},
+    arrow/.style={-Stealth, ultra thick, draw=primarynavy!70}
+]
+
+    % Nodes
+    \node (client) [clientNode] {Client Browser\\(Vindobona UI)};
+    \node (lb) [lbNode, right=of client] {\textbf{K8s Service}\\(Load Balancer)};
+    
+    \node (pod2) [podNode, right=of lb] {Express API\\(Replica 2)};
+    \node (pod1) [podNode, above=0.6cm of pod2] {Express API\\(Replica 1)};
+    \node (pod3) [podNode, below=0.6cm of pod2] {Express API\\(Replica 3)};
+    
+    \node (db) [dbNode, right=of pod2] {PostgreSQL\\(Azure DB)};
+
+    % Boundary Boxes
+    \draw[dashed, draw=accentcyan, thick] ($(pod1.north west)+(-0.3,0.4)$) rectangle ($(pod3.south east)+(0.3,-0.4)$) node[pos=0.08, above, font=\tiny\bfseries\color{accentcyan}] {Kubernetes Cluster (AKS)};
+    \draw[dashed, draw=accentblue!50, thick] ($(lb.north west)+(-0.2,1.8)$) rectangle ($(db.south east)+(0.4,-1.8)$) node[pos=0.96, below, font=\tiny\bfseries\color{accentblue}] {Microsoft Azure Cloud Zone};
+
+    % Connections
+    \draw[arrow] (client) -- node[above, font=\tiny\bfseries] {HTTPS :443} (lb);
+    \draw[arrow] (lb.east) -- ++(0.5,0) |- (pod1.west);
+    \draw[arrow] (lb.east) -- (pod2.west);
+    \draw[arrow] (lb.east) -- ++(0.5,0) |- (pod3.west);
+    
+    \draw[arrow] (pod1.east) -- ++(0.5,0) |- (db.north);
+    \draw[arrow] (pod2.east) -- (db.west);
+    \draw[arrow] (pod3.east) -- ++(0.5,0) |- (db.south);
+
+\end{tikzpicture}
+\caption{Load-balanced deployment schematic of Vindobona Pro FinTech on Azure}
+\end{figure}
+
+\vspace{0.5cm}
+
+% ==========================================
+% 🛡️ BACKEND SAFEGUARDS
+% ==========================================
+\section{How Kubernetes Protects the Backend Express API}
+
+Running a backend server without orchestrators is highly risky. Kubernetes acts as an automated operations team, protecting the server through four specific mechanisms:
+
+\subsection{1. Self-Healing (Automated Container Recovery)}
+If the Express API crashes due to an unhandled promise rejection, memory leaks, or execution failures:
+\begin{itemize}
+    \item \textbf{Without K8s:} The application remains offline until a developer SSHs into the machine and restarts the process manually.
+    \item \textbf{With K8s:} Kubernetes monitors the container container state. If the process terminates, it destroys the failed container and spawns a clean, new container replica **in less than 3 seconds**.
+\end{itemize}
+\textbf{Real-World Example:} A user sends malformed transaction payload causing Node.js to throw a fatal error. The server crashes; Kubernetes intercepts it immediately and boots a new instance, preventing downtime for other users.
+
+\subsection{2. Load Balancing (Traffic Equalization)}
+During high-traffic situations (e.g., end-of-month paydays):
+\begin{itemize}
+    \item \textbf{Without K8s:} All incoming API requests land on a single Node.js thread, causing response lag, high CPU load, and eventual server timeout.
+    \item \textbf{With K8s:} Kubernetes routes traffic dynamically across the **3 active replicas**. If Replica 1 is busy executing a calculation, the next request is automatically routed to Replica 2 or 3.
+\end{itemize}
+
+\newpage
+
+\subsection{3. Zero-Downtime Updates (Rolling Deployments)}
+When code changes (like adding a feature to \texttt{server.js}) are deployed:
+\begin{itemize}
+    \item \textbf{Without K8s:} The backend process must be stopped, updated, and restarted. During these minutes, users face a \textit{503 Service Unavailable} error page.
+    \item \textbf{With K8s:} Kubernetes conducts a **Rolling Update**:
+    \begin{enumerate}
+        \item It launches the new version as a separate container.
+        \item Once the new container passes health checks, Kubernetes routes traffic to it.
+        \item It destroys the old container replica.
+        \item This sequence repeats one-by-one until all 3 replicas are updated without dropping a single connection.
+    \end{enumerate}
+\end{itemize}
+
+\subsection{4. Intelligent Liveness \& Readiness Probes}
+Using the Express health endpoint (\texttt{/api/health}):
+\begin{itemize}
+    \item \textbf{Without K8s:} If the Express server hangs in an infinite loop or loses its database pool connection, it remains running but completely unresponsive.
+    \item \textbf{With K8s:} Kubernetes pings the \texttt{/api/health} endpoint every 10 seconds. If the API returns a status other than \texttt{200 OK} (or fails to respond), Kubernetes labels the container as unhealthy, removes it from the load balancer, and deploys a healthy instance.
+\end{itemize}
+
+\begin{tcolorbox}[
+    colback=bglight,
+    colframe=accentgreen,
+    arc=6pt,
+    boxrule=1.5pt,
+    title=\textbf{\color{white}🔒 Summary for Your Presentation}
+]
+    \centering
+    \small\itshape
+    "Microsoft Azure serves as our hardware foundation and scalable cloud provider. Kubernetes acts as our deployment manager on top, ensuring that our Express backend remains resilient through automated self-healing, balanced workloads across 3 replicas, zero-downtime rolling updates, and active health monitoring."
+\end{tcolorbox}
+
+\end{document}
